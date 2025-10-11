@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -49,19 +50,30 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'])),
         );
-        
+
         // Here you would typically navigate to the home screen
         // For demonstration, we'll just show a success dialog
         if (mounted) {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Login Berhasil'),
-              content: Text('Selamat datang admin!'),
+              title: Text(
+                'Login Berhasil',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                'Selamat datang admin!',
+                style: GoogleFonts.poppins(),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('OK'),
+                  child: Text(
+                    'OK',
+                    style: GoogleFonts.poppins(),
+                  ),
                 ),
               ],
             ),
@@ -103,7 +115,10 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(width: 8),
             Text(
               'jawara.sytes.net/login',
-              style: TextStyle(fontSize: 16, color: Colors.white),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
@@ -144,39 +159,39 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // App Title
               Text(
                 'Jawara Pintar',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 30),
-              
+
               // Welcome Text
               Text(
                 'Selamat Datang',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 10),
-              
+
               // Subtitle
               Text(
                 'Login untuk mengakses sistem Jawara Pintar.',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.black54,
                 ),
               ),
               const SizedBox(height: 40),
-              
+
               // Login Card
               Container(
                 padding: EdgeInsets.all(20),
@@ -198,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                     Center(
                       child: Text(
                         'Masuk ke akun anda',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
@@ -206,24 +221,25 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    
+
                     // Email Field Label
                     Text(
                       'Email',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Email TextField
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.poppins(),
                       decoration: InputDecoration(
                         hintText: 'Masukkan email disini',
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: GoogleFonts.poppins(color: Colors.grey),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -240,24 +256,25 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Password Field Label
                     Text(
                       'Password',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Password TextField
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscureText,
+                      style: GoogleFonts.poppins(),
                       decoration: InputDecoration(
                         hintText: 'Masukkan password disini',
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: GoogleFonts.poppins(color: Colors.grey),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -284,22 +301,22 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    
+
                     // Error message
                     if (_errorMessage.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
                           _errorMessage,
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             color: Colors.red,
                             fontSize: 14,
                           ),
                         ),
                       ),
-                      
+
                     const SizedBox(height: 30),
-                    
+
                     // Login Button
                     SizedBox(
                       width: double.infinity,
@@ -316,24 +333,24 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: _isLoading
                             ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                             : Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                          'Login',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Register Link
                     Center(
                       child: Row(
@@ -341,7 +358,7 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Text(
                             'Belum punya akun? ',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 15,
                               color: Colors.black54,
                             ),
@@ -352,7 +369,7 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             child: Text(
                               'Daftar',
-                              style: TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF6C63FF),
