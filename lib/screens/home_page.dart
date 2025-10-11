@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -8,7 +9,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Jawara Pintar Dashboard'),
-        backgroundColor: Color(0xFF6C63FF),
+        backgroundColor: AppStyles.primaryColor,
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -24,7 +25,7 @@ class HomePage extends StatelessWidget {
           children: [
             Icon(
               Icons.check_circle,
-              color: Color(0xFF6C63FF),
+              color: AppStyles.primaryColor,
               size: 80,
             ),
             SizedBox(height: 24),
@@ -40,7 +41,7 @@ class HomePage extends StatelessWidget {
               'Selamat datang, Admin',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.black54,
+                color: AppStyles.textSecondaryColor,
               ),
             ),
           ],
