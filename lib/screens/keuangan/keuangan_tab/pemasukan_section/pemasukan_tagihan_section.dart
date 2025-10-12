@@ -10,7 +10,7 @@ class PemasukanTagihanSection extends StatelessWidget {
         title: Text("Pemasukan Tagihan"),
       ),
       body: const Center(
-        child: Text("Ini Section Pemasukan Tagihan di Menu Keuangan di Tab Laporan"),
+        child: Text("Ini Section Pemasukan Tagihan di Menu Keuangan di Tab Pemasukan"),
       ),
     );
   }
