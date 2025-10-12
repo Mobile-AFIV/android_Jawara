@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import '../services/auth_service.dart';
@@ -24,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     // Set default email and password for testing purposes
     _emailController.text = 'admin1@gmail.com';
-    _passwordController.text = '12345678';
+    _passwordController.text = 'password';
   }
 
   @override
@@ -40,62 +41,54 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    try {
-      final result = await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text,
+    final result = await _authService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    if (result['success']) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
       );
-
-      if (result['success']) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'])),
-        );
-
-        // Here you would typically navigate to the home screen
-        // For demonstration, we'll just show a success dialog
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(
-                'Login Berhasil',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: Text(
-                'Selamat datang admin!',
-                style: GoogleFonts.poppins(),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'OK',
-                    style: GoogleFonts.poppins(),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-      } else {
-        // Show error message
-        setState(() {
-          _errorMessage = result['message'];
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Terjadi kesalahan: ${e.toString()}';
-      });
-    } finally {
+      
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              'Login Berhasil',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'Selamat datang admin!',
+              style: GoogleFonts.poppins(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => context.goNamed('dashboard'),
+                child: Text(
+                  'OK',
+                  style: GoogleFonts.poppins(),
+                ),
+              ),
+            ],
+          ),
+        );
       }
+    } else {
+      // Show error message
+      setState(() {
+        _errorMessage = result['message'];
+      });
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -312,7 +305,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            // Navigate to registration page
+                            context.goNamed('register');
                           },
                           child: Text(
                             'Daftar',
