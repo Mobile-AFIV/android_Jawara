@@ -10,7 +10,7 @@ class KategoriIuranSection extends StatelessWidget {
         title: Text("Kategori Iuran"),
       ),
       body: const Center(
-        child: Text("Ini Section Kategori Iuran di Menu Keuangan di Tab Laporan"),
+        child: Text("Ini Section Kategori Iuran di Menu Keuangan di Tab Pemasukan"),
       ),
     );
   }
