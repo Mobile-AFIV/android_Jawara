@@ -15,7 +15,7 @@ class AuthService {
     await Future.delayed(const Duration(seconds: 1));
     
     // Check for the specific credentials
-    if (email == 'admin1@gmail.com' && password == '12345678') {
+    if (email == 'admin1@gmail.com' && password == 'password') {
       return {
         'success': true,
         'message': 'Login berhasil'

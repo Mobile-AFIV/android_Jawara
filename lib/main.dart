@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jawara_pintar/route.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
-import 'screens/login_page.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       title: 'Jawara Pintar',
-      home: const LoginPage(),
+      routerConfig: mainRouter,
       debugShowCheckedModeBanner: false,
     );
   }
