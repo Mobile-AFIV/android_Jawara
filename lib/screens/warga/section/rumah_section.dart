@@ -7,10 +7,89 @@ class RumahSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Rumah"),
+        title: const Text("Rumah"),
       ),
-      body: const Center(
-        child: Text("Ini Section Rumah di Menu Warga"),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          const Text(
+            'Data Rumah',
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('No')),
+                DataColumn(label: Text('Alamat')),
+                DataColumn(label: Text('Status')),
+              ],
+              rows: [
+                DataRow(cells: [
+                  const DataCell(Text('1')),
+                  const DataCell(Text('Jl. Dahlia No. 15, RT 003/RW 002')),
+                  DataCell(
+                    Chip(
+                      label: const Text('Milik Sendiri'),
+                      backgroundColor: Colors.green[100],
+                      labelStyle: TextStyle(color: Colors.green[800]),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ]),
+                DataRow(cells: [
+                  const DataCell(Text('2')),
+                  const DataCell(Text('Jl. Mawar No. 23, RT 005/RW 002')),
+                  DataCell(
+                    Chip(
+                      label: const Text('Sewa'),
+                      backgroundColor: Colors.blue[100],
+                      labelStyle: TextStyle(color: Colors.blue[800]),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ]),
+                DataRow(cells: [
+                  const DataCell(Text('3')),
+                  const DataCell(Text('Jl. Melati No. 8, RT 002/RW 003')),
+                  DataCell(
+                    Chip(
+                      label: const Text('Milik Keluarga'),
+                      backgroundColor: Colors.purple[100],
+                      labelStyle: TextStyle(color: Colors.purple[800]),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ]),
+                DataRow(cells: [
+                  const DataCell(Text('4')),
+                  const DataCell(Text('Jl. Anggrek No. 42, RT 004/RW 001')),
+                  DataCell(
+                    Chip(
+                      label: const Text('Kontrak'),
+                      backgroundColor: Colors.orange[100],
+                      labelStyle: TextStyle(color: Colors.orange[800]),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
