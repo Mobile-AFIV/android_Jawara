@@ -157,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 36),
 
-              // Login Card
+              // Login Section
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -175,6 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                   CustomTextField(
                     controller: _emailController,
                     hintText: 'Masukkan email disini',
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 20),
 

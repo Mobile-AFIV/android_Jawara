@@ -24,7 +24,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Icons.menu_book_rounded,
                 size: 16,
                 color: Colors.white,
-                // color: AppStyles.primaryColor,
               ),
             ),
           ),
