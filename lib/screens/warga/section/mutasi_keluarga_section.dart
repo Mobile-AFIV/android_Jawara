@@ -7,19 +7,11 @@ class MutasiKeluargaSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Mutasi Keluarga"),
+        title: const Text("Data Mutasi Keluarga"),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          const Text(
-            'Data Mutasi Keluarga',
-            style: TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
           const SizedBox(height: 16.0),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
