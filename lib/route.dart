@@ -82,7 +82,7 @@ final GoRouter mainRouter = GoRouter(
         GoRoute(
           name: 'kegiatan',
           path: '/kegiatan',
-          builder: (context, state) => const KegiatanMain(),
+          builder: (context, state) => const KegiatanMenu(),
         ),
         GoRoute(
           name: 'lainnya',
