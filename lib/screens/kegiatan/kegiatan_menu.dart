@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class KegiatanMain extends StatefulWidget {
-  const KegiatanMain({super.key});
+class KegiatanMenu extends StatefulWidget {
+  const KegiatanMenu({super.key});
 
   @override
-  State<KegiatanMain> createState() => _KegiatanMainState();
+  State<KegiatanMenu> createState() => _KegiatanMenuState();
 }
 
-class _KegiatanMainState extends State<KegiatanMain> {
+class _KegiatanMenuState extends State<KegiatanMenu> {
   @override
   Widget build(BuildContext context) {
     return Center(

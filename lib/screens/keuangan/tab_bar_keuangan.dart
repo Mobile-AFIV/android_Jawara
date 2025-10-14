@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class TabBarKeuangan extends StatefulWidget {
+  final GoRouterState state;
   final Widget child;
 
-  const TabBarKeuangan({super.key, required this.child});
+  const TabBarKeuangan({super.key, required this.state, required this.child});
 
   @override
   State<TabBarKeuangan> createState() => _TabBarKeuanganState();
@@ -20,10 +21,15 @@ class _TabBarKeuanganState extends State<TabBarKeuangan> {
     'laporan',
   ];
 
+  int getCurrentIndex(BuildContext context) {
+    final String currentRouteName = widget.state.matchedLocation.split('/')[2];
+    return routeName.indexOf(currentRouteName);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      initialIndex: activeTabIndex,
+      initialIndex: getCurrentIndex(context),
       length: routeName.length,
       child: Column(
         children: [
