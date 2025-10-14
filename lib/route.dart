@@ -46,7 +46,7 @@ final GoRouter mainRouter = GoRouter(
     ),
     ShellRoute(
       builder: (context, state, child) {
-        return BottomNavMenu(child: child);
+        return BottomNavMenu(state: state, child: child);
       },
       routes: [
         GoRoute(
@@ -60,7 +60,7 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const WargaMenu(),
         ),
         ShellRoute(
-          builder: (context, state, child) => TabBarKeuangan(child: child),
+          builder: (context, state, child) => TabBarKeuangan(state: state, child: child),
           routes: [
             GoRoute(
               name: 'pemasukan',
