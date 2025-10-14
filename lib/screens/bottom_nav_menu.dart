@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/widgets/custom_appbar.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class BottomNavMenu extends StatefulWidget {
@@ -25,24 +26,22 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Jawara Pintar"),
-      ),
+      appBar: CustomAppBar(),
       body: widget.child,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        currentIndex: activeMenuIndex,
         selectedFontSize: 10,
         unselectedFontSize: 10,
+        selectedItemColor: AppStyles.primaryColor,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
         selectedIconTheme: IconThemeData(
           color: AppStyles.primaryColor,
         ),
-        selectedItemColor: AppStyles.primaryColor,
         unselectedIconTheme: IconThemeData(
           color: Colors.grey,
         ),
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        currentIndex: activeMenuIndex,
         onTap: (value) {
           setState(() {
             activeMenuIndex = value;

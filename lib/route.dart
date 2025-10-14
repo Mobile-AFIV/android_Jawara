@@ -141,34 +141,34 @@ final GoRouter mainRouter = GoRouter(
     //// Keuangan - Laporan
     GoRoute(
       name: 'cetak_laporan',
-      path: '/cetak_laporan',
+      path: '/keuangan/laporan/cetak_laporan',
       builder: (context, state) => const CetakLaporanSection(),
     ),
     GoRoute(
       name: 'laporan_Pemasukan',
-      path: '/laporan_Pemasukan',
+      path: '/keuangan/laporan/laporan_Pemasukan',
       builder: (context, state) => const LaporanPemasukanSection(),
     ),
     GoRoute(
       name: 'laporan_pengeluaran',
-      path: '/laporan_pengeluaran',
+      path: '/keuangan/laporan/laporan_pengeluaran',
       builder: (context, state) => const LaporanPengeluaranSection(),
     ),
     //// Keuangan - Pemasukan
     GoRoute(
       name: 'kategori_iuran',
-      path: '/kategori_iuran',
+      path: '/keuangan/pemasukan/kategori_iuran',
       builder: (context, state) => const KategoriIuranSection(),
     ),
     GoRoute(
       name: 'pemasukan_tagihan',
-      path: '/pemasukan_tagihan',
+      path: '/keuangan/pemasukan/pemasukan_tagihan',
       builder: (context, state) => const PemasukanTagihanSection(),
     ),
     //// Keuangan - Pengeluaran
     GoRoute(
       name: 'pengeluaran_daftar',
-      path: '/pengeluaran_daftar',
+      path: '/keuangan/pengeluaran/pengeluaran_daftar',
       builder: (context, state) => const PengeluaranDaftarSection(),
     ),
 

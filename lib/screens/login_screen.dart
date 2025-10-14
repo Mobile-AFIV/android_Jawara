@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:jawara_pintar/screens/widgets/custom_button.dart';
+import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import '../services/auth_service.dart';
 
@@ -51,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result['message'])),
       );
-      
+
       if (mounted) {
         showDialog(
           context: context,
@@ -95,7 +97,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -156,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 36),
 
-              // Login Card
+              // Login Section
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -171,27 +172,10 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 8),
 
                   // Email TextField
-                  TextField(
+                  CustomTextField(
                     controller: _emailController,
+                    hintText: 'Masukkan email disini',
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'Masukkan email disini',
-                      hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: AppStyles.primaryColor),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -206,39 +190,20 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 8),
 
                   // Password TextField
-                  TextField(
+                  CustomTextField(
                     controller: _passwordController,
+                    hintText: 'Masukkan password disini',
                     obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      hintText: 'Masukkan password disini',
-                      hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: AppStyles.primaryColor),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
                   ),
 
@@ -258,36 +223,25 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 30),
 
                   // Login Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppStyles.primaryColor,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Login',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                              ),
+                  CustomButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    child: _isLoading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
                             ),
-                    ),
+                          )
+                        : Text(
+                            'Login',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
+
                   const SizedBox(height: 20),
 
                   // Register Link
