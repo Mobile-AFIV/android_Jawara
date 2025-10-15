@@ -3,14 +3,15 @@ import 'package:jawara_pintar/utils/app_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final Function()? onPressed;
+  final double? width;
   final Widget? child;
 
-  const CustomButton({super.key, required this.onPressed, required this.child});
+  const CustomButton({super.key, required this.onPressed, this.width, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
+      width: width != null ? double.infinity : width,
       height: 50,
       child: ElevatedButton(
         onPressed: onPressed,
