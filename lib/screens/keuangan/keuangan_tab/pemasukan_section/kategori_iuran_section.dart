@@ -257,7 +257,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                   WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
-                  borderRadius: BorderRadiusGeometry.circular(8),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
