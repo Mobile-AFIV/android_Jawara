@@ -10,20 +10,49 @@ class RumahTambahSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50),
-            child: CustomTextField(),
-          ),
-          CustomButton(
-            onPressed: () {
-              halo();
-            },
-            child: const Text("Simpan"),
-          ),
-        ],
+      appBar: AppBar(
+        title: const Text("Tambah Rumah Baru"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(50, 20, 50, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Alamat Rumah",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            CustomTextField(),
+            SizedBox(height: 20),
+            Container(
+              height: 50,
+              width: double.maxFinite,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomButton(
+                    onPressed: () {
+                      halo();
+                    },
+                    child: const Text("Simpan"),
+                  ),
+                  SizedBox(width: 20),
+                  CustomButton(
+                    onPressed: () {
+                      halo();
+                    },
+                    child: const Text("Simpan"),
+                  ),
+                  // SizedBox(width: 90),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
