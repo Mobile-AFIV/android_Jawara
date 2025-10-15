@@ -30,8 +30,8 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      helpText: 'Pilih Tanggal Lahir',
+      lastDate: DateTime(2100),
+      helpText: 'Pilih Tanggal Kegiatan',
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
