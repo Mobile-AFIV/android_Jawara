@@ -4,8 +4,16 @@ import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
-class RumahTambah extends StatelessWidget {
+class RumahTambah extends StatefulWidget {
   const RumahTambah({super.key});
+
+  @override
+  State<RumahTambah> createState() => _RumahTambahState();
+}
+
+class _RumahTambahState extends State<RumahTambah> {
+  // You can add state variables here
+  final TextEditingController _alamatController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -13,8 +21,8 @@ class RumahTambah extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Tambah Rumah Baru"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(50, 20, 50, 20),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -25,30 +33,34 @@ class RumahTambah extends StatelessWidget {
                 fontSize: 18,
               ),
             ),
-            CustomTextField(),
+            TextField(
+              controller: _alamatController,
+              decoration: InputDecoration(
+                hintText: "Contoh: Jl. Bunga Mawar No. 1",
+                hintStyle: TextStyle(color: Colors.grey.shade700),
+                border: InputBorder.none,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+              ),
+            ),
             SizedBox(height: 20),
-            Container(
-              height: 50,
-              width: double.maxFinite,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CustomButton(
-                    onPressed: () {
-                      halo();
-                    },
-                    child: const Text("Simpan"),
+
+            Center(
+              child: CustomButton(
+                onPressed: () {
+                  // TODO
+                },
+                child: const Text(
+                  "Simpan",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(width: 20),
-                  CustomButton(
-                    onPressed: () {
-                      halo();
-                    },
-                    child: const Text("Simpan"),
-                  ),
-                  // SizedBox(width: 90),
-                ],
+                ),
               ),
             ),
           ],
@@ -57,7 +69,10 @@ class RumahTambah extends StatelessWidget {
     );
   }
 
-  void halo() {
-    print("halo");
+  @override
+  void dispose() {
+    // Clean up controller when the widget is disposed
+    _alamatController.dispose();
+    super.dispose();
   }
 }
