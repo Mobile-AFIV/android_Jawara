@@ -182,10 +182,10 @@ final GoRouter mainRouter = GoRouter(
 
     // Push dari Menu Kegiatan
     GoRoute(
-      name: 'broadcast_daftar',
-      path: '/broadcast_daftar',
-      builder: (context, state) => const BroadcastDaftarSection(),
-    ),
+        name: 'broadcast_daftar',
+        path: '/broadcast_daftar',
+        builder: (context, state) => const BroadcastDaftarSection(),
+       ),
     GoRoute(
       name: 'kegiatan_daftar',
       path: '/kegiatan_daftar',
