@@ -396,7 +396,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                       kategori.jenis,
                       style: const TextStyle(
                         color: AppStyles.primaryColor,
-                        // fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
                     ),
