@@ -425,7 +425,12 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                             Text("Edit kategori"),
                           ],
                         ),
-                        onTap: () => _showEditKategori(),
+                        onTap: () {
+                          namaIuran.text = kategori.nama;
+                          jenisIuran.text = kategori.jenis;
+                          nominalIuran.text = kategori.nominal.toString();
+                          _showEditKategori();
+                        },
                       ),
                     ];
                   },
