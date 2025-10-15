@@ -4,9 +4,10 @@ import 'package:jawara_pintar/screens/widgets/custom_appbar.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class BottomNavMenu extends StatefulWidget {
+  final GoRouterState state;
   final Widget child;
 
-  const BottomNavMenu({super.key, required this.child});
+  const BottomNavMenu({super.key, required this.state, required this.child});
 
   @override
   State<BottomNavMenu> createState() => _BottomNavMenuState();
@@ -15,13 +16,26 @@ class BottomNavMenu extends StatefulWidget {
 class _BottomNavMenuState extends State<BottomNavMenu> {
   int activeMenuIndex = 0;
 
-  final List<String> routeName = [
+  final List<String> routerName = [
     'dashboard',
     'warga',
     'pemasukan',
     'kegiatan',
     'lainnya',
   ];
+
+  final List<String> routerPath = [
+    'dashboard',
+    'warga',
+    'keuangan',
+    'kegiatan',
+    'lainnya',
+  ];
+
+  int getCurrentIndex(BuildContext context) {
+    final String currentRouteName = widget.state.matchedLocation.split('/')[1];
+    return routerPath.indexOf(currentRouteName);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +44,7 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
       body: widget.child,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: activeMenuIndex,
+        currentIndex: getCurrentIndex(context),
         selectedFontSize: 10,
         unselectedFontSize: 10,
         selectedItemColor: AppStyles.primaryColor,
@@ -46,7 +60,7 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
           setState(() {
             activeMenuIndex = value;
           });
-          context.goNamed(routeName[value]);
+          context.goNamed(routerName[value]);
         },
         items: const [
           BottomNavigationBarItem(

@@ -1,16 +1,220 @@
 import 'package:flutter/material.dart';
 
-class PenerimaanWargaSection extends StatelessWidget {
+class PenerimaanWargaSection extends StatefulWidget {
   const PenerimaanWargaSection({super.key});
+
+  @override
+  State<PenerimaanWargaSection> createState() => _PenerimaanWargaSectionState();
+}
+
+class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
+  // Track which cards are expanded
+  final List<bool> _expandedList = [true, false, false];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Penerimaan Warga"),
+        title: const Text("Data Penerimaan Warga"),
       ),
-      body: const Center(
-        child: Text("Ini Section Penerimaan Warga di Menu Warga"),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // First registration
+          _buildRegistrationCard(
+            name: 'Ahmad Setiawan',
+            nik: '3507012345678901',
+            email: 'ahmad.s@email.com',
+            gender: 'Laki-laki',
+            registrationStatus: 'Menunggu',
+            statusColor: Colors.amber,
+            isExpanded: _expandedList[0],
+            index: 0,
+          ),
+          const SizedBox(height: 12),
+
+          // Second registration
+          _buildRegistrationCard(
+            name: 'Dewi Susanti',
+            nik: '3507012345678902',
+            email: 'dewi.s@email.com',
+            gender: 'Perempuan',
+            registrationStatus: 'Diterima',
+            statusColor: Colors.green,
+            isExpanded: _expandedList[1],
+            index: 1,
+          ),
+          const SizedBox(height: 12),
+
+          // Third registration
+          _buildRegistrationCard(
+            name: 'Rudi Hartono',
+            nik: '3507012345678903',
+            email: 'rudi.h@email.com',
+            gender: 'Laki-laki',
+            registrationStatus: 'Ditolak',
+            statusColor: Colors.red,
+            isExpanded: _expandedList[2],
+            index: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegistrationCard({
+    required String name,
+    required String nik,
+    required String email,
+    required String gender,
+    required String registrationStatus,
+    required MaterialColor statusColor,
+    required bool isExpanded,
+    required int index,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          // Header section (always visible)
+          InkWell(
+            onTap: () {
+              setState(() {
+                _expandedList[index] = !_expandedList[index];
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                children: [
+                  // Left side: Name and status
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          "status: $registrationStatus",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Right side: Status chip and expand arrow
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor[100],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      registrationStatus,
+                      style: TextStyle(
+                        color: statusColor[800],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Expanded details section (only visible when expanded)
+          if (isExpanded)
+            Column(
+              children: [
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Registration details
+                      Text("NIK: $nik"),
+                      Text("Email: $email"),
+                      Text("Jenis Kelamin: $gender"),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text("Foto Identitas: "),
+                          const Icon(Icons.image, size: 20),
+                          TextButton(
+                            onPressed: () {
+                              // View photo action
+                            },
+                            child: const Text('Lihat'),
+                          ),
+                        ],
+                      ),
+
+                      // Action buttons
+                      const SizedBox(height: 16),
+                      if (registrationStatus == 'Menunggu')
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[100],
+                                  foregroundColor: Colors.green[800],
+                                  elevation: 0,
+                                ),
+                                child: const Text('Terima'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[100],
+                                  foregroundColor: Colors.red[800],
+                                  elevation: 0,
+                                ),
+                                child: const Text('Tolak'),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[100],
+                              foregroundColor: Colors.blue[800],
+                              elevation: 0,
+                            ),
+                            child: const Text('Detail'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }
