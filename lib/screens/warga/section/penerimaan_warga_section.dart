@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PenerimaanWargaSection extends StatefulWidget {
   const PenerimaanWargaSection({super.key});
@@ -58,6 +60,14 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
             index: 2,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: () {
+          context.pushNamed('penerimaan_warga_tambah');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

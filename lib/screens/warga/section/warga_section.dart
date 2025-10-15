@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 
 class WargaSection extends StatefulWidget {
   const WargaSection({super.key});
@@ -58,6 +60,14 @@ class _WargaSectionState extends State<WargaSection> {
             index: 2,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: () {
+          context.pushNamed('warga_tambah');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

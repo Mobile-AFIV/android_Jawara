@@ -4,8 +4,8 @@ import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
-class RumahTambahSection extends StatelessWidget {
-  const RumahTambahSection({super.key});
+class RumahTambah extends StatelessWidget {
+  const RumahTambah({super.key});
 
   @override
   Widget build(BuildContext context) {
