@@ -45,7 +45,7 @@ class TambahPenggunaSection extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: const CustomTextField(
               hintText: 'Masukkan nomor HP (cth: 08xxxxxxxxxx)',
-              keyboardType: TextInputType.emailAddress
+              keyboardType: TextInputType.phone
             ),
           ),
           Padding(
