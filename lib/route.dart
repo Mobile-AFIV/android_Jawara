@@ -22,6 +22,7 @@ import 'package:jawara_pintar/screens/lainnya/lainnya_menu.dart';
 import 'package:jawara_pintar/screens/lainnya/section/channel_transfer_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/log_aktivitas_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/manajemen_pengguna_section.dart';
+import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
 import 'package:jawara_pintar/screens/login_screen.dart';
 import 'package:jawara_pintar/screens/register_screen.dart';
 import 'package:jawara_pintar/screens/warga/section/keluarga_section.dart';
@@ -244,6 +245,11 @@ final GoRouter mainRouter = GoRouter(
       name: 'manajemen_pengguna',
       path: '/manajemen_pengguna',
       builder: (context, state) => const ManajemenPenggunaSection(),
+    ),
+    GoRoute(
+      name: 'tambah_pengguna',
+      path: '/tambah_pengguna',
+      builder: (context, state) => const TambahPenggunaSection(),
     ),
   ],
 );
