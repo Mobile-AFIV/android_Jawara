@@ -28,7 +28,11 @@ import 'package:jawara_pintar/screens/warga/section/keluarga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/mutasi_keluarga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/penerimaan_warga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/rumah_section.dart';
-import 'package:jawara_pintar/screens/warga/section/rumah_tambah_section.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/keluarga_tambah.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/mutasi_keluarga_tambah.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/penerimaan_warga_tambah.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/warga_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/warga_section.dart';
 import 'package:jawara_pintar/screens/warga/warga_menu.dart';
 
@@ -116,16 +120,37 @@ final GoRouter mainRouter = GoRouter(
       name: 'keluarga',
       path: '/keluarga',
       builder: (context, state) => const KeluargaSection(),
+      routes: [
+        GoRoute(
+          name: 'keluarga_tambah',
+          path: 'keluarga_tambah',
+          builder: (context, state) => const KeluargaTambah(),
+        ),
+      ],
     ),
     GoRoute(
       name: 'mutasi_keluarga',
       path: '/mutasi_keluarga',
       builder: (context, state) => const MutasiKeluargaSection(),
+      routes: [
+        GoRoute(
+          name: 'mutasi_keluarga_tambah',
+          path: 'mutasi_keluarga_tambah',
+          builder: (context, state) => const MutasiKeluargaTambah(),
+        ),
+      ],
     ),
     GoRoute(
       name: 'penerimaan_warga',
       path: '/penerimaan_warga',
       builder: (context, state) => const PenerimaanWargaSection(),
+      routes: [
+        GoRoute(
+          name: 'penerimaan_warga_tambah',
+          path: 'penerimaan_warga_tambah',
+          builder: (context, state) => const PenerimaanWargaTambah(),
+        ),
+      ],
     ),
     GoRoute(
       name: 'rumah',
@@ -135,7 +160,7 @@ final GoRouter mainRouter = GoRouter(
         GoRoute(
           name: 'rumah_tambah',
           path: 'rumah_tambah',
-          builder: (context, state) => const RumahTambahSection(),
+          builder: (context, state) => const RumahTambah(),
         ),
       ],
     ),
@@ -143,6 +168,13 @@ final GoRouter mainRouter = GoRouter(
       name: 'warga_section',
       path: '/warga_section',
       builder: (context, state) => const WargaSection(),
+      routes: [
+        GoRoute(
+          name: 'warga_tambah',
+          path: 'warga_tambah',
+          builder: (context, state) => const WargaTambah(),
+        ),
+      ],
     ),
 
     // Push dari Menu Keuangan
