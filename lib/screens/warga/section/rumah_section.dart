@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahSection extends StatefulWidget {
   const RumahSection({super.key});
@@ -59,6 +61,14 @@ class _RumahSectionState extends State<RumahSection> {
             index: 3,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: () {
+          context.pushNamed('rumah_tambah');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
