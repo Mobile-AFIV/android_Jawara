@@ -62,6 +62,62 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
     );
   }
 
+  // Method to show the identity photo
+  void _showIdentityPhoto(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: AppBar(
+                  title: const Text("Foto Identitas"),
+                  automaticallyImplyLeading: false,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              // const Padding(padding: EdgeInsets.all(16.0))
+              Image.asset(
+                'assets/images/placeholder.png',
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Handle image loading error
+                  return const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          "Gambar tidak ditemukan",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text("Foto KTP/Identitas"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildRegistrationCard({
     required String name,
     required String nik,
@@ -159,7 +215,8 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                           const Icon(Icons.image, size: 20),
                           TextButton(
                             onPressed: () {
-                              // View photo action
+                              // Open the identity photo
+                              _showIdentityPhoto(context);
                             },
                             child: const Text('Lihat'),
                           ),
