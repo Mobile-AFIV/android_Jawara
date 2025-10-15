@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 
 class MutasiKeluargaSection extends StatefulWidget {
   const MutasiKeluargaSection({super.key});
@@ -63,6 +65,14 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
             index: 3,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: () {
+          context.pushNamed('mutasi_keluarga_tambah');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
