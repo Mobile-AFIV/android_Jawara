@@ -605,4 +605,14 @@ class _WargaTambahState extends State<WargaTambah> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    // Clean up controller when the widget is disposed
+    _namaController.dispose();
+    _nikController.dispose();
+    _teleponController.dispose();
+    _tempatLahirController.dispose();
+    super.dispose();
+  }
 }
