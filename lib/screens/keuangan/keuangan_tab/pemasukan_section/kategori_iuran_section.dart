@@ -280,7 +280,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                   jenisIuranMenu.clear();
                   return;
                 }
-                jenisIuranMenu.text = value!;
+                jenisIuranMenu.text = value;
               });
             },
             closeBehavior: DropdownMenuCloseBehavior.all,
