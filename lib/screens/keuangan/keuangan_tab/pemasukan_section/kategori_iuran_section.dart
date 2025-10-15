@@ -276,7 +276,10 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             ),
             onSelected: (value) {
               setState(() {
-                if (value == null) jenisIuranMenu.clear();
+                if (value == null) {
+                  jenisIuranMenu.clear();
+                  return;
+                }
                 jenisIuranMenu.text = value!;
               });
             },
