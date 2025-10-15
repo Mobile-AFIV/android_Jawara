@@ -6,7 +6,7 @@ import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class KategoriIuranSection extends StatefulWidget {
-  KategoriIuranSection({super.key});
+  const KategoriIuranSection({super.key});
 
   @override
   State<KategoriIuranSection> createState() => _KategoriIuranSectionState();
