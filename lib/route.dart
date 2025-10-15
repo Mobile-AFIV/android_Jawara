@@ -8,6 +8,7 @@ import 'package:jawara_pintar/screens/kegiatan/kegiatan_menu.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/broadcast_daftar_section.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/kegiatan_daftar_section.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/pesan_warga_section.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/tambah/kegiatan_tambah.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/cetak_laporan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/laporan_pemasukan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/laporan_pengeluaran_section.dart';
@@ -215,14 +216,20 @@ final GoRouter mainRouter = GoRouter(
 
     // Push dari Menu Kegiatan
     GoRoute(
-      name: 'broadcast_daftar',
-      path: '/broadcast_daftar',
-      builder: (context, state) => const BroadcastDaftarSection(),
-    ),
+        name: 'broadcast_daftar',
+        path: '/broadcast_daftar',
+        builder: (context, state) => const BroadcastDaftarSection(),
+       ),
     GoRoute(
       name: 'kegiatan_daftar',
       path: '/kegiatan_daftar',
       builder: (context, state) => const KegiatanDaftarSection(),
+      routes: [
+        GoRoute(
+          name: 'kegiatan_tambah',
+          path: 'kegiatan_tambah',
+          builder: (context, state) => const KegiatanTambah(),)
+      ]
     ),
     GoRoute(
       name: 'pesan_warga',
