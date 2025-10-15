@@ -224,6 +224,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Login Button
                   CustomButton(
+                    width: double.maxFinite,
                     onPressed: _isLoading ? null : _handleLogin,
                     child: _isLoading
                         ? SizedBox(

@@ -13,6 +13,7 @@ import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/lapo
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/laporan_pengeluaran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/kategori_iuran_section.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_section/pengeluaran_daftar_section.dart';
@@ -61,7 +62,8 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const WargaMenu(),
         ),
         ShellRoute(
-          builder: (context, state, child) => TabBarKeuangan(state: state, child: child),
+          builder: (context, state, child) =>
+              TabBarKeuangan(state: state, child: child),
           routes: [
             GoRoute(
               name: 'pemasukan',
@@ -164,14 +166,19 @@ final GoRouter mainRouter = GoRouter(
     ),
     //// Keuangan - Pemasukan
     GoRoute(
-      name: 'kategori_iuran',
-      path: '/keuangan/pemasukan/kategori_iuran',
-      builder: (context, state) => const KategoriIuranSection(),
+        name: 'kategori_iuran',
+        path: '/keuangan/pemasukan/kategori_iuran',
+        builder: (context, state) => KategoriIuranSection(),
     ),
     GoRoute(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
       builder: (context, state) => const PemasukanTagihanSection(),
+    ),
+    GoRoute(
+      name: 'pemasukan_lain',
+      path: '/keuangan/pemasukan/pemasukan_lain',
+      builder: (context, state) => const PemasukanLainSection(),
     ),
     //// Keuangan - Pengeluaran
     GoRoute(

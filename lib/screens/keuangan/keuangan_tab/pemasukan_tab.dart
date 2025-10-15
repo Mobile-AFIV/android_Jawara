@@ -19,6 +19,10 @@ class PemasukanTab extends StatelessWidget {
             onPressed: () => context.pushNamed('pemasukan_tagihan'),
             child: Text("Ke Section Pemasukan Tagihan"),
           ),
+          TextButton(
+            onPressed: () => context.pushNamed('pemasukan_lain'),
+            child: Text("Ke Section Pemasukan Tagihan Lain"),
+          ),
         ],
       ),
     );
