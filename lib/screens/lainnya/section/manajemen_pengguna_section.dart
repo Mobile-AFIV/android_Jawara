@@ -19,7 +19,7 @@ class ManajemenPenggunaSection extends StatelessWidget {
           // Navigate to the TambahPenggunaSection when the button is pressed
           context.pushNamed('tambah_pengguna');
         },
-        child: Icon(Icons.add), backgroundColor: AppStyles.primaryColor, 
+        child: const Icon(Icons.add), backgroundColor: AppStyles.primaryColor, 
         foregroundColor: Colors.white,
         tooltip: 'Tambah Pengguna',
     )
