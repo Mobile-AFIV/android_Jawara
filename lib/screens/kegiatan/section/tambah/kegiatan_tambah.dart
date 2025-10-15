@@ -109,8 +109,7 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
                   child: Text(
                     _selectedDate == null
                         ? 'Tanggal Kegiatan belum dipilih'
-                        : 'Tanggal Kegiatan: ${_selectedDate!.toLocal()}'
-                            .split(' ')[0],
+                        : 'Tanggal Kegiatan: ${_selectedDate!.toLocal().toString().split(' ')[0]}',
                   ),
                 ),
                 ElevatedButton(
