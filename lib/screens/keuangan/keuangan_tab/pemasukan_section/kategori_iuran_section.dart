@@ -276,7 +276,10 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             ),
             onSelected: (value) {
               setState(() {
-                if (value == null) jenisIuranMenu.clear();
+                if (value == null) {
+                  jenisIuranMenu.clear();
+                  return;
+                }
                 jenisIuranMenu.text = value!;
               });
             },
@@ -393,7 +396,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                       kategori.jenis,
                       style: const TextStyle(
                         color: AppStyles.primaryColor,
-                        // fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
                     ),
