@@ -101,9 +101,9 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
                   String? fotoPath = _image?.path;
 
                   // Contoh: Tampilkan data di konsol
-                  print('Judul: $judul');
-                  print('Isi: $isi');
-                  print('Foto Path: $fotoPath');
+                  debugPrint('Judul: $judul');
+                  debugPrint('Isi: $isi');
+                  debugPrint('Foto Path: $fotoPath');
 
                   // Kembali ke halaman sebelumnya setelah simpan
                   Navigator.pop(context);
