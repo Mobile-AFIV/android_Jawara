@@ -10,8 +10,7 @@ class KegiatanTambah extends StatefulWidget {
 class _KegiatanTambahState extends State<KegiatanTambah> {
   final TextEditingController _namaKegiatanController = TextEditingController();
   final TextEditingController _lokasiController = TextEditingController();
-  final TextEditingController _penanggungJawabController =
-      TextEditingController();
+  final TextEditingController _penanggungJawabController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
   DateTime? _selectedDate;
   String? _selectedKategoriKegiatan;
