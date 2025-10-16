@@ -62,7 +62,7 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-            // Konfigurasi release lainnya...
+            // Other release configurations...
         }
     }
 }
