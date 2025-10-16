@@ -32,6 +32,17 @@ jobs:
           flutter pub get
           flutter pub upgrade --major-versions
 
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+
       - name: Build APK
         run: flutter build apk --release
 
