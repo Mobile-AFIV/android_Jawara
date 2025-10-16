@@ -56,6 +56,8 @@ android {
                 this.storeFile = file(storeFilePath)
                 this.storePassword = storePassword
             }
+        }
+    }
 
     buildTypes {
         getByName("release") {
