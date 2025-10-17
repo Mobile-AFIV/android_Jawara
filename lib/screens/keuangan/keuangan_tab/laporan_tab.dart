@@ -1,28 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/keuangan/widget/heading_section.dart';
 
 class LaporanTab extends StatelessWidget {
   const LaporanTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Ini Tab Laporan di Menu Keuangan"),
-          TextButton(
-            onPressed: () => context.pushNamed('cetak_laporan'),
-            child: Text("Ke Section Cetak Laporan"),
+          HeadingSection(
+            headingText: "Lihat dan cetak laporan keuangan",
+            subHeadingText: "Cetak Laporan",
+            lainnyaOnPressed: () => context.pushNamed('cetak_laporan'),
           ),
-          TextButton(
-            onPressed: () => context.pushNamed('laporan_Pemasukan'),
-            child: Text("Ke Section Laporan Pemasukan"),
+          Container(
+            height: 200,
+            width: double.infinity,
+            color: Colors.blue.shade50,
+            child: const Center(child: Text("Body")),
           ),
-          TextButton(
-            onPressed: () => context.pushNamed('laporan_pengeluaran'),
-            child: Text("Ke Section Laporan Pengeluaran"),
+
+          HeadingSection(
+            headingText: "Rekapitulasi seluruh pemasukan",
+            subHeadingText: "Laporan Pemasukan",
+            lainnyaOnPressed: () => context.pushNamed('laporan_Pemasukan'),
           ),
+          Container(
+            height: 200,
+            width: double.infinity,
+            color: Colors.blue.shade50,
+            child: const Center(child: Text("Body")),
+          ),
+
+          HeadingSection(
+            headingText: "Rekapitulasi seluruh pengeluaran",
+            subHeadingText: "Laporan Pengeluaran",
+            lainnyaOnPressed: () => context.pushNamed('laporan_pengeluaran'),
+          ),
+          Container(
+            height: 200,
+            width: double.infinity,
+            color: Colors.blue.shade50,
+            child: const Center(child: Text("Body")),
+          ),
+
         ],
       ),
     );

@@ -75,17 +75,35 @@ final GoRouter mainRouter = GoRouter(
             GoRoute(
               name: 'pemasukan',
               path: '/keuangan/pemasukan',
-              builder: (context, state) => const PemasukanTab(),
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const PemasukanTab(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) => child,
+                transitionDuration: Duration.zero,
+              ),
             ),
             GoRoute(
               name: 'pengeluaran',
               path: '/keuangan/pengeluaran',
-              builder: (context, state) => const PengeluaranTab(),
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const PengeluaranTab(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) => child,
+                transitionDuration: Duration.zero,
+              ),
             ),
             GoRoute(
               name: 'laporan',
               path: '/keuangan/laporan',
-              builder: (context, state) => const LaporanTab(),
+              pageBuilder: (context, state) => CustomTransitionPage(
+                key: state.pageKey,
+                child: const LaporanTab(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) => child,
+                transitionDuration: Duration.zero,
+              ),
             ),
           ],
         ),
@@ -232,6 +250,17 @@ final GoRouter mainRouter = GoRouter(
             name: 'broadcast_tambah',
             path: 'broadcast_tambah',
             builder: (context, state) => const BroadcastTambah(),
+          )
+        ]),
+    GoRoute(
+        name: 'kegiatan_daftar',
+        path: '/kegiatan_daftar',
+        builder: (context, state) => const KegiatanDaftarSection(),
+        routes: [
+          GoRoute(
+            name: 'kegiatan_tambah',
+            path: 'kegiatan_tambah',
+            builder: (context, state) => const KegiatanTambah(),
           )
         ]),
     GoRoute(
