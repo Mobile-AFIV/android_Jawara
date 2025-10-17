@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
@@ -17,29 +18,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
   final TextEditingController jenisIuran = TextEditingController();
   final TextEditingController jenisIuranMenu = TextEditingController();
   final TextEditingController nominalIuran = TextEditingController();
-
-  final List<Map<String, dynamic>> kategoriIuranData = [
-    {
-      'no': 1,
-      'nama': 'Bersih Desa',
-      'jenis': 'Iuran Bulanan',
-      'nominal': 200000,
-    },
-    {
-      'no': 2,
-      'nama': 'Mingguan',
-      'jenis': 'Iuran Khusus',
-      'nominal': 12,
-    },
-    {
-      'no': 3,
-      'nama': 'Agustusan',
-      'jenis': 'Iuran Khusus',
-      'nominal': 15,
-    },
-  ];
-
-  final List<String> jenisIuranList = ['Iuran Bulanan', 'Iuran Khusus'];
 
   Future<void> _showCustomModalBottomSheet(
       {required List<Widget> children}) async {
@@ -268,9 +246,10 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             width: double.maxFinite,
             requestFocusOnTap: false,
             dropdownMenuEntries: List.generate(
-              jenisIuranList.length,
+              PemasukanSectionData.jenisIuranList.length,
               (index) {
-                final String valueIndex = jenisIuranList[index];
+                final String valueIndex =
+                    PemasukanSectionData.jenisIuranList[index];
                 return DropdownMenuEntry(value: valueIndex, label: valueIndex);
               },
             ),
@@ -308,7 +287,10 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                 onPressed: () {
                   context.pop();
                 },
-                child: const Text("Tambah kategori"),
+                child: const Text(
+                  "Tambah kategori",
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -334,9 +316,9 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
         title: const Text("Kategori Iuran"),
       ),
       body: ListView.builder(
-        itemCount: kategoriIuranData.length,
+        itemCount: PemasukanSectionData.kategoriIuranData.length,
         itemBuilder: (context, index) {
-          return kategoriItem(kategoriIuranData[index]);
+          return kategoriItem(PemasukanSectionData.kategoriIuranData[index]);
         },
       ),
       floatingActionButton: FloatingActionButton(
