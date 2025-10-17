@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class BroadcastDaftarSection extends StatelessWidget {
   const BroadcastDaftarSection({super.key});
@@ -36,6 +37,15 @@ class BroadcastDaftarSection extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        shape: const CircleBorder(), // atau RoundedRectangleBorder()
+        onPressed: () {
+          context.pushNamed('broadcast_tambah');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
