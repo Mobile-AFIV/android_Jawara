@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/kategori_iuran_section.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/heading_section.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
@@ -25,19 +26,12 @@ class _PemasukanTabState extends State<PemasukanTab> {
             lainnyaOnPressed: () => context.pushNamed('kategori_iuran'),
           ),
           kategoriIuranSection(),
-
           HeadingSection(
             headingText: "Kelola tagihan iuran dari para keluarga",
-            subHeadingText: "Pemasukan Tagihan",
+            subHeadingText: "Tagihan Iuran",
             lainnyaOnPressed: () => context.pushNamed('pemasukan_tagihan'),
           ),
-          Container(
-            height: 200,
-            width: double.maxFinite,
-            color: Colors.green.shade100,
-            child: Center(child: Text("Body")),
-          ),
-
+          tagihanIuranSection(),
           HeadingSection(
             headingText: "Kelola pemasukan lainnya",
             subHeadingText: "Pemasukan Lain",
@@ -56,7 +50,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
 
   // ----------------- SECTION KATEGORI IURAN -----------------
   Widget kategoriIuranSection() {
-    final int limitItemShowed = 3;
+    const int limitItemShowed = 3;
     final kategoriList = PemasukanSectionData.kategoriIuranData;
     final topKategori = kategoriList.take(limitItemShowed).toList();
 
@@ -105,7 +99,9 @@ class _PemasukanTabState extends State<PemasukanTab> {
                           overflow: TextOverflow.ellipsis,
                           kategori.nama,
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            // fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -121,7 +117,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
                   const SizedBox(height: 8),
                   Text(
                     "Rp${kategori.nominal},00",
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 10),
                 ],
@@ -159,11 +155,187 @@ class _PemasukanTabState extends State<PemasukanTab> {
           Positioned(
             bottom: 0,
             child: Container(
-              padding: EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(bottom: 20),
               width: MediaQuery.sizeOf(context).width,
               child: Text(
                 "+${kategoriList.length - limitItemShowed + 1} lainnya",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ----------------- SECTION KATEGORI IURAN -----------------
+  Widget tagihanIuranSection() {
+    const int limitItemShowed = 3;
+    final tagihanList = PemasukanSectionData.tagihanIuranData;
+    final topTagihan = tagihanList.take(limitItemShowed).toList();
+
+    Widget tagihanIuranItem(Map<String, dynamic> json) {
+      final TagihanKeluarga tagihanKeluarga = TagihanKeluarga.fromJson(json);
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              overflow: TextOverflow.ellipsis,
+              tagihanKeluarga.nama,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(width: 1),
+                SizedBox(
+                  height: 14,
+                  width: 14,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: (tagihanKeluarga.statusKeluarga ==
+                              StatusKeluarga.aktif)
+                          ? AppStyles.successColor
+                          : AppStyles.errorColor,
+                      borderRadius: BorderRadiusGeometry.circular(50),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  tagihanKeluarga.statusKeluarga.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color:
+                        (tagihanKeluarga.statusKeluarga == StatusKeluarga.aktif)
+                            ? AppStyles.successColor
+                            : AppStyles.errorColor,
+                  ),
+                ),
+                // Expanded(child: const SizedBox(width: 32)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // const SizedBox(width: 32),
+                SizedBox(
+                  height: 16,
+                  width: 14,
+                  child: Icon(
+                    Icons.date_range,
+                    color: Colors.grey.shade500,
+                    size: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Iuran ${tagihanKeluarga.kategori}",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Rp${tagihanKeluarga.nominal},00",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color:
+                        (tagihanKeluarga.statusTagihan == StatusTagihan.belum)
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade500,
+                    decoration:
+                        (tagihanKeluarga.statusTagihan == StatusTagihan.ditolak)
+                            ? TextDecoration.lineThrough
+                            : null,
+                    decorationColor: Colors.grey.shade500,
+                  ),
+                ),
+                const Expanded(child: const SizedBox(width: 32)),
+                // const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusGeometry.circular(4),
+                    border: Border.all(
+                      color:
+                          (tagihanKeluarga.statusTagihan == StatusTagihan.belum)
+                              ? AppStyles.warningSurfaceColor
+                              : Colors.grey.shade500,
+                    ),
+                  ),
+                  child: Text(
+                    tagihanKeluarga.statusTagihan.label,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color:
+                          (tagihanKeluarga.statusTagihan == StatusTagihan.belum)
+                              ? AppStyles.warningOnSurfaceColor
+                              : Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        Column(
+          children: List.generate(
+            topTagihan.length,
+            (index) {
+              return tagihanIuranItem(topTagihan[index]);
+            },
+          ),
+        ),
+        if (topTagihan.length != 1 && !(topTagihan.length < limitItemShowed))
+          Positioned.fill(
+            child: Container(
+              width: double.maxFinite,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white.withValues(alpha: .0), Colors.white],
+                  begin: Alignment.topCenter,
+                  end: const Alignment(0, 0.65),
+                ),
+              ),
+            ),
+          ),
+        if (topTagihan.length != 1 && !(topTagihan.length < limitItemShowed))
+          Positioned(
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 20),
+              width: MediaQuery.sizeOf(context).width,
+              child: Text(
+                "+${tagihanList.length - limitItemShowed + 1} lainnya",
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
             ),

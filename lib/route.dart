@@ -226,7 +226,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
-      builder: (context, state) => const PemasukanTagihanSection(),
+      builder: (context, state) => PemasukanTagihanSection(),
     ),
     GoRoute(
       name: 'pemasukan_lain',
