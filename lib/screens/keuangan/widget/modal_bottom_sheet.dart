@@ -5,7 +5,7 @@ class ModalBottomSheet {
     required List<Widget> Function(StateSetter setModalState) children,
     required BuildContext context,
   }) async {
-    showModalBottomSheet(
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
