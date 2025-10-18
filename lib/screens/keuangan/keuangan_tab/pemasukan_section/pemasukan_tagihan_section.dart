@@ -112,7 +112,7 @@ class _PemasukanTagihanSectionState extends State<PemasukanTagihanSection> {
         ),
         const SizedBox(height: 4),
         GestureDetector(
-          onTap: kategoriIuranMenu.text != "" || kategoriIuranMenu.text.isNotEmpty ? () async {
+          onTap: kategoriIuranMenu.text.isNotEmpty ? () async {
             FocusScope.of(context).unfocus();
             final pickedDate = await showDatePicker(
               context: context,
