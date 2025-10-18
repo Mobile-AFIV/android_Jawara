@@ -264,17 +264,6 @@ final GoRouter mainRouter = GoRouter(
           )
         ]),
     GoRoute(
-        name: 'kegiatan_daftar',
-        path: '/kegiatan_daftar',
-        builder: (context, state) => const KegiatanDaftarSection(),
-        routes: [
-          GoRoute(
-            name: 'kegiatan_tambah',
-            path: 'kegiatan_tambah',
-            builder: (context, state) => const KegiatanTambah(),
-          )
-        ]),
-    GoRoute(
       name: 'pesan_warga',
       path: '/pesan_warga',
       builder: (context, state) => const PesanWargaSection(),
