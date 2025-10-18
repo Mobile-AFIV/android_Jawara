@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
+import 'package:jawara_pintar/screens/keuangan/widget/appbar_action_button.dart';
+import 'package:jawara_pintar/screens/keuangan/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
@@ -19,66 +21,10 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
   final TextEditingController jenisIuranMenu = TextEditingController();
   final TextEditingController nominalIuran = TextEditingController();
 
-  Future<void> _showCustomModalBottomSheet(
-      {required List<Widget> children}) async {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadiusGeometry.directional(
-          topStart: Radius.circular(12),
-          topEnd: Radius.circular(12),
-        ),
-      ),
-      backgroundColor: Colors.white,
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              alignment: Alignment.center,
-              width: double.maxFinite,
-              child: SizedBox(
-                width: 32,
-                height: 6,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                ),
-              ),
-            ),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height / 2,
-              ),
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 20,
-                    top: 12,
-                  ),
-                  width: double.maxFinite,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: children,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> _showDetailKategori(KategoriIuranData data) async {
-    _showCustomModalBottomSheet(
-      children: [
+    ModalBottomSheet.showCustomModalBottomSheet(
+      context: context,
+      children: (_) => [
         const Text(
           "Kategori Iuran",
           style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -125,8 +71,9 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
   }
 
   Future<void> _showEditKategori() async {
-    _showCustomModalBottomSheet(
-      children: [
+    ModalBottomSheet.showCustomModalBottomSheet(
+      context: context,
+      children: (_) => [
         const Text(
           "Kategori Iuran",
           style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -190,10 +137,9 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
   }
 
   Future<void> _showTambahKategori() async {
-    jenisIuranMenu.clear();
-
-    _showCustomModalBottomSheet(
-      children: [
+    ModalBottomSheet.showCustomModalBottomSheet(
+      context: context,
+      children: (_) => [
         const Text(
           "Kategori Iuran",
           style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -313,13 +259,28 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kategori Iuran"),
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+        titleSpacing: -4,
+        title: const Text(
+          "Kategori Iuran",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          AppBarActionButton.filter(onTap: () {}),
+        ],
+        actionsPadding: EdgeInsets.symmetric(horizontal: 16),
       ),
-      body: ListView.builder(
-        itemCount: PemasukanSectionData.kategoriIuranData.length,
-        itemBuilder: (context, index) {
-          return kategoriItem(PemasukanSectionData.kategoriIuranData[index]);
-        },
+      body: SafeArea(
+        child: ListView.builder(
+          itemCount: PemasukanSectionData.kategoriIuranData.length,
+          itemBuilder: (context, index) {
+            return kategoriItem(PemasukanSectionData.kategoriIuranData[index]);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         shape: RoundedRectangleBorder(
@@ -330,6 +291,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
           namaIuran.clear();
           jenisIuran.clear();
           nominalIuran.clear();
+          jenisIuranMenu.clear();
           _showTambahKategori();
         },
         child: const Icon(
@@ -370,7 +332,9 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                         overflow: TextOverflow.ellipsis,
                         kategori.nama,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          // fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -424,7 +388,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             const SizedBox(height: 8),
             Text(
               "Rp${kategori.nominal},00",
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 10),
           ],
