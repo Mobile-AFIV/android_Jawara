@@ -98,8 +98,6 @@ class _PemasukanTagihanSectionState extends State<PemasukanTagihanSection> {
                 }
                 kategoriIuranMenu.text = value;
               });
-              print("$value");
-              print("${kategoriIuranMenu.text}");
             },
             closeBehavior: DropdownMenuCloseBehavior.all,
           ),
