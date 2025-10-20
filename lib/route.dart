@@ -45,6 +45,8 @@ import 'package:jawara_pintar/screens/warga/section/detail/mutasi_keluarga_detai
 import 'package:jawara_pintar/screens/warga/section/detail/penerimaan_warga_detail.dart';
 import 'package:jawara_pintar/screens/warga/section/detail/rumah_detail.dart';
 import 'package:jawara_pintar/screens/warga/section/detail/warga_detail.dart';
+import 'package:jawara_pintar/screens/warga/section/edit/rumah_edit.dart';
+import 'package:jawara_pintar/screens/warga/section/edit/warga_edit.dart';
 import 'package:jawara_pintar/screens/warga/warga_menu.dart';
 
 final GoRouter mainRouter = GoRouter(
@@ -229,6 +231,11 @@ final GoRouter mainRouter = GoRouter(
             return RumahDetail(rumahIndex: rumahIndex, address: address);
           },
         ),
+        GoRoute(
+          name: 'rumah_edit',
+          path: 'rumah_edit',
+          builder: (context, state) => const RumahEdit(),
+        ),
       ],
     ),
     GoRoute(
@@ -249,6 +256,11 @@ final GoRouter mainRouter = GoRouter(
             final name = state.uri.queryParameters['name'];
             return WargaDetail(wargaIndex: wargaIndex, name: name);
           },
+        ),
+        GoRoute(
+          name: 'warga_edit',
+          path: 'warga_edit',
+          builder: (context, state) => const WargaEdit(),
         ),
       ],
     ),
