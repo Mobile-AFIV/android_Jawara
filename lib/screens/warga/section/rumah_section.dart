@@ -138,8 +138,21 @@ class _RumahSectionState extends State<RumahSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            context.pushNamed('rumah_edit');
+                          onPressed: status == 'Tersedia' ? () async {
+                            final result = await context.pushNamed(
+                              'rumah_edit',
+                              queryParameters: {
+                                'index': index.toString(),
+                                'address': address,
+                              },
+                            );
+                            if (result == true) {
+                              setState(() {});
+                            }
+                          } : () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Hanya rumah dengan status "Tersedia" yang dapat diedit')),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.amber[100],

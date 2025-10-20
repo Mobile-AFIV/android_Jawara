@@ -232,9 +232,13 @@ final GoRouter mainRouter = GoRouter(
           },
         ),
         GoRoute(
-          name: 'rumah_edit',
           path: 'rumah_edit',
-          builder: (context, state) => const RumahEdit(),
+          name: 'rumah_edit',
+          builder: (context, state) {
+            final rumahIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final address = state.uri.queryParameters['address'];
+            return RumahEdit(rumahIndex: rumahIndex, address: address);
+          },
         ),
       ],
     ),
