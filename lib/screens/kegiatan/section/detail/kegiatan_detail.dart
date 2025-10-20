@@ -62,7 +62,7 @@ class _KegiatanDetailState extends State<KegiatanDetail> {
                   Card(
                     margin: EdgeInsets.only(top: 8.0),
                     child: Image(
-                      image: AssetImage('assets/images/placeholder_image.png'),
+                      image: AssetImage('assets/images/placeholder.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
