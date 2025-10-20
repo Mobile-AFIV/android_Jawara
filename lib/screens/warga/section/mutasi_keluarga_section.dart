@@ -45,8 +45,13 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
         foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('mutasi_keluarga_tambah');
+        onPressed: () async {
+          final result = await context.pushNamed('mutasi_keluarga_tambah');
+          if (result == true) {
+            setState(() {
+              _expandedList = List.generate(MutasiKeluargaDummy.dummyData.length, (index) => index == 0);
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
