@@ -272,13 +272,21 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
         actions: [
           AppBarActionButton.filter(onTap: () {}),
         ],
-        actionsPadding: EdgeInsets.symmetric(horizontal: 16),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
       ),
       body: SafeArea(
-        child: ListView.builder(
+        child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: PemasukanSectionData.kategoriIuranData.length,
           itemBuilder: (context, index) {
             return kategoriItem(PemasukanSectionData.kategoriIuranData[index]);
+          },
+          separatorBuilder: (context, index) {
+            return Container(
+              height: 1,
+              width: double.maxFinite,
+              color: Colors.grey.shade300,
+            );
           },
         ),
       ),
@@ -308,12 +316,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
     return InkWell(
       onTap: () => _showDetailKategori(kategori),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          border:
-              Border(bottom: BorderSide(width: 1, color: Colors.grey.shade300)),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
