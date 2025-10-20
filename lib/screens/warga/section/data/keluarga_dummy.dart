@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
 
+class FamilyMember {
+  final String name;
+  final String nik;
+  final String role;
+  final String gender;
+  final String birthDate;
+  final String status;
+
+  FamilyMember({
+    required this.name,
+    required this.nik,
+    required this.role,
+    required this.gender,
+    required this.birthDate,
+    required this.status,
+  });
+}
+
 class KeluargaModel {
   final String familyName;
   final String headOfFamily;
@@ -7,6 +25,7 @@ class KeluargaModel {
   final String ownershipStatus;
   final String status;
   final MaterialColor statusColor;
+  final List<FamilyMember> members;
 
   KeluargaModel({
     required this.familyName,
@@ -15,6 +34,7 @@ class KeluargaModel {
     required this.ownershipStatus,
     required this.status,
     required this.statusColor,
+    required this.members,
   });
 }
 
@@ -27,6 +47,24 @@ class KeluargaDummy {
       ownershipStatus: 'Penyewa',
       status: 'Aktif',
       statusColor: Colors.green,
+      members: [
+        FamilyMember(
+          name: 'Budi Santoso',
+          nik: '3507012345678901',
+          role: 'Kepala Keluarga',
+          gender: 'Laki-laki',
+          birthDate: '15 Maret 1980',
+          status: 'Aktif',
+        ),
+        FamilyMember(
+          name: 'Siti Rahayu',
+          nik: '3507012345678902',
+          role: 'Istri',
+          gender: 'Perempuan',
+          birthDate: '22 April 1985',
+          status: 'Aktif',
+        ),
+      ],
     ),
     KeluargaModel(
       familyName: 'Keluarga Rahmad',
@@ -35,6 +73,7 @@ class KeluargaDummy {
       ownershipStatus: 'Pemilik',
       status: 'Aktif',
       statusColor: Colors.green,
+      members: [],
     ),
     KeluargaModel(
       familyName: 'Keluarga Wijaya',
@@ -43,6 +82,7 @@ class KeluargaDummy {
       ownershipStatus: 'Pemilik',
       status: 'Nonaktif',
       statusColor: Colors.red,
+      members: [],
     ),
     KeluargaModel(
       familyName: 'Keluarga Prasetyo',
@@ -51,6 +91,7 @@ class KeluargaDummy {
       ownershipStatus: 'Penyewa',
       status: 'Nonaktif',
       statusColor: Colors.red,
+      members: [],
     ),
   ];
 }

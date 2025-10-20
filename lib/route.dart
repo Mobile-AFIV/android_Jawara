@@ -156,10 +156,15 @@ final GoRouter mainRouter = GoRouter(
           path: 'keluarga_tambah',
           builder: (context, state) => const KeluargaTambah(),
         ),
+// Find this part in your route.dart file
         GoRoute(
-          name: 'keluarga_detail',
           path: 'keluarga_detail',
-          builder: (context, state) => const KeluargaDetail(),
+          name: 'keluarga_detail',
+          builder: (context, state) {
+            // Get the keluargaIndex from route parameters, default to 0 if not provided
+            final keluargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            return KeluargaDetail(keluargaIndex: keluargaIndex);
+          },
         ),
       ],
     ),

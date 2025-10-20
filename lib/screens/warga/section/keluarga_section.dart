@@ -159,7 +159,10 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            context.pushNamed('keluarga_detail');
+                            context.pushNamed(
+                              'keluarga_detail',
+                              queryParameters: {'index': index.toString()},
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
