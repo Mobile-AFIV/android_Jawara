@@ -89,7 +89,7 @@ class PemasukanLainSection extends StatelessWidget {
           Text(
             overflow: TextOverflow.ellipsis,
             itemData.nama,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
