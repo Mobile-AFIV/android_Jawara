@@ -169,7 +169,13 @@ class _WargaSectionState extends State<WargaSection> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            context.pushNamed('warga_detail');
+                            context.pushNamed(
+                              'warga_detail',
+                              queryParameters: {
+                                'index': index.toString(),
+                                'name': name,
+                              },
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],

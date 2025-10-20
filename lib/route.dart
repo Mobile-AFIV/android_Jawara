@@ -242,9 +242,13 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const WargaTambah(),
         ),
         GoRoute(
-          name: 'warga_detail',
           path: 'warga_detail',
-          builder: (context, state) => const WargaDetail(),
+          name: 'warga_detail',
+          builder: (context, state) {
+            final wargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final name = state.uri.queryParameters['name'];
+            return WargaDetail(wargaIndex: wargaIndex, name: name);
+          },
         ),
       ],
     ),
