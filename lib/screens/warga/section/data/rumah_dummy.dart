@@ -29,6 +29,12 @@ class RumahModel {
 }
 
 class RumahDummy {
+  // Status options
+  static final List<String> statusOptions = [
+    'Tersedia',
+    'Ditempati'
+  ];
+
   static List<RumahModel> dummyData = [
     RumahModel(
       address: 'Jl. Dahlia No. 15, RT 003/RW 002',
@@ -82,4 +88,9 @@ class RumahDummy {
       residentHistory: [],
     ),
   ];
+
+  // Method to add new house data
+  static void addRumah(RumahModel rumah) {
+    dummyData.add(rumah);
+  }
 }

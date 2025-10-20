@@ -17,6 +17,11 @@ class _RumahSectionState extends State<RumahSection> {
   @override
   void initState() {
     super.initState();
+    _initExpandedList();
+  }
+
+  // Create a separate method to initialize or update the expanded list
+  void _initExpandedList() {
     _expandedList = List.generate(RumahDummy.dummyData.length, (index) => index == 0);
   }
 
@@ -35,7 +40,7 @@ class _RumahSectionState extends State<RumahSection> {
             address: rumah.address,
             status: rumah.status,
             statusColor: rumah.statusColor,
-            isExpanded: _expandedList[index],
+            isExpanded: index < _expandedList.length ? _expandedList[index] : false,
             index: index,
           );
         },
@@ -44,8 +49,14 @@ class _RumahSectionState extends State<RumahSection> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
         foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('rumah_tambah');
+        onPressed: () async {
+          final result = await context.pushNamed('rumah_tambah');
+          if (result == true) {
+            setState(() {
+              // Update the expanded list to match the new data size
+              _initExpandedList();
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
@@ -70,7 +81,10 @@ class _RumahSectionState extends State<RumahSection> {
           InkWell(
             onTap: () {
               setState(() {
-                _expandedList[index] = !_expandedList[index];
+                // Add safety check before accessing _expandedList
+                if (index < _expandedList.length) {
+                  _expandedList[index] = !_expandedList[index];
+                }
               });
             },
             child: Padding(
@@ -129,7 +143,7 @@ class _RumahSectionState extends State<RumahSection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // House details
-                      Text("Alamat Lengkap:"),
+                      const Text("Alamat Lengkap:"),
                       Text(address),
                       const SizedBox(height: 8),
 
@@ -147,7 +161,12 @@ class _RumahSectionState extends State<RumahSection> {
                               },
                             );
                             if (result == true) {
-                              setState(() {});
+                              setState(() {
+                                // Make sure expanded list is updated if needed
+                                if (_expandedList.length != RumahDummy.dummyData.length) {
+                                  _initExpandedList();
+                                }
+                              });
                             }
                           } : () {
                             ScaffoldMessenger.of(context).showSnackBar(
