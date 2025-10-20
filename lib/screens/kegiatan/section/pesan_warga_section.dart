@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PesanWargaSection extends StatelessWidget {
   const PesanWargaSection({super.key});
@@ -9,9 +10,37 @@ class PesanWargaSection extends StatelessWidget {
       appBar: AppBar(
         title: Text("Pesan Warga"),
       ),
-      body: const Center(
-        child: Text("Ini Section Pesan warga di Menu Kegiatan"),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildKegiatanCard(
+            namaKegiatan: 'Ibu Atiqa',
+            isiBroadcast:
+                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla...',
+            statusColor: Colors.green,
+          ),
+          const SizedBox(height: 12),
+          _buildKegiatanCard(
+            namaKegiatan: 'Pak JOKO',
+            isiBroadcast:
+                'blabla blabla blabla blabla blabla blabla blabla blabla...',
+            statusColor: Colors.green,
+          ),
+        ],
       ),
     );
   }
+}
+
+Widget _buildKegiatanCard({
+  required String namaKegiatan,
+  required String isiBroadcast,
+  required Color statusColor,
+}) {
+  return Card(
+    child: ListTile(
+      title: Text(namaKegiatan),
+      subtitle: Text(isiBroadcast),
+    ),
+  );
 }

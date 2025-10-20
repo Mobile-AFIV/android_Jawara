@@ -14,6 +14,7 @@ class KegiatanDaftarSection extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         children: [
           _buildKegiatanCard(
+            context,
             namaKegiatan: 'Rapat RT 05',
             date: '25 Oktober 2023',
             penanggungJawab: 'Pak RT',
@@ -34,7 +35,8 @@ class KegiatanDaftarSection extends StatelessWidget {
     );
   }
 
-  Widget _buildKegiatanCard({
+  Widget _buildKegiatanCard(
+    BuildContext context, {
     required String namaKegiatan,
     required String date,
     required String penanggungJawab,
@@ -44,7 +46,19 @@ class KegiatanDaftarSection extends StatelessWidget {
       child: ListTile(
         title: Text(namaKegiatan),
         subtitle: Text('$penanggungJawab - $date'),
-        trailing: Icon(Icons.arrow_forward, color: statusColor),
+        trailing: ElevatedButton(
+        onPressed: () {
+          context.pushNamed('kegiatan_detail');
+        },
+        style: ElevatedButton.styleFrom(
+          shape: const CircleBorder(),
+          padding: const EdgeInsets.all(8),
+          backgroundColor: statusColor,
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        child: const Icon(Icons.arrow_forward),
+      ),
       ),
     );
   }
