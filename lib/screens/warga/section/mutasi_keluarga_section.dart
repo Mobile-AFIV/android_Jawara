@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/mutasi_keluarga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class MutasiKeluargaSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class MutasiKeluargaSection extends StatefulWidget {
 
 class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(MutasiKeluargaDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,52 +26,21 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
       appBar: AppBar(
         title: const Text("Data Mutasi Keluarga"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First mutation
-          _buildMutationCard(
-            familyName: 'Keluarga Jeha',
-            date: '25 Oktober 2023',
-            mutationType: 'Pindah Rumah',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second mutation
-          _buildMutationCard(
-            familyName: 'Keluarga Fikri',
-            date: '30 November 2023',
-            mutationType: 'Keluar Wilayah',
-            statusColor: Colors.red,
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third mutation
-          _buildMutationCard(
-            familyName: 'Keluarga Ahmad',
-            date: '15 Januari 2024',
-            mutationType: 'Pindah Masuk',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-          const SizedBox(height: 12),
-
-          // Fourth mutation
-          _buildMutationCard(
-            familyName: 'Keluarga Santoso',
-            date: '7 Maret 2024',
-            mutationType: 'Pindah Masuk',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[3],
-            index: 3,
-          ),
-        ],
+        itemCount: MutasiKeluargaDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final mutasi = MutasiKeluargaDummy.dummyData[index];
+          return _buildMutationCard(
+            familyName: mutasi.familyName,
+            date: mutasi.date,
+            mutationType: mutasi.mutationType,
+            statusColor: mutasi.statusColor,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),

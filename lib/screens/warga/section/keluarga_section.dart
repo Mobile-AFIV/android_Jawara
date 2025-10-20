@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class KeluargaSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class KeluargaSection extends StatefulWidget {
 
 class _KeluargaSectionState extends State<KeluargaSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(KeluargaDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,60 +26,23 @@ class _KeluargaSectionState extends State<KeluargaSection> {
       appBar: AppBar(
         title: const Text("Data Keluarga"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First family
-          _buildFamilyCard(
-            familyName: 'Keluarga Santoso',
-            headOfFamily: 'Budi Santoso',
-            address: 'Jl. Dahlia No. 15, RT 003/RW 002',
-            ownershipStatus: 'Penyewa',
-            status: 'Aktif',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second family
-          _buildFamilyCard(
-            familyName: 'Keluarga Rahmad',
-            headOfFamily: 'Ahmad Rahmad',
-            address: 'Jl. Mawar No. 23, RT 005/RW 002',
-            ownershipStatus: 'Pemilik',
-            status: 'Aktif',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third family
-          _buildFamilyCard(
-            familyName: 'Keluarga Wijaya',
-            headOfFamily: 'Hendra Wijaya',
-            address: 'Jl. Melati No. 8, RT 002/RW 003',
-            ownershipStatus: 'Pemilik',
-            status: 'Nonaktif',
-            statusColor: Colors.red,
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-          const SizedBox(height: 12),
-
-          // Fourth family
-          _buildFamilyCard(
-            familyName: 'Keluarga Prasetyo',
-            headOfFamily: 'Dimas Prasetyo',
-            address: 'Jl. Anggrek No. 42, RT 004/RW 001',
-            ownershipStatus: 'Penyewa',
-            status: 'Nonaktif',
-            statusColor: Colors.red,
-            isExpanded: _expandedList[3],
-            index: 3,
-          ),
-        ],
+        itemCount: KeluargaDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final keluarga = KeluargaDummy.dummyData[index];
+          return _buildFamilyCard(
+            familyName: keluarga.familyName,
+            headOfFamily: keluarga.headOfFamily,
+            address: keluarga.address,
+            ownershipStatus: keluarga.ownershipStatus,
+            status: keluarga.status,
+            statusColor: keluarga.statusColor,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
     );
   }
@@ -136,7 +106,7 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "$status",
+                      status,
                       style: TextStyle(
                         color: statusColor[800],
                         fontSize: 12,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PenerimaanWargaSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class PenerimaanWargaSection extends StatefulWidget {
 
 class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(PenerimaanWargaDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,47 +26,23 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
       appBar: AppBar(
         title: const Text("Data Penerimaan Warga"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First registration
-          _buildRegistrationCard(
-            name: 'Ahmad Setiawan',
-            nik: '3507012345678901',
-            email: 'ahmad.s@email.com',
-            gender: 'Laki-laki',
-            registrationStatus: 'Menunggu',
-            statusColor: Colors.amber,
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second registration
-          _buildRegistrationCard(
-            name: 'Dewi Susanti',
-            nik: '3507012345678902',
-            email: 'dewi.s@email.com',
-            gender: 'Perempuan',
-            registrationStatus: 'Diterima',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third registration
-          _buildRegistrationCard(
-            name: 'Rudi Hartono',
-            nik: '3507012345678903',
-            email: 'rudi.h@email.com',
-            gender: 'Laki-laki',
-            registrationStatus: 'Ditolak',
-            statusColor: Colors.red,
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-        ],
+        itemCount: PenerimaanWargaDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final penerimaan = PenerimaanWargaDummy.dummyData[index];
+          return _buildRegistrationCard(
+            name: penerimaan.name,
+            nik: penerimaan.nik,
+            email: penerimaan.email,
+            gender: penerimaan.gender,
+            registrationStatus: penerimaan.registrationStatus,
+            statusColor: penerimaan.statusColor,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
     );
   }
