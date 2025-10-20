@@ -8,23 +8,43 @@ class KegiatanDaftarSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Kegiatan Daftar"),
+        title: const Text("Kegiatan Daftar"),
       ),
-      body: const Center(
-        child: Column(
-          children: [
-            Text("Ini Section Kegiatan Daftar di Menu Kegiatan"),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildKegiatanCard(
+            namaKegiatan: 'Rapat RT 05',
+            date: '25 Oktober 2023',
+            penanggungJawab: 'Pak RT',
+            statusColor: Colors.green,
+          ),
+          const SizedBox(height: 12),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        shape: const CircleBorder(), // atau RoundedRectangleBorder()
+        shape: const CircleBorder(),
         onPressed: () {
           context.pushNamed('kegiatan_tambah');
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildKegiatanCard({
+    required String namaKegiatan,
+    required String date,
+    required String penanggungJawab,
+    required Color statusColor,
+  }) {
+    return Card(
+      child: ListTile(
+        title: Text(namaKegiatan),
+        subtitle: Text('$penanggungJawab - $date'),
+        trailing: Icon(Icons.arrow_forward, color: statusColor),
       ),
     );
   }

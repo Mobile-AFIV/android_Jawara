@@ -11,32 +11,25 @@ class BroadcastDaftarSection extends StatelessWidget {
         title: Text("Broadcast Daftar"),
       ),
       //awalnya ada consnya kenapa harus dihapus
-      body: Center(
-        child: Column(
-          children: [
-            Text("Ini Section Broadcast Daftar di Menu Kegiatan"),
-            SizedBox(),
-            DataTable(
-              columns: const [
-                DataColumn(label: Text('NO')),
-                DataColumn(label: Text('tes')),
-              ],
-              rows: const [
-                DataRow(cells: [
-                  DataCell(Text('Pengirim')),
-                  DataCell(Text('Pengirim')),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildKegiatanCard(
+            namaKegiatan: 'Rapat RT 05',
+            isiBroadcast:
+                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla ',
+            statusColor: Colors.green,
+          ),
+          const SizedBox(height: 12),
 
-                ]),
-                DataRow(cells: [
-              DataCell(Text('Andi')),
-              DataCell(Text('Sistem Informasi')),
-             
-            ]),
-              ],
-              
-            ),
-          ],
-        ),
+          _buildKegiatanCard(
+            namaKegiatan: 'Rapat RT 05',
+            isiBroadcast:
+                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla ',
+            statusColor: Colors.green,
+          ),
+          const SizedBox(height: 12),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
@@ -49,4 +42,18 @@ class BroadcastDaftarSection extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildKegiatanCard({
+  required String namaKegiatan,
+  required String isiBroadcast,
+  required Color statusColor,
+}) {
+  return Card(
+    child: ListTile(
+      title: Text(namaKegiatan),
+      subtitle: Text(isiBroadcast),
+      trailing: Icon(Icons.arrow_forward, color: statusColor),
+    ),
+  );
 }
