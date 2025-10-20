@@ -61,14 +61,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-        foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('penerimaan_warga_tambah');
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -166,13 +158,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          "status: $registrationStatus",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
                           ),
                         ),
                       ],
