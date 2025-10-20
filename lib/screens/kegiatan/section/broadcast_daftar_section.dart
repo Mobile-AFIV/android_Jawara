@@ -10,31 +10,30 @@ class BroadcastDaftarSection extends StatelessWidget {
       appBar: AppBar(
         title: Text("Broadcast Daftar"),
       ),
-      //awalnya ada consnya kenapa harus dihapus
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           _buildKegiatanCard(
+            context, 
             namaKegiatan: 'Rapat RT 05',
             isiBroadcast:
-                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla ',
+                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla...',
             statusColor: Colors.green,
           ),
           const SizedBox(height: 12),
-
           _buildKegiatanCard(
-            namaKegiatan: 'Rapat RT 05',
+            context,
+            namaKegiatan: 'Rapat RT 06',
             isiBroadcast:
-                'blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla blabla ',
+                'blabla blabla blabla blabla blabla blabla blabla blabla...',
             statusColor: Colors.green,
           ),
-          const SizedBox(height: 12),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        shape: const CircleBorder(), // atau RoundedRectangleBorder()
+        shape: const CircleBorder(),
         onPressed: () {
           context.pushNamed('broadcast_tambah');
         },
@@ -44,7 +43,8 @@ class BroadcastDaftarSection extends StatelessWidget {
   }
 }
 
-Widget _buildKegiatanCard({
+Widget _buildKegiatanCard(
+  BuildContext context, { 
   required String namaKegiatan,
   required String isiBroadcast,
   required Color statusColor,
@@ -53,7 +53,19 @@ Widget _buildKegiatanCard({
     child: ListTile(
       title: Text(namaKegiatan),
       subtitle: Text(isiBroadcast),
-      trailing: Icon(Icons.arrow_forward, color: statusColor),
+      trailing: ElevatedButton(
+        onPressed: () {
+          context.pushNamed('broadcast_detail'); 
+        },
+        style: ElevatedButton.styleFrom(
+          shape: const CircleBorder(),
+          padding: const EdgeInsets.all(8),
+          backgroundColor: statusColor,
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        child: const Icon(Icons.arrow_forward),
+      ),
     ),
   );
 }
