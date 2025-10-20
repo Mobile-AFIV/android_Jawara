@@ -55,7 +55,7 @@ class PemasukanLainSection extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(12),
+          borderRadius: BorderRadius.circular(12),
         ),
         backgroundColor: AppStyles.primaryColor,
         onPressed: () {},
