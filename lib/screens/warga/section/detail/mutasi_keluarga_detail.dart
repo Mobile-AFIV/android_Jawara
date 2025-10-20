@@ -107,7 +107,7 @@ class _MutasiKeluargaDetailState extends State<MutasiKeluargaDetail> {
             value,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.black,
+              color: textColor ?? Colors.black,
               fontWeight: textColor != null ? FontWeight.w500 : null,
             ),
           ),
