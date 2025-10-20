@@ -28,7 +28,7 @@ class _WargaSectionState extends State<WargaSection> {
             nik: "3507012345678901",
             family: "Kepala Keluarga",
             gender: "Laki-laki",
-            domicileStatus: "Tetap",
+            domicileStatus: "Aktif",
             lifeStatus: "Hidup",
             isExpanded: _expandedList[0],
             index: 0,
@@ -41,8 +41,8 @@ class _WargaSectionState extends State<WargaSection> {
             nik: "3507012345678902",
             family: "Istri",
             gender: "Perempuan",
-            domicileStatus: "Tetap",
-            lifeStatus: "Hidup",
+            domicileStatus: "Aktif",
+            lifeStatus: "Wafat",
             isExpanded: _expandedList[1],
             index: 1,
           ),
@@ -54,7 +54,7 @@ class _WargaSectionState extends State<WargaSection> {
             nik: "3507012345678903",
             family: "Anak",
             gender: "Laki-laki",
-            domicileStatus: "Tidak Tetap",
+            domicileStatus: "Nonaktif",
             lifeStatus: "Hidup",
             isExpanded: _expandedList[2],
             index: 2,
@@ -133,7 +133,7 @@ class _WargaSectionState extends State<WargaSection> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                        "$domicileStatus",
                       style: TextStyle(
                         color: Colors.green[800],
                         fontSize: 12,
@@ -166,7 +166,6 @@ class _WargaSectionState extends State<WargaSection> {
                       Text("NIK: $nik"),
                       Text("Keluarga: $family"),
                       Text("Jenis Kelamin: $gender"),
-                      Text("Status Domisili: $domicileStatus"),
 
                       // Action buttons
                       const SizedBox(height: 16),
