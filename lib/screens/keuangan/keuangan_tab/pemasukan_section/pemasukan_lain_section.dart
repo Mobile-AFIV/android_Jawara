@@ -105,7 +105,7 @@ class PemasukanLainSection extends StatelessWidget {
               Text(
                 dateParse(itemData.tanggal),
                 // itemData.tanggal,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                 ),
