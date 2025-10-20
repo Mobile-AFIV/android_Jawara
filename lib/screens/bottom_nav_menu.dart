@@ -40,50 +40,68 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       appBar: CustomAppBar(),
       body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: getCurrentIndex(context),
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        selectedItemColor: AppStyles.primaryColor,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        selectedIconTheme: IconThemeData(
-          color: AppStyles.primaryColor,
+      bottomNavigationBar: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              // color: Colors.black26,
+              color: Colors.black54,
+              blurRadius: 20,
+              offset: Offset(4, 6),
+            ),
+          ],
         ),
-        unselectedIconTheme: IconThemeData(
-          color: Colors.grey,
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: getCurrentIndex(context),
+          selectedFontSize: 10,
+          unselectedFontSize: 10,
+          selectedItemColor: AppStyles.primaryColor,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          selectedIconTheme: IconThemeData(
+            color: AppStyles.primaryColor,
+          ),
+          unselectedIconTheme: IconThemeData(
+            color: Colors.grey,
+          ),
+          onTap: (value) {
+            setState(() {
+              activeMenuIndex = value;
+            });
+            context.goNamed(routerName[value]);
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people),
+              label: 'Warga',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              label: 'Keuangan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.event),
+              label: 'Kegiatan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.more_horiz_rounded),
+              label: 'Lainnya',
+            ),
+          ],
         ),
-        onTap: (value) {
-          setState(() {
-            activeMenuIndex = value;
-          });
-          context.goNamed(routerName[value]);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Warga',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Keuangan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Kegiatan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz_rounded),
-            label: 'Lainnya',
-          ),
-        ],
       ),
     );
   }
