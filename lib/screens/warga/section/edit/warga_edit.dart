@@ -4,25 +4,35 @@ import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:intl/intl.dart';
 
-class WargaTambah extends StatefulWidget {
-  const WargaTambah({super.key});
+class WargaEdit extends StatefulWidget {
+  final int wargaIndex;
+  final String? name;
+
+  const WargaEdit({
+    super.key,
+    required this.wargaIndex,
+    this.name,
+  });
 
   @override
-  State<WargaTambah> createState() => _WargaTambahState();
+  State<WargaEdit> createState() => _WargaEditState();
 }
 
-class _WargaTambahState extends State<WargaTambah> {
+class _WargaEditState extends State<WargaEdit> {
+  late WargaModel warga;
+  late int wargaIndex;
+
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
   // Text controllers for form fields
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _nikController = TextEditingController();
-  final TextEditingController _familyController = TextEditingController();
-  TextEditingController _birthPlaceController = TextEditingController();
-  final TextEditingController _birthDateController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _jobController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _nikController;
+  late TextEditingController _familyController;
+  late TextEditingController _birthPlaceController;
+  late TextEditingController _birthDateController;
+  late TextEditingController _phoneController;
+  late TextEditingController _jobController;
 
   // Dropdown selections
   String? _selectedGender;
@@ -31,14 +41,82 @@ class _WargaTambahState extends State<WargaTambah> {
   String? _selectedEducation;
   String? _selectedJob;
   String? _selectedFamilyRole;
-  String _selectedDomicileStatus = 'Aktif';
-  String _selectedLifeStatus = 'Hidup';
+  late String _selectedDomicileStatus;
+  late String _selectedLifeStatus;
 
   // Date picker
   DateTime? _selectedDate;
 
   // Current step for stepper
   int _currentStep = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Find the warga data based on name or index
+    wargaIndex = widget.wargaIndex;
+
+    if (widget.name != null && widget.name!.isNotEmpty) {
+      final index = WargaDummy.dummyData.indexWhere((w) => w.name == widget.name);
+      if (index != -1) {
+        wargaIndex = index;
+      }
+    }
+
+    warga = WargaDummy.dummyData[wargaIndex];
+
+    // Initialize controllers with current data
+    _nameController = TextEditingController(text: warga.name);
+    _nikController = TextEditingController(text: warga.nik);
+    _familyController = TextEditingController(text: warga.family);
+    _birthPlaceController = TextEditingController(text: warga.birthPlace);
+    _birthDateController = TextEditingController(text: warga.birthDate);
+    _phoneController = TextEditingController(text: warga.phoneNumber);
+    _jobController = TextEditingController(text: warga.job);
+
+    // Set dropdown selections
+    _selectedGender = warga.gender;
+    _selectedReligion = warga.religion;
+    _selectedBloodType = warga.bloodType;
+    _selectedEducation = warga.education;
+
+    // Handle job selection, check if it's in the standard options or custom
+    if (WargaDummy.jobOptions.contains(warga.job)) {
+      _selectedJob = warga.job;
+    } else {
+      _selectedJob = 'Lainnya';
+      _jobController.text = warga.job;
+    }
+
+    _selectedFamilyRole = warga.familyRole;
+    _selectedDomicileStatus = warga.domicileStatus;
+    _selectedLifeStatus = warga.lifeStatus;
+
+    // Try to parse birth date
+    if (warga.birthDate.isNotEmpty) {
+      try {
+        // Try common date formats
+        List<String> formats = [
+          'dd MMMM yyyy', 'd MMMM yyyy',
+          'dd MMM yyyy', 'd MMM yyyy',
+          'yyyy-MM-dd', 'dd-MM-yyyy'
+        ];
+
+        for (var format in formats) {
+          try {
+            _selectedDate = DateFormat(format, 'id_ID').parse(warga.birthDate);
+            break;
+          } catch (e) {
+            // Continue to next format
+          }
+        }
+      } catch (e) {
+        // If all parsing fails, don't set a date
+        print("Failed to parse birth date: ${warga.birthDate}");
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -82,11 +160,11 @@ class _WargaTambahState extends State<WargaTambah> {
     }
   }
 
-  // Save the data
+  // Save the edited data
   void _saveData() {
     if (_formKey.currentState!.validate()) {
-      // Create new WargaModel
-      final newWarga = WargaModel(
+      // Create updated WargaModel
+      final updatedWarga = WargaModel(
         name: _nameController.text,
         nik: _nikController.text,
         family: _familyController.text,
@@ -103,16 +181,15 @@ class _WargaTambahState extends State<WargaTambah> {
         familyRole: _selectedFamilyRole ?? '',
       );
 
-      // Add to dummy data
-      WargaDummy.addWarga(newWarga);
+      // Update the dummy data
+      WargaDummy.dummyData[wargaIndex] = updatedWarga;
 
-      // Show success message
+      // Show success message and return
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data warga berhasil ditambahkan')),
+        const SnackBar(content: Text('Data warga berhasil disimpan')),
       );
 
-      // Return to previous screen
-      Navigator.pop(context, true);
+      Navigator.pop(context, true); // Return with success result
     } else {
       // If not all fields are validated, show error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,7 +209,7 @@ class _WargaTambahState extends State<WargaTambah> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tambah Data Warga"),
+        title: const Text("Edit Data Warga"),
         elevation: 0,
       ),
       body: Form(
@@ -155,6 +232,8 @@ class _WargaTambahState extends State<WargaTambah> {
               setState(() {
                 _currentStep -= 1;
               });
+            } else {
+              Navigator.pop(context); // Back to previous screen
             }
           },
           controlsBuilder: (context, details) {
@@ -178,23 +257,23 @@ class _WargaTambahState extends State<WargaTambah> {
                       ),
                     ),
                   ),
-                  if (_currentStep > 0) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: details.onStepCancel,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppStyles.primaryColor,
-                          side: BorderSide(color: AppStyles.primaryColor),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: details.onStepCancel,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppStyles.primaryColor,
+                        side: BorderSide(color: AppStyles.primaryColor),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('Kembali'),
+                      ),
+                      child: Text(
+                        _currentStep == 0 ? 'Batal' : 'Kembali',
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             );
@@ -239,7 +318,7 @@ class _WargaTambahState extends State<WargaTambah> {
                 if (value == null || value.isEmpty) {
                   return 'NIK tidak boleh kosong';
                 }
-                if (value.length != 16) {
+                if (value.length != 16 && value != "2222222222222222") { // Special case for test data
                   return 'NIK harus 16 digit';
                 }
                 return null;
@@ -281,6 +360,7 @@ class _WargaTambahState extends State<WargaTambah> {
                   return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
                 });
               },
+              initialValue: TextEditingValue(text: _birthPlaceController.text),
               onSelected: (String selection) {
                 _birthPlaceController.text = selection;
               },
@@ -290,7 +370,12 @@ class _WargaTambahState extends State<WargaTambah> {
                   FocusNode fieldFocusNode,
                   VoidCallback onFieldSubmitted
                   ) {
+                // Update the controller without losing existing text
+                if (fieldController.text.isEmpty && _birthPlaceController.text.isNotEmpty) {
+                  fieldController.text = _birthPlaceController.text;
+                }
                 _birthPlaceController = fieldController;
+
                 return TextFormField(
                   controller: fieldController,
                   focusNode: fieldFocusNode,

@@ -5,8 +5,9 @@ class PenerimaanWargaModel {
   final String nik;
   final String email;
   final String gender;
-  final String registrationStatus;
-  final MaterialColor statusColor;
+  String registrationStatus;
+  MaterialColor statusColor;
+  String? rejectionReason;
 
   PenerimaanWargaModel({
     required this.name,
@@ -15,6 +16,7 @@ class PenerimaanWargaModel {
     required this.gender,
     required this.registrationStatus,
     required this.statusColor,
+    this.rejectionReason,
   });
 }
 
@@ -43,6 +45,7 @@ class PenerimaanWargaDummy {
       gender: 'Laki-laki',
       registrationStatus: 'Ditolak',
       statusColor: Colors.red,
+      rejectionReason: 'Data tidak lengkap',
     ),
   ];
 }

@@ -141,19 +141,6 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       const SizedBox(height: 8),
 
                       // Action buttons
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber[100],
-                            foregroundColor: Colors.amber[800],
-                            elevation: 0,
-                          ),
-                          child: const Text('edit'),
-                        ),
-                      ),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,

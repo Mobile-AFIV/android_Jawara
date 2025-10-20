@@ -22,6 +22,22 @@ class MutasiKeluargaModel {
 }
 
 class MutasiKeluargaDummy {
+  // Mutation type options
+  static final List<String> mutationTypeOptions = [
+    'Pindah Masuk',
+    'Keluar Wilayah',
+  ];
+
+  // Family options (for dropdown)
+  static final List<String> familyOptions = [
+    'Keluarga Santoso',
+    'Keluarga Rahmad',
+    'Keluarga Wijaya',
+    'Keluarga Prasetyo',
+    'Keluarga Tes',
+    'Keluarga Ijat'
+  ];
+
   static List<MutasiKeluargaModel> dummyData = [
     MutasiKeluargaModel(
       familyName: 'Keluarga Jeha',
@@ -59,5 +75,32 @@ class MutasiKeluargaDummy {
       newAddress: 'Jl. Anggrek No. 42, RT 004/RW 001',
       reason: 'Ingin dekat dengan keluarga',
     ),
+    // Example data from previous image
+    MutasiKeluargaModel(
+      familyName: 'Keluarga Ijat',
+      date: '15 Oktober 2025',
+      mutationType: 'Keluar Wilayah',
+      statusColor: Colors.red,
+      oldAddress: 'i',
+      newAddress: '',
+      reason: 'Karena mau keluar',
+    ),
   ];
+
+  // Get status color based on mutation type
+  static MaterialColor getStatusColor(String mutationType) {
+    switch (mutationType) {
+      case 'Pindah Masuk':
+        return Colors.green;
+      case 'Keluar Wilayah':
+        return Colors.red;
+      default:
+        return Colors.blue;
+    }
+  }
+
+  // Method to add new mutation data
+  static void addMutasi(MutasiKeluargaModel mutasi) {
+    dummyData.add(mutasi);
+  }
 }
