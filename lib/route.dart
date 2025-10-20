@@ -40,6 +40,11 @@ import 'package:jawara_pintar/screens/warga/section/tambah/penerimaan_warga_tamb
 import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/warga_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/warga_section.dart';
+import 'package:jawara_pintar/screens/warga/section/detail/keluarga_detail.dart';
+import 'package:jawara_pintar/screens/warga/section/detail/mutasi_keluarga_detail.dart';
+import 'package:jawara_pintar/screens/warga/section/detail/penerimaan_warga_detail.dart';
+import 'package:jawara_pintar/screens/warga/section/detail/rumah_detail.dart';
+import 'package:jawara_pintar/screens/warga/section/detail/warga_detail.dart';
 import 'package:jawara_pintar/screens/warga/warga_menu.dart';
 
 final GoRouter mainRouter = GoRouter(
@@ -151,6 +156,16 @@ final GoRouter mainRouter = GoRouter(
           path: 'keluarga_tambah',
           builder: (context, state) => const KeluargaTambah(),
         ),
+// Find this part in your route.dart file
+        GoRoute(
+          path: 'keluarga_detail',
+          name: 'keluarga_detail',
+          builder: (context, state) {
+            // Get the keluargaIndex from route parameters, default to 0 if not provided
+            final keluargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            return KeluargaDetail(keluargaIndex: keluargaIndex);
+          },
+        ),
       ],
     ),
     GoRoute(
@@ -162,6 +177,15 @@ final GoRouter mainRouter = GoRouter(
           name: 'mutasi_keluarga_tambah',
           path: 'mutasi_keluarga_tambah',
           builder: (context, state) => const MutasiKeluargaTambah(),
+        ),
+        GoRoute(
+          path: 'mutasi_keluarga_detail',
+          name: 'mutasi_keluarga_detail',
+          builder: (context, state) {
+            // Get the mutasiIndex from route parameters, default to 0 if not provided
+            final mutasiIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            return MutasiKeluargaDetail(mutasiIndex: mutasiIndex);
+          },
         ),
       ],
     ),
@@ -175,6 +199,15 @@ final GoRouter mainRouter = GoRouter(
           path: 'penerimaan_warga_tambah',
           builder: (context, state) => const PenerimaanWargaTambah(),
         ),
+        GoRoute(
+          path: 'penerimaan_warga_detail',
+          name: 'penerimaan_warga_detail',
+          builder: (context, state) {
+            final penerimaanIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final name = state.uri.queryParameters['name'];
+            return PenerimaanWargaDetail(penerimaanIndex: penerimaanIndex, name: name);
+          },
+        ),
       ],
     ),
     GoRoute(
@@ -187,6 +220,15 @@ final GoRouter mainRouter = GoRouter(
           path: 'rumah_tambah',
           builder: (context, state) => const RumahTambah(),
         ),
+        GoRoute(
+          path: 'rumah_detail',
+          name: 'rumah_detail',
+          builder: (context, state) {
+            final rumahIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final address = state.uri.queryParameters['address'];
+            return RumahDetail(rumahIndex: rumahIndex, address: address);
+          },
+        ),
       ],
     ),
     GoRoute(
@@ -198,6 +240,15 @@ final GoRouter mainRouter = GoRouter(
           name: 'warga_tambah',
           path: 'warga_tambah',
           builder: (context, state) => const WargaTambah(),
+        ),
+        GoRoute(
+          path: 'warga_detail',
+          name: 'warga_detail',
+          builder: (context, state) {
+            final wargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final name = state.uri.queryParameters['name'];
+            return WargaDetail(wargaIndex: wargaIndex, name: name);
+          },
         ),
       ],
     ),

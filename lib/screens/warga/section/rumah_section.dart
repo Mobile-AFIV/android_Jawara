@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class RumahSection extends StatefulWidget {
 
 class _RumahSectionState extends State<RumahSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(RumahDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,48 +26,20 @@ class _RumahSectionState extends State<RumahSection> {
       appBar: AppBar(
         title: const Text("Data Rumah"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First house
-          _buildHouseCard(
-            address: 'Jl. Dahlia No. 15, RT 003/RW 002',
-            status: 'Milik Sendiri',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second house
-          _buildHouseCard(
-            address: 'Jl. Mawar No. 23, RT 005/RW 002',
-            status: 'Sewa',
-            statusColor: Colors.blue,
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third house
-          _buildHouseCard(
-            address: 'Jl. Melati No. 8, RT 002/RW 003',
-            status: 'Milik Keluarga',
-            statusColor: Colors.purple,
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-          const SizedBox(height: 12),
-
-          // Fourth house
-          _buildHouseCard(
-            address: 'Jl. Anggrek No. 42, RT 004/RW 001',
-            status: 'Kontrak',
-            statusColor: Colors.orange,
-            isExpanded: _expandedList[3],
-            index: 3,
-          ),
-        ],
+        itemCount: RumahDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final rumah = RumahDummy.dummyData[index];
+          return _buildHouseCard(
+            address: rumah.address,
+            status: rumah.status,
+            statusColor: rumah.statusColor,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
@@ -110,13 +89,6 @@ class _RumahSectionState extends State<RumahSection> {
                             fontSize: 16,
                           ),
                         ),
-                        Text(
-                          "status: $status",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -125,13 +97,13 @@ class _RumahSectionState extends State<RumahSection> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: statusColor[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                      status,
                       style: TextStyle(
-                        color: Colors.green[800],
+                        color: statusColor[800],
                         fontSize: 12,
                       ),
                     ),
@@ -160,21 +132,6 @@ class _RumahSectionState extends State<RumahSection> {
                       Text("Alamat Lengkap:"),
                       Text(address),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text("Status Kepemilikan: "),
-                          Chip(
-                            label: Text(status),
-                            backgroundColor: statusColor[100],
-                            labelStyle: TextStyle(color: statusColor[800]),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ],
-                      ),
 
                       // Action buttons
                       const SizedBox(height: 16),
@@ -194,7 +151,15 @@ class _RumahSectionState extends State<RumahSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed(
+                              'rumah_detail',
+                              queryParameters: {
+                                'index': index.toString(),
+                                'address': address,
+                              },
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class KeluargaSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class KeluargaSection extends StatefulWidget {
 
 class _KeluargaSectionState extends State<KeluargaSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(KeluargaDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,64 +26,23 @@ class _KeluargaSectionState extends State<KeluargaSection> {
       appBar: AppBar(
         title: const Text("Data Keluarga"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First family
-          _buildFamilyCard(
-            familyName: 'Keluarga Santoso',
-            headOfFamily: 'Budi Santoso',
-            address: 'Jl. Dahlia No. 15, RT 003/RW 002',
-            ownershipStatus: 'Milik Sendiri',
-            statusColor: Colors.green,
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second family
-          _buildFamilyCard(
-            familyName: 'Keluarga Rahmad',
-            headOfFamily: 'Ahmad Rahmad',
-            address: 'Jl. Mawar No. 23, RT 005/RW 002',
-            ownershipStatus: 'Sewa',
-            statusColor: Colors.blue,
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third family
-          _buildFamilyCard(
-            familyName: 'Keluarga Wijaya',
-            headOfFamily: 'Hendra Wijaya',
-            address: 'Jl. Melati No. 8, RT 002/RW 003',
-            ownershipStatus: 'Milik Keluarga',
-            statusColor: Colors.purple,
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-          const SizedBox(height: 12),
-
-          // Fourth family
-          _buildFamilyCard(
-            familyName: 'Keluarga Prasetyo',
-            headOfFamily: 'Dimas Prasetyo',
-            address: 'Jl. Anggrek No. 42, RT 004/RW 001',
-            ownershipStatus: 'Kontrak',
-            statusColor: Colors.orange,
-            isExpanded: _expandedList[3],
-            index: 3,
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-        foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('keluarga_tambah');
+        itemCount: KeluargaDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final keluarga = KeluargaDummy.dummyData[index];
+          return _buildFamilyCard(
+            familyName: keluarga.familyName,
+            headOfFamily: keluarga.headOfFamily,
+            address: keluarga.address,
+            ownershipStatus: keluarga.ownershipStatus,
+            status: keluarga.status,
+            statusColor: keluarga.statusColor,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
         },
-        child: const Icon(Icons.add),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
     );
   }
@@ -86,6 +52,7 @@ class _KeluargaSectionState extends State<KeluargaSection> {
     required String headOfFamily,
     required String address,
     required String ownershipStatus,
+    required String status,
     required MaterialColor statusColor,
     required bool isExpanded,
     required int index,
@@ -135,13 +102,13 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: statusColor[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                      status,
                       style: TextStyle(
-                        color: Colors.green[800],
+                        color: statusColor[800],
                         fontSize: 12,
                       ),
                     ),
@@ -170,26 +137,8 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       Text("Nama Keluarga: $familyName"),
                       Text("Kepala Keluarga: $headOfFamily"),
                       Text("Alamat: $address"),
+                      Text("Status Kepemilikan: $ownershipStatus"),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text("Status Kepemilikan: "),
-                          Chip(
-                            label: Text(ownershipStatus),
-                            backgroundColor: statusColor[100],
-                            labelStyle: TextStyle(color: statusColor[800]),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ],
-                      ),
-
-                      // Family members summary
-                      const SizedBox(height: 8),
-                      const Text("Jumlah Anggota Keluarga: 4 orang"),
 
                       // Action buttons
                       const SizedBox(height: 16),
@@ -209,7 +158,12 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed(
+                              'keluarga_detail',
+                              queryParameters: {'index': index.toString()},
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],

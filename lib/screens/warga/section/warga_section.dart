@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class WargaSection extends StatefulWidget {
@@ -11,7 +12,13 @@ class WargaSection extends StatefulWidget {
 
 class _WargaSectionState extends State<WargaSection> {
   // Track which cards are expanded
-  final List<bool> _expandedList = [true, false, false];
+  late List<bool> _expandedList;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedList = List.generate(WargaDummy.dummyData.length, (index) => index == 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,47 +26,23 @@ class _WargaSectionState extends State<WargaSection> {
       appBar: AppBar(
         title: const Text("Data Warga"),
       ),
-      body: ListView(
+      body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
-        children: [
-          // First card (expanded by default)
-          _buildWargaCard(
-            name: "Budi Santoso",
-            nik: "3507012345678901",
-            family: "Kepala Keluarga",
-            gender: "Laki-laki",
-            domicileStatus: "Tetap",
-            lifeStatus: "Hidup",
-            isExpanded: _expandedList[0],
-            index: 0,
-          ),
-          const SizedBox(height: 12),
-
-          // Second card
-          _buildWargaCard(
-            name: "Siti Rahayu",
-            nik: "3507012345678902",
-            family: "Istri",
-            gender: "Perempuan",
-            domicileStatus: "Tetap",
-            lifeStatus: "Hidup",
-            isExpanded: _expandedList[1],
-            index: 1,
-          ),
-          const SizedBox(height: 12),
-
-          // Third card
-          _buildWargaCard(
-            name: "Ahmad Fauzi",
-            nik: "3507012345678903",
-            family: "Anak",
-            gender: "Laki-laki",
-            domicileStatus: "Tidak Tetap",
-            lifeStatus: "Hidup",
-            isExpanded: _expandedList[2],
-            index: 2,
-          ),
-        ],
+        itemCount: WargaDummy.dummyData.length,
+        itemBuilder: (context, index) {
+          final warga = WargaDummy.dummyData[index];
+          return _buildWargaCard(
+            name: warga.name,
+            nik: warga.nik,
+            family: warga.family,
+            gender: warga.gender,
+            domicileStatus: warga.domicileStatus,
+            lifeStatus: warga.lifeStatus,
+            isExpanded: _expandedList[index],
+            index: index,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
@@ -127,13 +110,13 @@ class _WargaSectionState extends State<WargaSection> {
                   // Right side: Status chip and expand arrow
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.green[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                      domicileStatus,
                       style: TextStyle(
                         color: Colors.green[800],
                         fontSize: 12,
@@ -166,7 +149,6 @@ class _WargaSectionState extends State<WargaSection> {
                       Text("NIK: $nik"),
                       Text("Keluarga: $family"),
                       Text("Jenis Kelamin: $gender"),
-                      Text("Status Domisili: $domicileStatus"),
 
                       // Action buttons
                       const SizedBox(height: 16),
@@ -186,7 +168,15 @@ class _WargaSectionState extends State<WargaSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed(
+                              'warga_detail',
+                              queryParameters: {
+                                'index': index.toString(),
+                                'name': name,
+                              },
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],
