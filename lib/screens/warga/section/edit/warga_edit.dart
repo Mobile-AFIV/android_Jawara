@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:intl/intl.dart';
@@ -31,28 +32,23 @@ class _WargaEditState extends State<WargaEdit> {
   late TextEditingController _birthPlaceController;
   late TextEditingController _birthDateController;
   late TextEditingController _phoneController;
-  late TextEditingController _religionController;
-  late TextEditingController _bloodTypeController;
-  late TextEditingController _educationController;
   late TextEditingController _jobController;
-  late TextEditingController _familyRoleController;
 
   // Dropdown selections
-  String _selectedGender = 'Laki-laki';
-  String _selectedDomicileStatus = 'Aktif';
-  String _selectedLifeStatus = 'Hidup';
-
-  // Options for dropdown menus
-  final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
-  final List<String> _domicileStatusOptions = ['Aktif', 'Nonaktif'];
-  final List<String> _lifeStatusOptions = ['Hidup', 'Wafat'];
-  final List<String> _religionOptions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
-  final List<String> _bloodTypeOptions = ['A', 'B', 'AB', 'O', 'Tidak tahu'];
-  final List<String> _educationOptions = ['Tidak sekolah', 'SD/MI', 'SMP/MTs', 'SMA/SMK/MA', 'Sarjana/Diploma', 'Magister', 'Doktor'];
-  final List<String> _familyRoleOptions = ['Kepala Keluarga', 'Istri', 'Anak', 'Orang Tua', 'Saudara', 'Lainnya'];
+  String? _selectedGender;
+  String? _selectedReligion;
+  String? _selectedBloodType;
+  String? _selectedEducation;
+  String? _selectedJob;
+  String? _selectedFamilyRole;
+  late String _selectedDomicileStatus;
+  late String _selectedLifeStatus;
 
   // Date picker
   DateTime? _selectedDate;
+
+  // Current step for stepper
+  int _currentStep = 0;
 
   @override
   void initState() {
@@ -77,14 +73,23 @@ class _WargaEditState extends State<WargaEdit> {
     _birthPlaceController = TextEditingController(text: warga.birthPlace);
     _birthDateController = TextEditingController(text: warga.birthDate);
     _phoneController = TextEditingController(text: warga.phoneNumber);
-    _religionController = TextEditingController(text: warga.religion);
-    _bloodTypeController = TextEditingController(text: warga.bloodType);
-    _educationController = TextEditingController(text: warga.education);
     _jobController = TextEditingController(text: warga.job);
-    _familyRoleController = TextEditingController(text: warga.familyRole);
 
     // Set dropdown selections
     _selectedGender = warga.gender;
+    _selectedReligion = warga.religion;
+    _selectedBloodType = warga.bloodType;
+    _selectedEducation = warga.education;
+
+    // Handle job selection, check if it's in the standard options or custom
+    if (WargaDummy.jobOptions.contains(warga.job)) {
+      _selectedJob = warga.job;
+    } else {
+      _selectedJob = 'Lainnya';
+      _jobController.text = warga.job;
+    }
+
+    _selectedFamilyRole = warga.familyRole;
     _selectedDomicileStatus = warga.domicileStatus;
     _selectedLifeStatus = warga.lifeStatus;
 
@@ -122,11 +127,7 @@ class _WargaEditState extends State<WargaEdit> {
     _birthPlaceController.dispose();
     _birthDateController.dispose();
     _phoneController.dispose();
-    _religionController.dispose();
-    _bloodTypeController.dispose();
-    _educationController.dispose();
     _jobController.dispose();
-    _familyRoleController.dispose();
     super.dispose();
   }
 
@@ -137,6 +138,18 @@ class _WargaEditState extends State<WargaEdit> {
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppStyles.primaryColor,
+              onPrimary: Colors.white,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null && picked != _selectedDate) {
@@ -155,17 +168,17 @@ class _WargaEditState extends State<WargaEdit> {
         name: _nameController.text,
         nik: _nikController.text,
         family: _familyController.text,
-        gender: _selectedGender,
+        gender: _selectedGender ?? '',
         domicileStatus: _selectedDomicileStatus,
         lifeStatus: _selectedLifeStatus,
         birthPlace: _birthPlaceController.text,
         birthDate: _birthDateController.text,
         phoneNumber: _phoneController.text,
-        religion: _religionController.text,
-        bloodType: _bloodTypeController.text,
-        education: _educationController.text,
-        job: _jobController.text,
-        familyRole: _familyRoleController.text,
+        religion: _selectedReligion ?? '',
+        bloodType: _selectedBloodType ?? '',
+        education: _selectedEducation ?? '',
+        job: _selectedJob == 'Lainnya' ? _jobController.text : (_selectedJob ?? ''),
+        familyRole: _selectedFamilyRole ?? '',
       );
 
       // Update the dummy data
@@ -177,6 +190,18 @@ class _WargaEditState extends State<WargaEdit> {
       );
 
       Navigator.pop(context, true); // Return with success result
+    } else {
+      // If not all fields are validated, show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mohon lengkapi data yang diperlukan')),
+      );
+
+      // Go to first step if currently on second step
+      if (_currentStep == 1) {
+        setState(() {
+          _currentStep = 0;
+        });
+      }
     }
   }
 
@@ -185,221 +210,382 @@ class _WargaEditState extends State<WargaEdit> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Data Warga"),
+        elevation: 0,
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Personal Information Section
-              const Text(
-                "Data Pribadi",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Full Name
-              TextFormField(
-                controller: _nameController,
-                decoration: _inputDecoration("Nama Lengkap"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama tidak boleh kosong';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // NIK
-              TextFormField(
-                controller: _nikController,
-                decoration: _inputDecoration("NIK"),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'NIK tidak boleh kosong';
-                  }
-                  if (value.length != 16 && value != "2222222222222222") { // Special case for test data
-                    return 'NIK harus 16 digit';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Gender
-              DropdownButtonFormField<String>(
-                decoration: _inputDecoration("Jenis Kelamin"),
-                value: _selectedGender,
-                items: _genderOptions.map((String gender) {
-                  return DropdownMenuItem<String>(
-                    value: gender,
-                    child: Text(gender),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedGender = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Birth Place
-              TextFormField(
-                controller: _birthPlaceController,
-                decoration: _inputDecoration("Tempat Lahir"),
-              ),
-              const SizedBox(height: 16),
-
-              // Birth Date
-              GestureDetector(
-                onTap: () => _selectDate(context),
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    controller: _birthDateController,
-                    decoration: _inputDecoration("Tanggal Lahir", suffixIcon: Icons.calendar_today),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Religion
-              TextFormField(
-                controller: _religionController,
-                decoration: _inputDecoration("Agama"),
-              ),
-              const SizedBox(height: 16),
-
-              // Blood Type
-              TextFormField(
-                controller: _bloodTypeController,
-                decoration: _inputDecoration("Golongan Darah"),
-              ),
-              const SizedBox(height: 16),
-
-              // Phone Number
-              TextFormField(
-                controller: _phoneController,
-                decoration: _inputDecoration("Nomor Telepon"),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-
-              // Education
-              TextFormField(
-                controller: _educationController,
-                decoration: _inputDecoration("Pendidikan Terakhir"),
-              ),
-              const SizedBox(height: 16),
-
-              // Job
-              TextFormField(
-                controller: _jobController,
-                decoration: _inputDecoration("Pekerjaan"),
-              ),
-              const SizedBox(height: 24),
-
-              // Family Information Section
-              const Text(
-                "Data Keluarga",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Family Name
-              TextFormField(
-                controller: _familyController,
-                decoration: _inputDecoration("Keluarga"),
-              ),
-              const SizedBox(height: 16),
-
-              // Family Role
-              TextFormField(
-                controller: _familyRoleController,
-                decoration: _inputDecoration("Peran dalam Keluarga"),
-              ),
-              const SizedBox(height: 24),
-
-              // Status Information Section
-              const Text(
-                "Status",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Domicile Status
-              DropdownButtonFormField<String>(
-                decoration: _inputDecoration("Status Penduduk"),
-                value: _selectedDomicileStatus,
-                items: _domicileStatusOptions.map((String status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedDomicileStatus = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Life Status
-              DropdownButtonFormField<String>(
-                decoration: _inputDecoration("Status Kehidupan"),
-                value: _selectedLifeStatus,
-                items: _lifeStatusOptions.map((String status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedLifeStatus = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // Action buttons
-              Row(
+        child: Stepper(
+          type: StepperType.vertical,
+          currentStep: _currentStep,
+          onStepContinue: () {
+            final isLastStep = _currentStep == getSteps().length - 1;
+            if (isLastStep) {
+              _saveData();
+            } else {
+              setState(() {
+                _currentStep += 1;
+              });
+            }
+          },
+          onStepCancel: () {
+            if (_currentStep > 0) {
+              setState(() {
+                _currentStep -= 1;
+              });
+            } else {
+              Navigator.pop(context); // Back to previous screen
+            }
+          },
+          controlsBuilder: (context, details) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _saveData,
+                      onPressed: details.onStepContinue,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppStyles.primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      child: const Text('Simpan'),
+                      child: Text(
+                        _currentStep == getSteps().length - 1 ? 'Simpan' : 'Lanjut',
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        foregroundColor: Colors.black87,
+                    child: OutlinedButton(
+                      onPressed: details.onStepCancel,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppStyles.primaryColor,
+                        side: BorderSide(color: AppStyles.primaryColor),
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      child: const Text('Batal'),
+                      child: Text(
+                        _currentStep == 0 ? 'Batal' : 'Kembali',
+                      ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
+          steps: getSteps(),
         ),
       ),
     );
+  }
+
+  List<Step> getSteps() {
+    return [
+      Step(
+        state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 0,
+        title: const Text("Data Pribadi"),
+        content: Column(
+          children: [
+            // Full Name
+            TextFormField(
+              controller: _nameController,
+              decoration: _inputDecoration("Nama Lengkap *"),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Nama tidak boleh kosong';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // NIK
+            TextFormField(
+              controller: _nikController,
+              decoration: _inputDecoration("NIK *"),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(16),
+              ],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'NIK tidak boleh kosong';
+                }
+                if (value.length != 16 && value != "2222222222222222") { // Special case for test data
+                  return 'NIK harus 16 digit';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Gender
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Jenis Kelamin *"),
+              value: _selectedGender,
+              items: WargaDummy.genderOptions.map((String gender) {
+                return DropdownMenuItem<String>(
+                  value: gender,
+                  child: Text(gender),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedGender = newValue;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Jenis kelamin harus dipilih';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Birth Place with autocomplete
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return const Iterable<String>.empty();
+                }
+                return WargaDummy.cityOptions.where((String city) {
+                  return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                });
+              },
+              initialValue: TextEditingValue(text: _birthPlaceController.text),
+              onSelected: (String selection) {
+                _birthPlaceController.text = selection;
+              },
+              fieldViewBuilder: (
+                  BuildContext context,
+                  TextEditingController fieldController,
+                  FocusNode fieldFocusNode,
+                  VoidCallback onFieldSubmitted
+                  ) {
+                // Update the controller without losing existing text
+                if (fieldController.text.isEmpty && _birthPlaceController.text.isNotEmpty) {
+                  fieldController.text = _birthPlaceController.text;
+                }
+                _birthPlaceController = fieldController;
+
+                return TextFormField(
+                  controller: fieldController,
+                  focusNode: fieldFocusNode,
+                  decoration: _inputDecoration("Tempat Lahir"),
+                  onFieldSubmitted: (String value) {
+                    onFieldSubmitted();
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Birth Date
+            GestureDetector(
+              onTap: () => _selectDate(context),
+              child: AbsorbPointer(
+                child: TextFormField(
+                  controller: _birthDateController,
+                  decoration: _inputDecoration(
+                    "Tanggal Lahir",
+                    suffixIcon: Icons.calendar_today,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Phone Number
+            TextFormField(
+              controller: _phoneController,
+              decoration: _inputDecoration("Nomor Telepon"),
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Religion
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Agama"),
+              value: _selectedReligion,
+              items: WargaDummy.religionOptions.map((String religion) {
+                return DropdownMenuItem<String>(
+                  value: religion,
+                  child: Text(religion),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedReligion = newValue;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Blood Type
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Golongan Darah"),
+              value: _selectedBloodType,
+              items: WargaDummy.bloodTypeOptions.map((String bloodType) {
+                return DropdownMenuItem<String>(
+                  value: bloodType,
+                  child: Text(bloodType),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedBloodType = newValue;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+      Step(
+        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 1,
+        title: const Text("Data Tambahan"),
+        content: Column(
+          children: [
+            // Education
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Pendidikan Terakhir"),
+              value: _selectedEducation,
+              items: WargaDummy.educationOptions.map((String education) {
+                return DropdownMenuItem<String>(
+                  value: education,
+                  child: Text(education),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedEducation = newValue;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Job
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Pekerjaan"),
+              value: _selectedJob,
+              items: [...WargaDummy.jobOptions, 'Lainnya'].map((String job) {
+                return DropdownMenuItem<String>(
+                  value: job,
+                  child: Text(job),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedJob = newValue;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Custom Job (if "Lainnya" is selected)
+            if (_selectedJob == 'Lainnya')
+              Column(
+                children: [
+                  TextFormField(
+                    controller: _jobController,
+                    decoration: _inputDecoration("Pekerjaan Lainnya"),
+                    validator: (value) {
+                      if (_selectedJob == 'Lainnya' && (value == null || value.isEmpty)) {
+                        return 'Mohon isi jenis pekerjaan';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+
+            // Family Name
+            TextFormField(
+              controller: _familyController,
+              decoration: _inputDecoration("Nama Keluarga *"),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Nama keluarga tidak boleh kosong';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Family Role
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Peran dalam Keluarga *"),
+              value: _selectedFamilyRole,
+              items: WargaDummy.familyRoleOptions.map((String role) {
+                return DropdownMenuItem<String>(
+                  value: role,
+                  child: Text(role),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedFamilyRole = newValue;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Peran dalam keluarga harus dipilih';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Domicile Status
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Status Penduduk"),
+              value: _selectedDomicileStatus,
+              items: WargaDummy.statusOptions.map((String status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(status),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedDomicileStatus = newValue!;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Life Status
+            DropdownButtonFormField<String>(
+              decoration: _inputDecoration("Status Kehidupan"),
+              value: _selectedLifeStatus,
+              items: WargaDummy.lifeStatusOptions.map((String status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(status),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedLifeStatus = newValue!;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 
   // Helper method for consistent input decoration
@@ -411,6 +597,7 @@ class _WargaEditState extends State<WargaEdit> {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
     );
   }
 }
