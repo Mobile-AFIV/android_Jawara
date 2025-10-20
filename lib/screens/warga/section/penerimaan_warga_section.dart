@@ -32,12 +32,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
         itemBuilder: (context, index) {
           final penerimaan = PenerimaanWargaDummy.dummyData[index];
           return _buildRegistrationCard(
-            name: penerimaan.name,
-            nik: penerimaan.nik,
-            email: penerimaan.email,
-            gender: penerimaan.gender,
-            registrationStatus: penerimaan.registrationStatus,
-            statusColor: penerimaan.statusColor,
+            penerimaan: penerimaan,
             isExpanded: _expandedList[index],
             index: index,
           );
@@ -70,7 +65,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                   ],
                 ),
               ),
-              // const Padding(padding: EdgeInsets.all(16.0))
               Image.asset(
                 'assets/images/placeholder.png',
                 width: double.infinity,
@@ -103,13 +97,24 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
     );
   }
 
+  // Method to navigate to the detail page
+  void _navigateToDetail(int index, PenerimaanWargaModel penerimaan) async {
+    final result = await context.pushNamed(
+      'penerimaan_warga_detail',
+      queryParameters: {
+        'index': index.toString(),
+        'name': penerimaan.name,
+      },
+    );
+
+    // Refresh the list if returning with a refresh flag
+    if (result == true) {
+      setState(() {});
+    }
+  }
+
   Widget _buildRegistrationCard({
-    required String name,
-    required String nik,
-    required String email,
-    required String gender,
-    required String registrationStatus,
-    required MaterialColor statusColor,
+    required PenerimaanWargaModel penerimaan,
     required bool isExpanded,
     required int index,
   }) {
@@ -137,7 +142,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name,
+                          penerimaan.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -151,13 +156,13 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor[100],
+                      color: penerimaan.statusColor[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      registrationStatus,
+                      penerimaan.registrationStatus,
                       style: TextStyle(
-                        color: statusColor[800],
+                        color: penerimaan.statusColor[800],
                         fontSize: 12,
                       ),
                     ),
@@ -183,9 +188,9 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Registration details
-                      Text("NIK: $nik"),
-                      Text("Email: $email"),
-                      Text("Jenis Kelamin: $gender"),
+                      Text("NIK: ${penerimaan.nik}"),
+                      Text("Email: ${penerimaan.email}"),
+                      Text("Jenis Kelamin: ${penerimaan.gender}"),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -201,57 +206,20 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                         ],
                       ),
 
-                      // Action buttons
+                      // Detail button for all statuses
                       const SizedBox(height: 16),
-                      if (registrationStatus == 'Menunggu')
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[100],
-                                  foregroundColor: Colors.green[800],
-                                  elevation: 0,
-                                ),
-                                child: const Text('Terima'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red[100],
-                                  foregroundColor: Colors.red[800],
-                                  elevation: 0,
-                                ),
-                                child: const Text('Tolak'),
-                              ),
-                            ),
-                          ],
-                        )
-                      else
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.pushNamed(
-                                'penerimaan_warga_detail',
-                                queryParameters: {
-                                  'index': index.toString(),
-                                  'name': name,
-                                },
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[100],
-                              foregroundColor: Colors.blue[800],
-                              elevation: 0,
-                            ),
-                            child: const Text('Detail'),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _navigateToDetail(index, penerimaan),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[100],
+                            foregroundColor: Colors.blue[800],
+                            elevation: 0,
                           ),
+                          child: const Text('Detail'),
                         ),
+                      ),
                     ],
                   ),
                 ),
