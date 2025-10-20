@@ -200,9 +200,13 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const PenerimaanWargaTambah(),
         ),
         GoRoute(
-          name: 'penerimaan_warga_detail',
           path: 'penerimaan_warga_detail',
-          builder: (context, state) => const PenerimaanWargaDetail(),
+          name: 'penerimaan_warga_detail',
+          builder: (context, state) {
+            final penerimaanIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final name = state.uri.queryParameters['name'];
+            return PenerimaanWargaDetail(penerimaanIndex: penerimaanIndex, name: name);
+          },
         ),
       ],
     ),

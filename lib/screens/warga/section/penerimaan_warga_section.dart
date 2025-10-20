@@ -236,7 +236,13 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              context.pushNamed('penerimaan_warga_detail');
+                              context.pushNamed(
+                                'penerimaan_warga_detail',
+                                queryParameters: {
+                                  'index': index.toString(),
+                                  'name': name,
+                                },
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue[100],
