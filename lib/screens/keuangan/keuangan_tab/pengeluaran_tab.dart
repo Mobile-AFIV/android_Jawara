@@ -8,22 +8,24 @@ class PengeluaranTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          HeadingSection(
-            headingText: "Kelola daftar pengeluaran anda",
-            subHeadingText: "Pengeluaran Daftar",
-            lainnyaOnPressed: () => context.pushNamed('pengeluaran_daftar'),
-          ),
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.red.shade50,
-            child: const Center(child: Text("Body")),
-          ),
-
-        ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 60 + 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            HeadingSection(
+              headingText: "Kelola daftar pengeluaran anda",
+              subHeadingText: "Pengeluaran Daftar",
+              lainnyaOnPressed: () => context.pushNamed('pengeluaran_daftar'),
+            ),
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.red.shade50,
+              child: const Center(child: Text("Body")),
+            ),
+          ],
+        ),
       ),
     );
   }

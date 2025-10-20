@@ -8,46 +8,49 @@ class LaporanTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          HeadingSection(
-            headingText: "Lihat dan cetak laporan keuangan",
-            subHeadingText: "Cetak Laporan",
-            lainnyaOnPressed: () => context.pushNamed('cetak_laporan'),
-          ),
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.blue.shade50,
-            child: const Center(child: Text("Body")),
-          ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 60 + 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            HeadingSection(
+              headingText: "Lihat dan cetak laporan keuangan",
+              subHeadingText: "Cetak Laporan",
+              lainnyaOnPressed: () => context.pushNamed('cetak_laporan'),
+            ),
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.blue.shade50,
+              child: const Center(child: Text("Body")),
+            ),
 
-          HeadingSection(
-            headingText: "Rekapitulasi seluruh pemasukan",
-            subHeadingText: "Laporan Pemasukan",
-            lainnyaOnPressed: () => context.pushNamed('laporan_Pemasukan'),
-          ),
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.blue.shade50,
-            child: const Center(child: Text("Body")),
-          ),
+            HeadingSection(
+              headingText: "Rekapitulasi seluruh pemasukan",
+              subHeadingText: "Laporan Pemasukan",
+              lainnyaOnPressed: () => context.pushNamed('laporan_Pemasukan'),
+            ),
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.blue.shade50,
+              child: const Center(child: Text("Body")),
+            ),
 
-          HeadingSection(
-            headingText: "Rekapitulasi seluruh pengeluaran",
-            subHeadingText: "Laporan Pengeluaran",
-            lainnyaOnPressed: () => context.pushNamed('laporan_pengeluaran'),
-          ),
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.blue.shade50,
-            child: const Center(child: Text("Body")),
-          ),
+            HeadingSection(
+              headingText: "Rekapitulasi seluruh pengeluaran",
+              subHeadingText: "Laporan Pengeluaran",
+              lainnyaOnPressed: () => context.pushNamed('laporan_pengeluaran'),
+            ),
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Colors.blue.shade50,
+              child: const Center(child: Text("Body")),
+            ),
 
-        ],
+          ],
+        ),
       ),
     );
   }
