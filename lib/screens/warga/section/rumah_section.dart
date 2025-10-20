@@ -152,7 +152,13 @@ class _RumahSectionState extends State<RumahSection> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            context.pushNamed('rumah_detail');
+                            context.pushNamed(
+                              'rumah_detail',
+                              queryParameters: {
+                                'index': index.toString(),
+                                'address': address,
+                              },
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],

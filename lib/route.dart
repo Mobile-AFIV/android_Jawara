@@ -221,9 +221,13 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const RumahTambah(),
         ),
         GoRoute(
-          name: 'rumah_detail',
           path: 'rumah_detail',
-          builder: (context, state) => const RumahDetail(),
+          name: 'rumah_detail',
+          builder: (context, state) {
+            final rumahIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final address = state.uri.queryParameters['address'];
+            return RumahDetail(rumahIndex: rumahIndex, address: address);
+          },
         ),
       ],
     ),
