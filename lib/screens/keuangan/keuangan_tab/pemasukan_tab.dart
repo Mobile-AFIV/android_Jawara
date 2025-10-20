@@ -433,7 +433,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
                             Text(
                               dateParse(pemasukanLain.tanggal),
                               // pemasukanLain.tanggal,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),
