@@ -161,7 +161,9 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed('mutasi_keluarga_detail');
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],

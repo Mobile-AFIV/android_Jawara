@@ -151,7 +151,9 @@ class _RumahSectionState extends State<RumahSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed('rumah_detail');
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],

@@ -235,7 +235,9 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              context.pushNamed('penerimaan_warga_detail');
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue[100],
                               foregroundColor: Colors.blue[800],

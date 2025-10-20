@@ -158,7 +158,9 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed('keluarga_detail');
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],

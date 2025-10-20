@@ -168,7 +168,9 @@ class _WargaSectionState extends State<WargaSection> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed('warga_detail');
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
                             foregroundColor: Colors.blue[800],
