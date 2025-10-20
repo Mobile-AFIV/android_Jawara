@@ -10,14 +10,46 @@ class PemasukanSectionData {
       'no': 2,
       'nama': 'Mingguan',
       'jenis': jenisIuranList[1],
-      'nominal': 12,
+      'nominal': 12000,
     },
     {
       'no': 3,
       'nama': 'Agustusan',
       'jenis': jenisIuranList[1],
-      'nominal': 15,
+      'nominal': 15000,
     },
+  ];
+
+  static final List<Map<String, dynamic>> pemasukanLainData = [
+    {
+      'no': 1,
+      'nama': 'aaaaa',
+      'jenisPemasukan': 'Dana Bantuan Pemerintah',
+      'tanggal': '15 Oktober 2025',
+      'nominal': 11000, // Rp 11.000,00
+    },
+    {
+      'no': 2,
+      'nama': 'Joki by firman',
+      'jenisPemasukan': 'Pendapatan Lainnya',
+      'tanggal': '13 Oktober 2025',
+      'nominal': 49999997, // Rp 49.999.997,00
+    },
+    {
+      'no': 3,
+      'nama': 'tes',
+      'jenisPemasukan': 'Pendapatan Lainnya',
+      'tanggal': '12 Agustus 2025',
+      'nominal': 10000, // Rp 10.000,00
+    },
+  ];
+
+  static final List<String> jenisPemasukanList = [
+    'Donasi',
+    'Dana Bantuan Pemerintah',
+    'Sumbangan Swadaya',
+    'Hasil Usaha Kampung',
+    'Pendapatan Lainnya',
   ];
 
   static final List<String> jenisIuranList = ['Iuran Bulanan', 'Iuran Khusus'];
@@ -211,6 +243,7 @@ enum StatusKeluarga {
   keluar('Sudah Keluar');
 
   final String label;
+
   const StatusKeluarga(this.label);
 
   // static StatusKeluarga fromString(String value) {
@@ -226,6 +259,7 @@ enum StatusTagihan {
   ditolak('Ditolak');
 
   final String label;
+
   const StatusTagihan(this.label);
 
   // static StatusTagihan fromString(String value) {
