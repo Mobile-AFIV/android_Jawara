@@ -27,7 +27,8 @@ class _KeluargaSectionState extends State<KeluargaSection> {
             familyName: 'Keluarga Santoso',
             headOfFamily: 'Budi Santoso',
             address: 'Jl. Dahlia No. 15, RT 003/RW 002',
-            ownershipStatus: 'Milik Sendiri',
+            ownershipStatus: 'Penyewa',
+            status: 'Aktif',
             statusColor: Colors.green,
             isExpanded: _expandedList[0],
             index: 0,
@@ -39,8 +40,9 @@ class _KeluargaSectionState extends State<KeluargaSection> {
             familyName: 'Keluarga Rahmad',
             headOfFamily: 'Ahmad Rahmad',
             address: 'Jl. Mawar No. 23, RT 005/RW 002',
-            ownershipStatus: 'Sewa',
-            statusColor: Colors.blue,
+            ownershipStatus: 'Pemilik',
+            status: 'Aktif',
+            statusColor: Colors.green,
             isExpanded: _expandedList[1],
             index: 1,
           ),
@@ -51,8 +53,9 @@ class _KeluargaSectionState extends State<KeluargaSection> {
             familyName: 'Keluarga Wijaya',
             headOfFamily: 'Hendra Wijaya',
             address: 'Jl. Melati No. 8, RT 002/RW 003',
-            ownershipStatus: 'Milik Keluarga',
-            statusColor: Colors.purple,
+            ownershipStatus: 'Pemilik',
+            status: 'Nonaktif',
+            statusColor: Colors.red,
             isExpanded: _expandedList[2],
             index: 2,
           ),
@@ -63,20 +66,13 @@ class _KeluargaSectionState extends State<KeluargaSection> {
             familyName: 'Keluarga Prasetyo',
             headOfFamily: 'Dimas Prasetyo',
             address: 'Jl. Anggrek No. 42, RT 004/RW 001',
-            ownershipStatus: 'Kontrak',
-            statusColor: Colors.orange,
+            ownershipStatus: 'Penyewa',
+            status: 'Nonaktif',
+            statusColor: Colors.red,
             isExpanded: _expandedList[3],
             index: 3,
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-        foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('keluarga_tambah');
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -86,6 +82,7 @@ class _KeluargaSectionState extends State<KeluargaSection> {
     required String headOfFamily,
     required String address,
     required String ownershipStatus,
+    required String status,
     required MaterialColor statusColor,
     required bool isExpanded,
     required int index,
@@ -135,13 +132,13 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: statusColor[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                      "$status",
                       style: TextStyle(
-                        color: Colors.green[800],
+                        color: statusColor[800],
                         fontSize: 12,
                       ),
                     ),
@@ -170,26 +167,8 @@ class _KeluargaSectionState extends State<KeluargaSection> {
                       Text("Nama Keluarga: $familyName"),
                       Text("Kepala Keluarga: $headOfFamily"),
                       Text("Alamat: $address"),
+                      Text("Status Kepemilikan: $ownershipStatus"),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text("Status Kepemilikan: "),
-                          Chip(
-                            label: Text(ownershipStatus),
-                            backgroundColor: statusColor[100],
-                            labelStyle: TextStyle(color: statusColor[800]),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ],
-                      ),
-
-                      // Family members summary
-                      const SizedBox(height: 8),
-                      const Text("Jumlah Anggota Keluarga: 4 orang"),
 
                       // Action buttons
                       const SizedBox(height: 16),
