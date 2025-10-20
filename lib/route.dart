@@ -179,11 +179,14 @@ final GoRouter mainRouter = GoRouter(
           builder: (context, state) => const MutasiKeluargaTambah(),
         ),
         GoRoute(
-          name: 'mutasi_keluarga_detail',
           path: 'mutasi_keluarga_detail',
-          builder: (context, state) => const MutasiKeluargaDetail(),
+          name: 'mutasi_keluarga_detail',
+          builder: (context, state) {
+            // Get the mutasiIndex from route parameters, default to 0 if not provided
+            final mutasiIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            return MutasiKeluargaDetail(mutasiIndex: mutasiIndex);
+          },
         ),
-
       ],
     ),
     GoRoute(

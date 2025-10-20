@@ -162,7 +162,10 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            context.pushNamed('mutasi_keluarga_detail');
+                            context.pushNamed(
+                              'mutasi_keluarga_detail',
+                              queryParameters: {'index': index.toString()},
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[100],
