@@ -25,8 +25,8 @@ class _RumahSectionState extends State<RumahSection> {
           // First house
           _buildHouseCard(
             address: 'Jl. Dahlia No. 15, RT 003/RW 002',
-            status: 'Milik Sendiri',
-            statusColor: Colors.green,
+            status: 'Ditempati',
+            statusColor: Colors.blue,
             isExpanded: _expandedList[0],
             index: 0,
           ),
@@ -35,7 +35,7 @@ class _RumahSectionState extends State<RumahSection> {
           // Second house
           _buildHouseCard(
             address: 'Jl. Mawar No. 23, RT 005/RW 002',
-            status: 'Sewa',
+            status: 'Ditempati',
             statusColor: Colors.blue,
             isExpanded: _expandedList[1],
             index: 1,
@@ -45,8 +45,8 @@ class _RumahSectionState extends State<RumahSection> {
           // Third house
           _buildHouseCard(
             address: 'Jl. Melati No. 8, RT 002/RW 003',
-            status: 'Milik Keluarga',
-            statusColor: Colors.purple,
+            status: 'Tersedia',
+            statusColor: Colors.green,
             isExpanded: _expandedList[2],
             index: 2,
           ),
@@ -55,8 +55,8 @@ class _RumahSectionState extends State<RumahSection> {
           // Fourth house
           _buildHouseCard(
             address: 'Jl. Anggrek No. 42, RT 004/RW 001',
-            status: 'Kontrak',
-            statusColor: Colors.orange,
+            status: 'Tersedia',
+            statusColor: Colors.green,
             isExpanded: _expandedList[3],
             index: 3,
           ),
@@ -110,13 +110,6 @@ class _RumahSectionState extends State<RumahSection> {
                             fontSize: 16,
                           ),
                         ),
-                        Text(
-                          "status: $status",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -125,13 +118,13 @@ class _RumahSectionState extends State<RumahSection> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: statusColor[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      "aktif",
+                      "$status",
                       style: TextStyle(
-                        color: Colors.green[800],
+                        color: statusColor[800],
                         fontSize: 12,
                       ),
                     ),
@@ -160,21 +153,6 @@ class _RumahSectionState extends State<RumahSection> {
                       Text("Alamat Lengkap:"),
                       Text(address),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text("Status Kepemilikan: "),
-                          Chip(
-                            label: Text(status),
-                            backgroundColor: statusColor[100],
-                            labelStyle: TextStyle(color: statusColor[800]),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ],
-                      ),
 
                       // Action buttons
                       const SizedBox(height: 16),
