@@ -27,6 +27,7 @@ class PemasukanSectionData {
       'jenisPemasukan': 'Dana Bantuan Pemerintah',
       'tanggal': '15 Oktober 2025',
       'nominal': 11000, // Rp 11.000,00
+      'verifikator': 'Admin Jawara',
     },
     {
       'no': 2,
@@ -34,6 +35,7 @@ class PemasukanSectionData {
       'jenisPemasukan': 'Pendapatan Lainnya',
       'tanggal': '13 Oktober 2025',
       'nominal': 49999997, // Rp 49.999.997,00
+      'verifikator': 'Admin Jawara',
     },
     {
       'no': 3,
@@ -41,6 +43,7 @@ class PemasukanSectionData {
       'jenisPemasukan': 'Pendapatan Lainnya',
       'tanggal': '12 Agustus 2025',
       'nominal': 10000, // Rp 10.000,00
+      'verifikator': 'Admin Jawara',
     },
   ];
 

@@ -19,6 +19,7 @@ import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/kategori_iuran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/tambah_pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_section/pengeluaran_daftar_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_tab.dart';
@@ -155,7 +156,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'keluarga_detail',
           name: 'keluarga_detail',
           builder: (context, state) {
-            final keluargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final keluargaIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             return KeluargaDetail(keluargaIndex: keluargaIndex);
           },
         ),
@@ -175,7 +177,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'mutasi_keluarga_detail',
           name: 'mutasi_keluarga_detail',
           builder: (context, state) {
-            final mutasiIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final mutasiIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             return MutasiKeluargaDetail(mutasiIndex: mutasiIndex);
           },
         ),
@@ -190,9 +193,11 @@ final GoRouter mainRouter = GoRouter(
           path: 'penerimaan_warga_detail',
           name: 'penerimaan_warga_detail',
           builder: (context, state) {
-            final penerimaanIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final penerimaanIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             final name = state.uri.queryParameters['name'];
-            return PenerimaanWargaDetail(penerimaanIndex: penerimaanIndex, name: name);
+            return PenerimaanWargaDetail(
+                penerimaanIndex: penerimaanIndex, name: name);
           },
         ),
       ],
@@ -211,7 +216,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'rumah_detail',
           name: 'rumah_detail',
           builder: (context, state) {
-            final rumahIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final rumahIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             final address = state.uri.queryParameters['address'];
             return RumahDetail(rumahIndex: rumahIndex, address: address);
           },
@@ -220,7 +226,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'rumah_edit',
           name: 'rumah_edit',
           builder: (context, state) {
-            final rumahIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final rumahIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             final address = state.uri.queryParameters['address'];
             return RumahEdit(rumahIndex: rumahIndex, address: address);
           },
@@ -241,7 +248,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'warga_detail',
           name: 'warga_detail',
           builder: (context, state) {
-            final wargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final wargaIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             final name = state.uri.queryParameters['name'];
             return WargaDetail(wargaIndex: wargaIndex, name: name);
           },
@@ -250,7 +258,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'warga_edit',
           name: 'warga_edit',
           builder: (context, state) {
-            final wargaIndex = int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
+            final wargaIndex =
+                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
             final name = state.uri.queryParameters['name'];
             return WargaEdit(wargaIndex: wargaIndex, name: name);
           },
@@ -290,6 +299,15 @@ final GoRouter mainRouter = GoRouter(
       name: 'pemasukan_lain',
       path: '/keuangan/pemasukan/pemasukan_lain',
       builder: (context, state) => const PemasukanLainSection(),
+      routes: [
+        GoRoute(
+          name: 'tambah_pemasukan_lain',
+          path: 'tambah',
+          builder: (context, state) {
+            return TambahPemasukanLainSection();
+          },
+        ),
+      ],
     ),
     //// Keuangan - Pengeluaran
     GoRoute(
@@ -304,7 +322,8 @@ final GoRouter mainRouter = GoRouter(
         path: '/broadcast_daftar',
         builder: (context, state) => const BroadcastDaftarSection(),
         routes: [
-          GoRoute(path:   'broadcast_detail',
+          GoRoute(
+            path: 'broadcast_detail',
             name: 'broadcast_detail',
             builder: (context, state) => const BroadcastDetail(),
           ),
@@ -319,7 +338,8 @@ final GoRouter mainRouter = GoRouter(
         path: '/kegiatan_daftar',
         builder: (context, state) => const KegiatanDaftarSection(),
         routes: [
-          GoRoute(path:   'kegiatan_detail_detail',
+          GoRoute(
+            path: 'kegiatan_detail_detail',
             name: 'kegiatan_detail',
             builder: (context, state) => const KegiatanDetail(),
           ),
