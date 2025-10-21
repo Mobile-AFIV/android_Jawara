@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PenerimaanWargaSection extends StatefulWidget {
@@ -31,11 +34,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
         itemCount: PenerimaanWargaDummy.dummyData.length,
         itemBuilder: (context, index) {
           final penerimaan = PenerimaanWargaDummy.dummyData[index];
-          return _buildRegistrationCard(
-            penerimaan: penerimaan,
-            isExpanded: _expandedList[index],
-            index: index,
-          );
+          return _buildRegistrationCard(penerimaan, index);
         },
         separatorBuilder: (context, index) => const SizedBox(height: 12),
       ),
@@ -113,120 +112,46 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection> {
     }
   }
 
-  Widget _buildRegistrationCard({
-    required PenerimaanWargaModel penerimaan,
-    required bool isExpanded,
-    required int index,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildRegistrationCard(PenerimaanWargaModel penerimaan, int index) {
+    return ExpandableSectionCard(
+      title: penerimaan.name,
+      statusChip: StatusChip(
+        label: penerimaan.registrationStatus,
+        color: penerimaan.statusColor,
       ),
-      child: Column(
-        children: [
-          // Header section (always visible)
-          InkWell(
-            onTap: () {
-              setState(() {
-                _expandedList[index] = !_expandedList[index];
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Row(
-                children: [
-                  // Left side: Name and status
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          penerimaan.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Right side: Status chip and expand arrow
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: penerimaan.statusColor[100],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      penerimaan.registrationStatus,
-                      style: TextStyle(
-                        color: penerimaan.statusColor[800],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
+      isExpanded: _expandedList[index],
+      onToggleExpand: () {
+        setState(() {
+          _expandedList[index] = !_expandedList[index];
+        });
+      },
+      expandedContent: [
+        // Registration details
+        Text("NIK: ${penerimaan.nik}"),
+        Text("Email: ${penerimaan.email}"),
+        Text("Jenis Kelamin: ${penerimaan.gender}"),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Text("Foto Identitas: "),
+            const Icon(Icons.image, size: 20),
+            TextButton(
+              onPressed: () {
+                // Open the identity photo
+                _showIdentityPhoto(context);
+              },
+              child: const Text('Lihat'),
             ),
-          ),
+          ],
+        ),
 
-          // Expanded details section (only visible when expanded)
-          if (isExpanded)
-            Column(
-              children: [
-                const Divider(height: 1),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Registration details
-                      Text("NIK: ${penerimaan.nik}"),
-                      Text("Email: ${penerimaan.email}"),
-                      Text("Jenis Kelamin: ${penerimaan.gender}"),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text("Foto Identitas: "),
-                          const Icon(Icons.image, size: 20),
-                          TextButton(
-                            onPressed: () {
-                              // Open the identity photo
-                              _showIdentityPhoto(context);
-                            },
-                            child: const Text('Lihat'),
-                          ),
-                        ],
-                      ),
-
-                      // Detail button for all statuses
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _navigateToDetail(index, penerimaan),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[100],
-                            foregroundColor: Colors.blue[800],
-                            elevation: 0,
-                          ),
-                          child: const Text('Detail'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
+        // Detail button for all statuses
+        const SizedBox(height: 16),
+        SectionActionButtons(
+          showEditButton: false,
+          onDetailPressed: () => _navigateToDetail(index, penerimaan),
+        ),
+      ],
     );
   }
 }
