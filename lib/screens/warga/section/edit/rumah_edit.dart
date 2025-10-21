@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahEdit extends StatefulWidget {
@@ -47,11 +50,6 @@ class _RumahEditState extends State<RumahEdit> {
     }
 
     rumah = RumahDummy.dummyData[rumahIndex];
-
-    // Only allow editing if status is "Tersedia"
-    if (rumah.status != 'Tersedia') {
-      // We'll handle this in the build method to show an error
-    }
 
     // Initialize controllers with current data
     _addressController = TextEditingController(text: rumah.address);
@@ -149,22 +147,23 @@ class _RumahEditState extends State<RumahEdit> {
               const SizedBox(height: 16),
 
               // Address
-              TextFormField(
+              FormTextField(
                 controller: _addressController,
-                decoration: _inputDecoration("Alamat Rumah"),
+                label: "Alamat Rumah",
+                isRequired: true,
+                maxLines: 2,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Alamat tidak boleh kosong';
                   }
                   return null;
                 },
-                maxLines: 2,
               ),
               const SizedBox(height: 16),
 
               // Status
-              DropdownButtonFormField<String>(
-                decoration: _inputDecoration("Status"),
+              FormDropdownField<String>(
+                label: "Status",
                 value: _selectedStatus,
                 items: _statusOptions.map((String status) {
                   return DropdownMenuItem<String>(
@@ -173,56 +172,24 @@ class _RumahEditState extends State<RumahEdit> {
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedStatus = newValue!;
-                  });
+                  if (newValue != null) {
+                    setState(() {
+                      _selectedStatus = newValue;
+                    });
+                  }
                 },
               ),
               const SizedBox(height: 32),
 
               // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _saveData,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppStyles.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('Simpan'),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        foregroundColor: Colors.black87,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('Batal'),
-                    ),
-                  ),
-                ],
+              FormActionButtons(
+                onSave: _saveData,
+                onCancel: () => Navigator.pop(context),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  // Helper method for consistent input decoration
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
     );
   }
 }
