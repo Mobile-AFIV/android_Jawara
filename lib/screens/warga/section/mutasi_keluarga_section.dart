@@ -7,6 +7,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/section_action_button
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
 class MutasiKeluargaSection extends StatefulWidget {
   const MutasiKeluargaSection({super.key});
@@ -110,7 +111,24 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
         setState(() => _selectedFilter = value);
         _filterData();
       },
+      showIcons: true,
+      optionIcons: {
+        'Semua': Icons.list,
+        'Pindah Masuk': Icons.login,
+        'Keluar Wilayah': Icons.logout,
+      },
     );
+  }
+
+  IconData? _getIconForFilter(String filter) {
+    switch (filter) {
+      case 'Pindah Masuk':
+        return Icons.login;
+      case 'Keluar Wilayah':
+        return Icons.logout;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -153,21 +171,40 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 500));
-          setState(() => _initExpandedList());
-          _filterData();
-        },
-        child: ListView.separated(
-          controller: _scrollController,
-          padding: const EdgeInsets.all(16.0),
-          physics: const BouncingScrollPhysics(),
-          itemCount: _filteredData.length,
-          itemBuilder: (context, index) {
-            return _buildAnimatedCard(index);
-          },
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Active filter indicator
+            ActiveFilterChip(
+              activeFilter: _selectedFilter,
+              icon: _getIconForFilter(_selectedFilter),
+              onClear: () {
+                setState(() {
+                  _selectedFilter = 'Semua';
+                  _filterData();
+                });
+              },
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  setState(() => _initExpandedList());
+                  _filterData();
+                },
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16.0),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: _filteredData.length,
+                  itemBuilder: (context, index) {
+                    return _buildAnimatedCard(index);
+                  },
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: AnimatedScale(

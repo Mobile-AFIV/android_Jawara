@@ -6,6 +6,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart' as custom_filter;
+import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class WargaSection extends StatefulWidget {
@@ -105,13 +106,30 @@ class _WargaSectionState extends State<WargaSection>
     custom_filter.FilterBottomSheet.show(
       context: context,
       title: 'Filter Status Domisili',
-      options: ['Semua', 'Aktif', 'Nonaktif'],
+      options: ['Semua', 'Aktif', 'Tidak Aktif'],
       selectedValue: _selectedFilter,
       onSelected: (filter) {
         setState(() => _selectedFilter = filter);
         _filterData();
       },
+      showIcons: true,
+      optionIcons: {
+        'Semua': Icons.list,
+        'Aktif': Icons.check_circle,
+        'Tidak Aktif': Icons.cancel,
+      },
     );
+  }
+
+  IconData? _getIconForFilter(String filter) {
+    switch (filter) {
+      case 'Aktif':
+        return Icons.check_circle;
+      case 'Tidak Aktif':
+        return Icons.cancel;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -154,23 +172,42 @@ class _WargaSectionState extends State<WargaSection>
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 500));
-          setState(() {
-            _initExpandedList();
-            _filterData();
-          });
-        },
-        child: ListView.separated(
-          controller: _scrollController,
-          padding: const EdgeInsets.all(16.0),
-          physics: const BouncingScrollPhysics(),
-          itemCount: _filteredData.length,
-          itemBuilder: (context, index) {
-            return _buildAnimatedCard(index);
-          },
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Active filter indicator
+            ActiveFilterChip(
+              activeFilter: _selectedFilter,
+              icon: _getIconForFilter(_selectedFilter),
+              onClear: () {
+                setState(() {
+                  _selectedFilter = 'Semua';
+                  _filterData();
+                });
+              },
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  setState(() {
+                    _initExpandedList();
+                    _filterData();
+                  });
+                },
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16.0),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: _filteredData.length,
+                  itemBuilder: (context, index) {
+                    return _buildAnimatedCard(index);
+                  },
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: AnimatedScale(

@@ -6,6 +6,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
 class PenerimaanWargaSection extends StatefulWidget {
   const PenerimaanWargaSection({super.key});
@@ -98,6 +99,13 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
         setState(() => _selectedFilter = value);
         _filterData();
       },
+      showIcons: true,
+      optionIcons: {
+        'Semua': Icons.list,
+        'Menunggu': Icons.hourglass_empty,
+        'Diterima': Icons.check_circle,
+        'Ditolak': Icons.cancel,
+      },
     );
   }
 
@@ -107,6 +115,19 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
+  }
+
+  IconData? _getIconForFilter(String filter) {
+    switch (filter) {
+      case 'Menunggu':
+        return Icons.hourglass_empty;
+      case 'Diterima':
+        return Icons.check_circle;
+      case 'Ditolak':
+        return Icons.cancel;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -149,46 +170,65 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: () async {
-              await Future.delayed(const Duration(milliseconds: 500));
-              setState(() {
-                _initExpandedList();
-                _filterData();
-              });
-            },
-            child: ListView.separated(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16.0),
-              physics: const BouncingScrollPhysics(),
-              itemCount: _filteredData.length,
-              itemBuilder: (context, index) {
-                return _buildAnimatedCard(index);
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Active filter indicator
+            ActiveFilterChip(
+              activeFilter: _selectedFilter,
+              icon: _getIconForFilter(_selectedFilter),
+              onClear: () {
+                setState(() {
+                  _selectedFilter = 'Semua';
+                  _filterData();
+                });
               },
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
             ),
-          ),
-          
-          // Scroll to top button
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: ScaleTransition(
-              scale: _scrollButtonAnimation,
-              child: FloatingActionButton.small(
-                heroTag: 'scrollToTop',
-                onPressed: _scrollToTop,
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.keyboard_arrow_up,
-                  color: Theme.of(context).primaryColor,
-                ),
+            Expanded(
+              child: Stack(
+                children: [
+                  RefreshIndicator(
+                    onRefresh: () async {
+                      await Future.delayed(const Duration(milliseconds: 500));
+                      setState(() {
+                        _initExpandedList();
+                        _filterData();
+                      });
+                    },
+                    child: ListView.separated(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16.0),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: _filteredData.length,
+                      itemBuilder: (context, index) {
+                        return _buildAnimatedCard(index);
+                      },
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    ),
+                  ),
+
+                  // Scroll to top button
+                  Positioned(
+                    right: 16,
+                    bottom: 16,
+                    child: ScaleTransition(
+                      scale: _scrollButtonAnimation,
+                      child: FloatingActionButton.small(
+                        heroTag: 'scrollToTop',
+                        onPressed: _scrollToTop,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.keyboard_arrow_up,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
