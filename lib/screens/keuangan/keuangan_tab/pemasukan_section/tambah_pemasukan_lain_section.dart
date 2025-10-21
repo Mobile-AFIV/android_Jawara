@@ -142,7 +142,7 @@ class _TambahPemasukanLainSectionState extends State<TambahPemasukanLainSection>
                         Size(MediaQuery.sizeOf(context).width - 24, 200),
                       ),
                       padding:
-                      WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
+                      WidgetStatePropertyAll(const EdgeInsets.symmetric(vertical: 12)),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
