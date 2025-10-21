@@ -67,7 +67,7 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
               StatusField(label: "Status Keluarga:", value: keluarga.status, color: keluarga.statusColor),
 
               // Family members
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               const Text(
                 "Anggota Keluarga:",
                 style: TextStyle(
@@ -75,11 +75,31 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Divider(height: 1),
+              const SizedBox(height: 16),
 
-              // List of family members
-              ...keluarga.members.map((member) => FamilyMemberCard(member: member)).toList(),
+              // List of family members (matching ResidentHistoryItem style)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: keluarga.members.length,
+                  itemBuilder: (context, index) {
+                    return FamilyMemberCard(member: keluarga.members[index]);
+                  },
+                ),
+              ),
 
               const SizedBox(height: 24),
               // Back button
