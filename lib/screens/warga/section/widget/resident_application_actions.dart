@@ -23,25 +23,59 @@ class ResidentApplicationActions extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onAccept,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[100],
-                foregroundColor: Colors.green[800],
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: Colors.green.withValues(alpha: 0.4),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Terima'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.check_circle_rounded, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Terima',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
+            child: OutlinedButton(
               onPressed: onShowRejectionDialog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[100],
-                foregroundColor: Colors.red[800],
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red.shade700,
+                side: BorderSide(color: Colors.red.shade400, width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Tolak'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.cancel_rounded, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Tolak',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -54,12 +88,30 @@ class ResidentApplicationActions extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onAccept,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green[100],
-            foregroundColor: Colors.green[800],
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shadowColor: Colors.green.withValues(alpha: 0.4),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: const Text('Terima Pendaftaran'),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.check_circle_rounded, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Terima Pendaftaran',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
