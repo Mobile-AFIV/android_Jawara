@@ -4,6 +4,8 @@ import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/modal_bottom_sheet.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahSection extends StatefulWidget {
@@ -28,6 +30,23 @@ class _RumahSectionState extends State<RumahSection> {
     _expandedList = List.generate(RumahDummy.dummyData.length, (index) => index == 0);
   }
 
+  // Show Add House Bottom Sheet
+  Future<void> _showAddHouseBottomSheet() async {
+    final result = await ModalBottomSheet.showCustomModalBottomSheet(
+      context: context,
+      children: (setModalState) => [
+        const RumahTambah(),
+      ],
+    );
+
+    if (result == true) {
+      setState(() {
+        // Update the expanded list to match the new data size
+        _initExpandedList();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,15 +65,7 @@ class _RumahSectionState extends State<RumahSection> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
         foregroundColor: Colors.white,
-        onPressed: () async {
-          final result = await context.pushNamed('rumah_tambah');
-          if (result == true) {
-            setState(() {
-              // Update the expanded list to match the new data size
-              _initExpandedList();
-            });
-          }
-        },
+        onPressed: _showAddHouseBottomSheet,
         child: const Icon(Icons.add),
       ),
     );

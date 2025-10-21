@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_radio_group.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahTambah extends StatefulWidget {
@@ -58,75 +56,109 @@ class _RumahTambahState extends State<RumahTambah> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tambah Data Rumah"),
-        elevation: 0,
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          const Center(
+            child: Text(
+              "Tambah Data Rumah",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Address Section
+          const Text(
+            "Alamat Rumah",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          FormTextField(
+            controller: _addressController,
+            label: "Alamat",
+            isRequired: true,
+            maxLines: 2,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Alamat tidak boleh kosong';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 8),
+          // Helper text
+          const Text(
+            "Masukkan alamat lengkap termasuk nomor rumah",
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Status Section
+          const Text(
+            "Status Rumah",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          FormRadioGroup<String>(
+            value: _selectedStatus,
+            options: RumahDummy.statusOptions,
+            labels: RumahDummy.statusOptions,
+            onChanged: (String? value) {
+              if (value != null) {
+                setState(() {
+                  _selectedStatus = value;
+                });
+              }
+            },
+            activeColor: AppStyles.primaryColor,
+          ),
+          const SizedBox(height: 32),
+
+          // Action buttons
+          Row(
             children: [
-              // Address Card
-              FormCard(
-                title: "Alamat Rumah",
-                children: [
-                  FormTextField(
-                    controller: _addressController,
-                    label: "Alamat",
-                    isRequired: true,
-                    maxLines: 2,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Alamat tidak boleh kosong';
-                      }
-                      return null;
-                    },
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppStyles.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  const SizedBox(height: 8),
-                  // Helper text
-                  const Text(
-                    "Masukkan alamat lengkap termasuk nomor rumah",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
+                  onPressed: _saveData,
+                  child: const Text("Simpan"),
+                ),
               ),
-
-              // Status Card
-              FormCard(
-                title: "Status Rumah",
-                children: [
-                  FormRadioGroup<String>(
-                    value: _selectedStatus,
-                    options: RumahDummy.statusOptions,
-                    labels: RumahDummy.statusOptions,
-                    onChanged: (String? value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedStatus = value;
-                        });
-                      }
-                    },
-                    activeColor: AppStyles.primaryColor,
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                ],
-              ),
-
-              // Action buttons
-              FormActionButtons(
-                onSave: _saveData,
-                onCancel: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Batal"),
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
