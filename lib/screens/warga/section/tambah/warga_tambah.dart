@@ -158,7 +158,7 @@ class _WargaTambahState extends State<WargaTambah> {
         title: const Text("Data Pribadi"),
         content: Column(
           children: [
-            // Full Name
+            const SizedBox(height: 5),
             FormTextField(
               controller: _nameController,
               label: "Nama Lengkap",
@@ -293,7 +293,7 @@ class _WargaTambahState extends State<WargaTambah> {
         title: const Text("Data Tambahan"),
         content: Column(
           children: [
-            // Education
+            const SizedBox(height: 5),
             FormDropdownField<String>(
               label: "Pendidikan Terakhir",
               value: _selectedEducation,
