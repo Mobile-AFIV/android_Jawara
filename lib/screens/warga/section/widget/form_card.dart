@@ -17,11 +17,9 @@ class FormCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
       margin: margin,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      elevation: 0,
+      color: Colors.white,
       child: Padding(
         padding: padding,
         child: Column(

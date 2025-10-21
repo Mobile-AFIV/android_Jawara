@@ -3,8 +3,6 @@ import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_radio_group.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/form_preview_card.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
@@ -117,36 +115,6 @@ class _RumahTambahState extends State<RumahTambah> {
                       }
                     },
                     activeColor: AppStyles.primaryColor,
-                    buildStatusInfo: (label, value) {
-                      return Text(
-                        value == 'Tersedia'
-                            ? "Rumah ini siap untuk ditempati"
-                            : "Rumah ini sudah ada penghuninya",
-                        style: TextStyle(
-                          color: value == 'Tersedia' ? Colors.green : Colors.blue,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              // Preview card
-              FormPreviewCard(
-                previewItems: [
-                  Text(
-                    _addressController.text.isEmpty ? "..." : _addressController.text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  StatusChip(
-                    label: _selectedStatus,
-                    backgroundColor: _selectedStatus == 'Tersedia' ? Colors.green[100]! : Colors.blue[100]!,
-                    textColor: _selectedStatus == 'Tersedia' ? Colors.green[800]! : Colors.blue[800]!,
                   ),
                 ],
               ),
