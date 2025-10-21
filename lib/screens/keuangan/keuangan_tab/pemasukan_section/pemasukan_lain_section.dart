@@ -1,19 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/appbar_action_button.dart';
+import 'package:jawara_pintar/screens/keuangan/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
-class PemasukanLainSection extends StatelessWidget {
+class PemasukanLainSection extends StatefulWidget {
   const PemasukanLainSection({super.key});
 
-  String dateParse(String input) {
+  @override
+  State<PemasukanLainSection> createState() => _PemasukanLainSectionState();
+}
+
+class _PemasukanLainSectionState extends State<PemasukanLainSection> {
+
+  String dateParse(String input, {String monthFormat = 'MMM'}) {
     final parser = DateFormat('d MMMM yyyy', 'id');
     final date = parser.parse(input);
 
-    final String output = DateFormat('EEEE, d MMM yyyy', 'id').format(date);
+    final String output = DateFormat('EEEE, d $monthFormat yyyy', 'id').format(date);
 
     return output;
+  }
+
+  Future<void> _showDetailKategori(PemasukanLainData data) async {
+    ModalBottomSheet.showCustomModalBottomSheet(
+      context: context,
+      children: (_) => [
+        const Text(
+          "Detail Pemasukan",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          "Nama Pemasukan",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          data.nama,
+          style: const TextStyle(fontSize: 20),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Kategori",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          data.jenisPemasukan,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Tanggal Transaksi",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          dateParse(data.tanggal, monthFormat: "MMMM"),
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Jumlah",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Rp${data.nominal},00",
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Verifikator",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          data.verifikator,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   @override
@@ -58,7 +129,9 @@ class PemasukanLainSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         backgroundColor: AppStyles.primaryColor,
-        onPressed: () {},
+        onPressed: () {
+          context.pushNamed('tambah_pemasukan_lain');
+        },
         child: const Icon(
           Icons.add,
           color: Colors.white,
@@ -68,52 +141,55 @@ class PemasukanLainSection extends StatelessWidget {
   }
 
   Widget pemasukanLainItem(PemasukanLainData itemData) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 8),
-      width: double.maxFinite,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 10),
-          Text(
-            overflow: TextOverflow.ellipsis,
-            itemData.jenisPemasukan,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppStyles.primaryColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            overflow: TextOverflow.ellipsis,
-            itemData.nama,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Rp${itemData.nominal},00",
-                style: const TextStyle(fontSize: 14),
+    return InkWell(
+      onTap: () => _showDetailKategori(itemData),
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 8),
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            Text(
+              overflow: TextOverflow.ellipsis,
+              itemData.jenisPemasukan,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppStyles.primaryColor,
               ),
-              Text(
-                dateParse(itemData.tanggal),
-                // itemData.tanggal,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              overflow: TextOverflow.ellipsis,
+              itemData.nama,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Rp${itemData.nominal},00",
+                  style: const TextStyle(fontSize: 14),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
+                Text(
+                  dateParse(itemData.tanggal),
+                  // itemData.tanggal,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }
@@ -125,6 +201,7 @@ class PemasukanLainData {
   final String jenisPemasukan;
   final String tanggal;
   final int nominal;
+  final String verifikator;
 
   PemasukanLainData({
     required this.no,
@@ -132,6 +209,7 @@ class PemasukanLainData {
     required this.jenisPemasukan,
     required this.tanggal,
     required this.nominal,
+    required this.verifikator,
   });
 
   factory PemasukanLainData.fromJson(Map<String, dynamic> json) {
@@ -141,6 +219,7 @@ class PemasukanLainData {
       jenisPemasukan: json['jenisPemasukan'],
       tanggal: json['tanggal'],
       nominal: json['nominal'],
+      verifikator: json['verifikator'],
     );
   }
 }
