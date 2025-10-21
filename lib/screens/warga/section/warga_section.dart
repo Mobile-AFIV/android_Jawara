@@ -13,19 +13,70 @@ class WargaSection extends StatefulWidget {
   State<WargaSection> createState() => _WargaSectionState();
 }
 
-class _WargaSectionState extends State<WargaSection> {
-  // Track which cards are expanded
+class _WargaSectionState extends State<WargaSection>
+    with TickerProviderStateMixin {
   late List<bool> _expandedList;
+  late AnimationController _fabController;
+  late Animation<double> _fabScaleAnimation;
+  late Animation<double> _fabRotationAnimation;
+  final ScrollController _scrollController = ScrollController();
+  bool _showFab = true;
 
   @override
   void initState() {
     super.initState();
     _initExpandedList();
+    _initFabAnimation();
+    _setupScrollListener();
   }
 
-  // Method to properly initialize or update the expanded list
   void _initExpandedList() {
-    _expandedList = List.generate(WargaDummy.dummyData.length, (index) => index == 0);
+    _expandedList = List.generate(
+      WargaDummy.dummyData.length,
+      (index) => index == 0,
+    );
+  }
+
+  void _initFabAnimation() {
+    _fabController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _fabScaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fabController,
+      curve: Curves.easeOutBack,
+    ));
+
+    _fabRotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fabController,
+      curve: Curves.easeInOut,
+    ));
+
+    _fabController.forward();
+  }
+
+  void _setupScrollListener() {
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 100 && _showFab) {
+        setState(() => _showFab = false);
+      } else if (_scrollController.offset <= 100 && !_showFab) {
+        setState(() => _showFab = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _fabController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -33,92 +84,193 @@ class _WargaSectionState extends State<WargaSection> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Data Warga"),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Search functionality
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              // Filter functionality
+            },
+          ),
+        ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: WargaDummy.dummyData.length,
-        itemBuilder: (context, index) {
-          final warga = WargaDummy.dummyData[index];
-          return _buildWargaCard(warga, index);
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.delayed(const Duration(milliseconds: 500));
+          setState(() => _initExpandedList());
         },
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        child: ListView.separated(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(16.0),
+          physics: const BouncingScrollPhysics(),
+          itemCount: WargaDummy.dummyData.length,
+          itemBuilder: (context, index) {
+            return _buildAnimatedCard(index);
+          },
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-        foregroundColor: Colors.white,
-        onPressed: () async {
-          // Add await to handle the result when returning from WargaTambah
-          final result = await context.pushNamed('warga_tambah');
+      floatingActionButton: AnimatedScale(
+        scale: _showFab ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        child: ScaleTransition(
+          scale: _fabScaleAnimation,
+          child: RotationTransition(
+            turns: _fabRotationAnimation,
+            child: FloatingActionButton.extended(
+              backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+              foregroundColor: Colors.white,
+              onPressed: () async {
+                await _fabController.reverse();
 
-          // If data was successfully added, refresh the UI
-          if (result == true) {
-            setState(() {
-              // Re-initialize the expanded list to match the updated data
-              _initExpandedList();
-            });
-          }
-        },
-        child: const Icon(Icons.add),
+                final result = await context.pushNamed('warga_tambah');
+
+                _fabController.forward();
+
+                if (result == true) {
+                  setState(() {
+                    _initExpandedList();
+                  });
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Tambah Warga'),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildWargaCard(WargaModel warga, int index) {
+  Widget _buildAnimatedCard(int index) {
+    final warga = WargaDummy.dummyData[index];
     bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
-    MaterialColor statusColor = warga.domicileStatus == "Aktif" ? Colors.green : Colors.red;
+    MaterialColor statusColor = warga.domicileStatus == "Aktif" 
+        ? Colors.green 
+        : Colors.red;
+    bool isActive = warga.domicileStatus == "Aktif";
 
-    return ExpandableSectionCard(
-      title: warga.name,
-      subtitle: "status: ${warga.lifeStatus}",
-      statusChip: StatusChip(
-        label: warga.domicileStatus,
-        color: statusColor,
-      ),
-      isExpanded: isExpanded,
-      onToggleExpand: () {
-        setState(() {
-          // Safety check before modifying the expanded list
-          if (index < _expandedList.length) {
-            _expandedList[index] = !_expandedList[index];
-          }
-        });
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 300 + (index * 50)),
+      curve: Curves.easeOutCubic,
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
       },
-      expandedContent: [
-        // Resident details
-        Text("NIK: ${warga.nik}"),
-        Text("Keluarga: ${warga.family}"),
-        Text("Jenis Kelamin: ${warga.gender}"),
-        const SizedBox(height: 16),
-
-        // Action buttons
-        SectionActionButtons(
-          showEditButton: true,
-          onEditPressed: () async {
-            final result = await context.pushNamed(
-              'warga_edit',
-              queryParameters: {
-                'index': index.toString(),
-                'name': warga.name,
-              },
-            );
-            if (result == true) {
-              setState(() {
-                // Ensure expanded list matches data after edit
-                if (_expandedList.length != WargaDummy.dummyData.length) {
-                  _initExpandedList();
-                }
-              });
+      child: ExpandableSectionCard(
+        title: warga.name,
+        subtitle: "status: ${warga.lifeStatus}",
+        statusChip: StatusChip(
+          label: warga.domicileStatus,
+          color: statusColor,
+          icon: isActive ? Icons.check_circle : Icons.cancel,
+        ),
+        isExpanded: isExpanded,
+        onToggleExpand: () {
+          setState(() {
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
             }
-          },
-          onDetailPressed: () {
-            context.pushNamed(
-              'warga_detail',
-              queryParameters: {
-                'index': index.toString(),
-                'name': warga.name,
-              },
-            );
-          },
+          });
+        },
+        expandedContent: [
+          _buildInfoRow(
+            Icons.credit_card,
+            "NIK",
+            warga.nik,
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+            Icons.family_restroom,
+            "Keluarga",
+            warga.family,
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+            warga.gender == "Laki-laki" ? Icons.male : Icons.female,
+            "Jenis Kelamin",
+            warga.gender,
+          ),
+          const SizedBox(height: 16),
+          SectionActionButtons(
+            showEditButton: true,
+            onEditPressed: () async {
+              final result = await context.pushNamed(
+                'warga_edit',
+                queryParameters: {
+                  'index': index.toString(),
+                  'name': warga.name,
+                },
+              );
+              if (result == true) {
+                setState(() {
+                  if (_expandedList.length != WargaDummy.dummyData.length) {
+                    _initExpandedList();
+                  }
+                });
+              }
+            },
+            onDetailPressed: () {
+              context.pushNamed(
+                'warga_detail',
+                queryParameters: {
+                  'index': index.toString(),
+                  'name': warga.name,
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: Colors.grey[700]),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
