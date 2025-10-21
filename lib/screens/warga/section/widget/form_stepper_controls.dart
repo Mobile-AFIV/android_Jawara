@@ -6,6 +6,8 @@ class FormStepperControls extends StatelessWidget {
   final VoidCallback onCancel;
   final bool isLastStep;
   final bool isFirstStep;
+  final IconData? continueIcon;
+  final IconData? cancelIcon;
 
   const FormStepperControls({
     Key? key,
@@ -13,6 +15,8 @@ class FormStepperControls extends StatelessWidget {
     required this.onCancel,
     required this.isLastStep,
     required this.isFirstStep,
+    this.continueIcon,
+    this.cancelIcon,
   }) : super(key: key);
 
   @override
@@ -27,12 +31,31 @@ class FormStepperControls extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppStyles.primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 2,
+                shadowColor: AppStyles.primaryColor.withValues(alpha: 0.4),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(isLastStep ? 'Simpan' : 'Lanjut'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    continueIcon ?? (isLastStep ? Icons.save_outlined : Icons.arrow_forward_rounded),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isLastStep ? 'Simpan' : 'Lanjut',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -40,14 +63,31 @@ class FormStepperControls extends StatelessWidget {
             child: OutlinedButton(
               onPressed: onCancel,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppStyles.primaryColor,
-                side: BorderSide(color: AppStyles.primaryColor),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                foregroundColor: Colors.grey.shade700,
+                side: BorderSide(color: Colors.grey.shade400, width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Text(isFirstStep ? 'Batal' : 'Kembali'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    cancelIcon ?? (isFirstStep ? Icons.close : Icons.arrow_back_rounded),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isFirstStep ? 'Batal' : 'Kembali',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
