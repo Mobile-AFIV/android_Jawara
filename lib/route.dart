@@ -302,7 +302,7 @@ final GoRouter mainRouter = GoRouter(
       routes: [
         GoRoute(
           name: 'tambah_pemasukan_lain',
-          path: '/keuangan/pemasukan/pemasukan_lain/tambah',
+          path: 'tambah',
           builder: (context, state) {
             return TambahPemasukanLainSection();
           },
