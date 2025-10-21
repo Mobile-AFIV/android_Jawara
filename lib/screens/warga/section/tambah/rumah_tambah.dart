@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_radio_group.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_preview_card.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahTambah extends StatefulWidget {
@@ -66,216 +72,94 @@ class _RumahTambahState extends State<RumahTambah> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Card containing address field
-              Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Alamat Rumah",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Full address field
-                      TextFormField(
-                        controller: _addressController,
-                        decoration: _inputDecoration(
-                          "Alamat *",
-                          hintText: "Contoh: Jl. Merpati No. 5",
-                          prefixIcon: Icons.home,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Alamat tidak boleh kosong';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      // Helper text
-                      const Text(
-                        "Masukkan alamat lengkap termasuk nomor rumah",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Card containing status
-              Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Status Rumah",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Status radio buttons
-                      ...RumahDummy.statusOptions.map((status) =>
-                          RadioListTile<String>(
-                            title: Text(status),
-                            value: status,
-                            groupValue: _selectedStatus,
-                            activeColor: AppStyles.primaryColor,
-                            onChanged: (String? value) {
-                              setState(() {
-                                _selectedStatus = value!;
-                              });
-                            },
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                      ).toList(),
-
-                      // Status info text
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Text(
-                          _selectedStatus == 'Tersedia'
-                              ? "Rumah ini siap untuk ditempati"
-                              : "Rumah ini sudah ada penghuninya",
-                          style: TextStyle(
-                            color: _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Preview card
-              Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Pratinjau",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Address preview
-                      Text(
-                        _addressController.text.isEmpty ? "..." : _addressController.text,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Status chip
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _selectedStatus == 'Tersedia' ? Colors.green[100] : Colors.blue[100],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          _selectedStatus,
-                          style: TextStyle(
-                            color: _selectedStatus == 'Tersedia' ? Colors.green[800] : Colors.blue[800],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Action buttons
-              Row(
+              // Address Card
+              FormCard(
+                title: "Alamat Rumah",
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _saveData,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppStyles.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('Simpan'),
-                    ),
+                  FormTextField(
+                    controller: _addressController,
+                    label: "Alamat",
+                    isRequired: true,
+                    maxLines: 2,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Alamat tidak boleh kosong';
+                      }
+                      return null;
+                    },
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppStyles.primaryColor,
-                        side: BorderSide(color: AppStyles.primaryColor),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('Batal'),
+                  const SizedBox(height: 8),
+                  // Helper text
+                  const Text(
+                    "Masukkan alamat lengkap termasuk nomor rumah",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
+              ),
+
+              // Status Card
+              FormCard(
+                title: "Status Rumah",
+                children: [
+                  FormRadioGroup<String>(
+                    value: _selectedStatus,
+                    options: RumahDummy.statusOptions,
+                    labels: RumahDummy.statusOptions,
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedStatus = value;
+                        });
+                      }
+                    },
+                    activeColor: AppStyles.primaryColor,
+                    buildStatusInfo: (label, value) {
+                      return Text(
+                        value == 'Tersedia'
+                            ? "Rumah ini siap untuk ditempati"
+                            : "Rumah ini sudah ada penghuninya",
+                        style: TextStyle(
+                          color: value == 'Tersedia' ? Colors.green : Colors.blue,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              // Preview card
+              FormPreviewCard(
+                previewItems: [
+                  Text(
+                    _addressController.text.isEmpty ? "..." : _addressController.text,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  StatusChip(
+                    label: _selectedStatus,
+                    backgroundColor: _selectedStatus == 'Tersedia' ? Colors.green[100]! : Colors.blue[100]!,
+                    textColor: _selectedStatus == 'Tersedia' ? Colors.green[800]! : Colors.blue[800]!,
+                  ),
+                ],
+              ),
+
+              // Action buttons
+              FormActionButtons(
+                onSave: _saveData,
+                onCancel: () => Navigator.pop(context),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  // Helper method for consistent input decoration
-  InputDecoration _inputDecoration(String label, {String? hintText, IconData? prefixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hintText,
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
     );
   }
 }
