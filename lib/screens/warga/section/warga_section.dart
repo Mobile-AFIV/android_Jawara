@@ -20,6 +20,11 @@ class _WargaSectionState extends State<WargaSection> {
   @override
   void initState() {
     super.initState();
+    _initExpandedList();
+  }
+
+  // Method to properly initialize or update the expanded list
+  void _initExpandedList() {
     _expandedList = List.generate(WargaDummy.dummyData.length, (index) => index == 0);
   }
 
@@ -41,8 +46,17 @@ class _WargaSectionState extends State<WargaSection> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
         foregroundColor: Colors.white,
-        onPressed: () {
-          context.pushNamed('warga_tambah');
+        onPressed: () async {
+          // Add await to handle the result when returning from WargaTambah
+          final result = await context.pushNamed('warga_tambah');
+
+          // If data was successfully added, refresh the UI
+          if (result == true) {
+            setState(() {
+              // Re-initialize the expanded list to match the updated data
+              _initExpandedList();
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
@@ -50,6 +64,9 @@ class _WargaSectionState extends State<WargaSection> {
   }
 
   Widget _buildWargaCard(WargaModel warga, int index) {
+    // Safety check to prevent out-of-bounds access
+    bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
+
     return ExpandableSectionCard(
       title: warga.name,
       subtitle: "status: ${warga.lifeStatus}",
@@ -57,10 +74,13 @@ class _WargaSectionState extends State<WargaSection> {
         label: warga.domicileStatus,
         color: Colors.green,
       ),
-      isExpanded: _expandedList[index],
+      isExpanded: isExpanded,
       onToggleExpand: () {
         setState(() {
-          _expandedList[index] = !_expandedList[index];
+          // Safety check before modifying the expanded list
+          if (index < _expandedList.length) {
+            _expandedList[index] = !_expandedList[index];
+          }
         });
       },
       expandedContent: [
@@ -82,7 +102,12 @@ class _WargaSectionState extends State<WargaSection> {
               },
             );
             if (result == true) {
-              setState(() {});
+              setState(() {
+                // Ensure expanded list matches data after edit
+                if (_expandedList.length != WargaDummy.dummyData.length) {
+                  _initExpandedList();
+                }
+              });
             }
           },
           onDetailPressed: () {
