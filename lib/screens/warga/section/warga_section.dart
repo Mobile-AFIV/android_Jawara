@@ -64,15 +64,15 @@ class _WargaSectionState extends State<WargaSection> {
   }
 
   Widget _buildWargaCard(WargaModel warga, int index) {
-    // Safety check to prevent out-of-bounds access
     bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
+    MaterialColor statusColor = warga.domicileStatus == "Aktif" ? Colors.green : Colors.red;
 
     return ExpandableSectionCard(
       title: warga.name,
       subtitle: "status: ${warga.lifeStatus}",
       statusChip: StatusChip(
         label: warga.domicileStatus,
-        color: Colors.green,
+        color: statusColor,
       ),
       isExpanded: isExpanded,
       onToggleExpand: () {
