@@ -7,6 +7,8 @@ import 'package:jawara_pintar/screens/warga/section/widget/section_action_button
 import 'package:jawara_pintar/screens/warga/section/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 
 class RumahSection extends StatefulWidget {
   const RumahSection({super.key});
@@ -24,12 +26,19 @@ class _RumahSectionState extends State<RumahSection>
   final ScrollController _scrollController = ScrollController();
   bool _showFab = true;
 
+  // Search and filter states
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'Semua';
+  List<RumahModel> _filteredData = [];
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
     _initExpandedList();
     _initFabAnimation();
     _setupScrollListener();
+    _initSearchAndFilter();
   }
 
   void _initExpandedList() {
@@ -37,6 +46,11 @@ class _RumahSectionState extends State<RumahSection>
       RumahDummy.dummyData.length,
       (index) => index == 0,
     );
+  }
+
+  void _initSearchAndFilter() {
+    _filteredData = List.from(RumahDummy.dummyData);
+    _searchController.addListener(_filterData);
   }
 
   void _initFabAnimation() {
@@ -74,6 +88,32 @@ class _RumahSectionState extends State<RumahSection>
     });
   }
 
+  void _filterData() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      _filteredData = RumahDummy.dummyData.where((rumah) {
+        bool matchesSearch = rumah.address.toLowerCase().contains(query);
+        bool matchesFilter = _selectedFilter == 'Semua' ||
+                             rumah.status == _selectedFilter;
+        return matchesSearch && matchesFilter;
+      }).toList();
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+    });
+  }
+
+  void _showFilterBottomSheet() {
+    FilterBottomSheet.show(
+      context: context,
+      title: 'Filter Status Rumah',
+      options: ['Semua', ...RumahDummy.statusOptions],
+      selectedValue: _selectedFilter,
+      onSelected: (value) {
+        setState(() => _selectedFilter = value);
+        _filterData();
+      },
+    );
+  }
+
   Future<void> _showAddHouseBottomSheet() async {
     await _fabController.reverse();
     
@@ -97,6 +137,7 @@ class _RumahSectionState extends State<RumahSection>
   void dispose() {
     _fabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -104,33 +145,47 @@ class _RumahSectionState extends State<RumahSection>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Rumah"),
+        title: _isSearching
+            ? custom_search.SearchBar(
+                controller: _searchController,
+                hintText: 'Cari alamat rumah...',
+                onChanged: (value) => _filterData(),
+                onClear: () {
+                  setState(() {
+                    _isSearching = false;
+                    _searchController.clear();
+                  });
+                },
+              )
+            : const Text("Data Rumah"),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() => _isSearching = true);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // Filter functionality
-            },
+            onPressed: _showFilterBottomSheet,
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.delayed(const Duration(milliseconds: 500));
-          setState(() => _initExpandedList());
+          setState(() {
+            _initExpandedList();
+            _filterData();
+          });
         },
         child: ListView.separated(
           controller: _scrollController,
           padding: const EdgeInsets.all(16.0),
           physics: const BouncingScrollPhysics(),
-          itemCount: RumahDummy.dummyData.length,
+          itemCount: _filteredData.length,
           itemBuilder: (context, index) {
             return _buildAnimatedCard(index);
           },
@@ -159,7 +214,8 @@ class _RumahSectionState extends State<RumahSection>
   }
 
   Widget _buildAnimatedCard(int index) {
-    final rumah = RumahDummy.dummyData[index];
+    final rumah = _filteredData[index];
+    final originalIndex = RumahDummy.dummyData.indexOf(rumah);
     final bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
     bool isAvailable = rumah.status.toLowerCase() == 'tersedia';
 
@@ -203,7 +259,7 @@ class _RumahSectionState extends State<RumahSection>
                     final result = await context.pushNamed(
                       'rumah_edit',
                       queryParameters: {
-                        'index': index.toString(),
+                        'index': originalIndex.toString(),
                         'address': rumah.address,
                       },
                     );
@@ -222,7 +278,7 @@ class _RumahSectionState extends State<RumahSection>
               context.pushNamed(
                 'rumah_detail',
                 queryParameters: {
-                  'index': index.toString(),
+                  'index': originalIndex.toString(),
                   'address': rumah.address,
                 },
               );

@@ -5,6 +5,8 @@ import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_ca
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 
 class MutasiKeluargaSection extends StatefulWidget {
   const MutasiKeluargaSection({super.key});
@@ -22,12 +24,19 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
   final ScrollController _scrollController = ScrollController();
   bool _showFab = true;
 
+  // Search and filter states
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'Semua';
+  List<MutasiKeluargaModel> _filteredData = [];
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
     _initExpandedList();
     _initFabAnimation();
     _setupScrollListener();
+    _initSearchAndFilter();
   }
 
   void _initExpandedList() {
@@ -35,6 +44,11 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
       MutasiKeluargaDummy.dummyData.length,
       (index) => index == 0,
     );
+  }
+
+  void _initSearchAndFilter() {
+    _filteredData = List.from(MutasiKeluargaDummy.dummyData);
+    _searchController.addListener(_filterData);
   }
 
   void _initFabAnimation() {
@@ -72,10 +86,38 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
     });
   }
 
+  void _filterData() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      _filteredData = MutasiKeluargaDummy.dummyData.where((mutasi) {
+        bool matchesSearch = mutasi.familyName.toLowerCase().contains(query) ||
+                             mutasi.mutationType.toLowerCase().contains(query);
+        bool matchesFilter = _selectedFilter == 'Semua' ||
+                             mutasi.mutationType == _selectedFilter;
+        return matchesSearch && matchesFilter;
+      }).toList();
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+    });
+  }
+
+  void _showFilterBottomSheet() {
+    FilterBottomSheet.show(
+      context: context,
+      title: 'Filter Jenis Mutasi',
+      options: ['Semua', ...MutasiKeluargaDummy.mutationTypeOptions],
+      selectedValue: _selectedFilter,
+      onSelected: (value) {
+        setState(() => _selectedFilter = value);
+        _filterData();
+      },
+    );
+  }
+
   @override
   void dispose() {
     _fabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -83,20 +125,31 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Mutasi Keluarga"),
+        title: _isSearching
+            ? custom_search.SearchBar(
+                controller: _searchController,
+                hintText: 'Cari nama keluarga atau jenis mutasi...',
+                onChanged: (value) => _filterData(),
+                onClear: () {
+                  setState(() {
+                    _isSearching = false;
+                    _searchController.clear();
+                  });
+                },
+              )
+            : const Text("Data Mutasi Keluarga"),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() => _isSearching = true);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // Filter functionality
-            },
+            onPressed: _showFilterBottomSheet,
           ),
         ],
       ),
@@ -104,12 +157,13 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
         onRefresh: () async {
           await Future.delayed(const Duration(milliseconds: 500));
           setState(() => _initExpandedList());
+          _filterData();
         },
         child: ListView.separated(
           controller: _scrollController,
           padding: const EdgeInsets.all(16.0),
           physics: const BouncingScrollPhysics(),
-          itemCount: MutasiKeluargaDummy.dummyData.length,
+          itemCount: _filteredData.length,
           itemBuilder: (context, index) {
             return _buildAnimatedCard(index);
           },
@@ -148,7 +202,8 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
   }
 
   Widget _buildAnimatedCard(int index) {
-    final mutasi = MutasiKeluargaDummy.dummyData[index];
+    final mutasi = _filteredData[index];
+    final originalIndex = MutasiKeluargaDummy.dummyData.indexOf(mutasi);
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -201,7 +256,7 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection>
             onDetailPressed: () {
               context.pushNamed(
                 'mutasi_keluarga_detail',
-                queryParameters: {'index': index.toString()},
+                queryParameters: {'index': originalIndex.toString()},
               );
             },
           ),

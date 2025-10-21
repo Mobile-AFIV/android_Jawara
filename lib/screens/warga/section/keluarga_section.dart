@@ -4,6 +4,8 @@ import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 
 class KeluargaSection extends StatefulWidget {
   const KeluargaSection({super.key});
@@ -20,12 +22,19 @@ class _KeluargaSectionState extends State<KeluargaSection>
   late AnimationController _scrollButtonController;
   late Animation<double> _scrollButtonAnimation;
 
+  // Search and filter states
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'Semua';
+  List<KeluargaModel> _filteredData = [];
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
     _initExpandedList();
     _initScrollButton();
     _setupScrollListener();
+    _initSearchAndFilter();
   }
 
   void _initExpandedList() {
@@ -33,6 +42,11 @@ class _KeluargaSectionState extends State<KeluargaSection>
       KeluargaDummy.dummyData.length,
       (index) => index == 0,
     );
+  }
+
+  void _initSearchAndFilter() {
+    _filteredData = List.from(KeluargaDummy.dummyData);
+    _searchController.addListener(_filterData);
   }
 
   void _initScrollButton() {
@@ -59,6 +73,33 @@ class _KeluargaSectionState extends State<KeluargaSection>
     });
   }
 
+  void _filterData() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      _filteredData = KeluargaDummy.dummyData.where((keluarga) {
+        bool matchesSearch = keluarga.familyName.toLowerCase().contains(query) ||
+                             keluarga.headOfFamily.toLowerCase().contains(query);
+        bool matchesFilter = _selectedFilter == 'Semua' ||
+                             keluarga.status == _selectedFilter;
+        return matchesSearch && matchesFilter;
+      }).toList();
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+    });
+  }
+
+  void _showFilterBottomSheet() {
+    FilterBottomSheet.show(
+      context: context,
+      title: 'Filter Status',
+      options: ['Semua', 'Aktif', 'Nonaktif'],
+      selectedValue: _selectedFilter,
+      onSelected: (value) {
+        setState(() => _selectedFilter = value);
+        _filterData();
+      },
+    );
+  }
+
   void _scrollToTop() {
     _scrollController.animateTo(
       0,
@@ -71,6 +112,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
   void dispose() {
     _scrollButtonController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -78,20 +120,31 @@ class _KeluargaSectionState extends State<KeluargaSection>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Keluarga"),
+        title: _isSearching
+            ? custom_search.SearchBar(
+                controller: _searchController,
+                hintText: 'Cari nama keluarga atau kepala keluarga...',
+                onChanged: (value) => _filterData(),
+                onClear: () {
+                  setState(() {
+                    _isSearching = false;
+                    _searchController.clear();
+                  });
+                },
+              )
+            : const Text("Data Keluarga"),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() => _isSearching = true);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // Filter functionality
-            },
+            onPressed: _showFilterBottomSheet,
           ),
         ],
       ),
@@ -100,13 +153,16 @@ class _KeluargaSectionState extends State<KeluargaSection>
           RefreshIndicator(
             onRefresh: () async {
               await Future.delayed(const Duration(milliseconds: 500));
-              setState(() => _initExpandedList());
+              setState(() {
+                _initExpandedList();
+                _filterData();
+              });
             },
             child: ListView.separated(
               controller: _scrollController,
               padding: const EdgeInsets.all(16.0),
               physics: const BouncingScrollPhysics(),
-              itemCount: KeluargaDummy.dummyData.length,
+              itemCount: _filteredData.length,
               itemBuilder: (context, index) {
                 return _buildAnimatedCard(index);
               },
@@ -137,7 +193,8 @@ class _KeluargaSectionState extends State<KeluargaSection>
   }
 
   Widget _buildAnimatedCard(int index) {
-    final keluarga = KeluargaDummy.dummyData[index];
+    final keluarga = _filteredData[index];
+    final originalIndex = KeluargaDummy.dummyData.indexOf(keluarga);
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -196,7 +253,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
             onDetailPressed: () {
               context.pushNamed(
                 'keluarga_detail',
-                queryParameters: {'index': index.toString()},
+                queryParameters: {'index': originalIndex.toString()},
               );
             },
           ),
@@ -247,7 +304,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
     switch (status.toLowerCase()) {
       case 'aktif':
         return Icons.check_circle;
-      case 'tidak aktif':
+      case 'nonaktif':
         return Icons.cancel;
       default:
         return Icons.info;

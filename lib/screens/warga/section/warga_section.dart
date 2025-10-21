@@ -4,6 +4,8 @@ import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart' as custom_filter;
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class WargaSection extends StatefulWidget {
@@ -22,12 +24,19 @@ class _WargaSectionState extends State<WargaSection>
   final ScrollController _scrollController = ScrollController();
   bool _showFab = true;
 
+  // Search and filter states
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'Semua';
+  List<WargaModel> _filteredData = [];
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
     _initExpandedList();
     _initFabAnimation();
     _setupScrollListener();
+    _initSearchAndFilter();
   }
 
   void _initExpandedList() {
@@ -35,6 +44,11 @@ class _WargaSectionState extends State<WargaSection>
       WargaDummy.dummyData.length,
       (index) => index == 0,
     );
+  }
+
+  void _initSearchAndFilter() {
+    _filteredData = List.from(WargaDummy.dummyData);
+    _searchController.addListener(_filterData);
   }
 
   void _initFabAnimation() {
@@ -72,10 +86,39 @@ class _WargaSectionState extends State<WargaSection>
     });
   }
 
+  void _filterData() {
+    setState(() {
+      String query = _searchController.text.toLowerCase();
+      _filteredData = WargaDummy.dummyData.where((warga) {
+        bool matchesSearch = warga.name.toLowerCase().contains(query) ||
+                             warga.nik.contains(query) ||
+                             warga.family.toLowerCase().contains(query);
+        bool matchesFilter = _selectedFilter == 'Semua' ||
+                             warga.domicileStatus == _selectedFilter;
+        return matchesSearch && matchesFilter;
+      }).toList();
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+    });
+  }
+
+  void _showFilterBottomSheet() {
+    custom_filter.FilterBottomSheet.show(
+      context: context,
+      title: 'Filter Status Domisili',
+      options: ['Semua', 'Aktif', 'Nonaktif'],
+      selectedValue: _selectedFilter,
+      onSelected: (filter) {
+        setState(() => _selectedFilter = filter);
+        _filterData();
+      },
+    );
+  }
+
   @override
   void dispose() {
     _fabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -83,33 +126,47 @@ class _WargaSectionState extends State<WargaSection>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Warga"),
+        title: _isSearching
+            ? custom_search.SearchBar(
+                controller: _searchController,
+                hintText: 'Cari nama, NIK, atau keluarga...',
+                onChanged: (value) => _filterData(),
+                onClear: () {
+                  setState(() {
+                    _isSearching = false;
+                    _searchController.clear();
+                  });
+                },
+              )
+            : const Text("Data Warga"),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search functionality
-            },
-          ),
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() => _isSearching = true);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // Filter functionality
-            },
+            onPressed: _showFilterBottomSheet,
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.delayed(const Duration(milliseconds: 500));
-          setState(() => _initExpandedList());
+          setState(() {
+            _initExpandedList();
+            _filterData();
+          });
         },
         child: ListView.separated(
           controller: _scrollController,
           padding: const EdgeInsets.all(16.0),
           physics: const BouncingScrollPhysics(),
-          itemCount: WargaDummy.dummyData.length,
+          itemCount: _filteredData.length,
           itemBuilder: (context, index) {
             return _buildAnimatedCard(index);
           },
@@ -150,7 +207,8 @@ class _WargaSectionState extends State<WargaSection>
   }
 
   Widget _buildAnimatedCard(int index) {
-    final warga = WargaDummy.dummyData[index];
+    final warga = _filteredData[index];
+    final originalIndex = WargaDummy.dummyData.indexOf(warga);
     bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
     MaterialColor statusColor = warga.domicileStatus == "Aktif" 
         ? Colors.green 
@@ -211,7 +269,7 @@ class _WargaSectionState extends State<WargaSection>
               final result = await context.pushNamed(
                 'warga_edit',
                 queryParameters: {
-                  'index': index.toString(),
+                  'index': originalIndex.toString(),
                   'name': warga.name,
                 },
               );
@@ -227,7 +285,7 @@ class _WargaSectionState extends State<WargaSection>
               context.pushNamed(
                 'warga_detail',
                 queryParameters: {
-                  'index': index.toString(),
+                  'index': originalIndex.toString(),
                   'name': warga.name,
                 },
               );
