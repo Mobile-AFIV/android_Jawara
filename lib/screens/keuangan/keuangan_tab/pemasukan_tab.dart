@@ -106,7 +106,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
                           kategori.nama,
                           style: const TextStyle(
                             fontSize: 16,
-                            // fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

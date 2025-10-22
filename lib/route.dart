@@ -314,7 +314,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'pengeluaran_daftar',
       path: '/keuangan/pengeluaran/pengeluaran_daftar',
-      builder: (context, state) => const PengeluaranDaftarSection(),
+      builder: (context, state) => PengeluaranDaftarSection(),
     ),
 
     // Push dari Menu Kegiatan
