@@ -74,7 +74,7 @@ class _PemasukanLainSectionState extends State<PemasukanLainSection> {
         ),
         const SizedBox(height: 12),
         const Text(
-          "Verfikator",
+          "Verifikator",
           style: TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const SizedBox(height: 4),
