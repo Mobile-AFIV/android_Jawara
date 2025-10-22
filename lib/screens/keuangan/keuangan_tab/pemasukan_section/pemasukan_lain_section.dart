@@ -24,7 +24,7 @@ class _PemasukanLainSectionState extends State<PemasukanLainSection> {
     return output;
   }
 
-  Future<void> _showDetailKategori(PemasukanLainData data) async {
+  Future<void> _showDetailPemasukanLain(PemasukanLainData data) async {
     ModalBottomSheet.showCustomModalBottomSheet(
       context: context,
       children: (_) => [
@@ -142,7 +142,7 @@ class _PemasukanLainSectionState extends State<PemasukanLainSection> {
 
   Widget pemasukanLainItem(PemasukanLainData itemData) {
     return InkWell(
-      onTap: () => _showDetailKategori(itemData),
+      onTap: () => _showDetailPemasukanLain(itemData),
       child: Container(
         padding: const EdgeInsets.only(bottom: 8),
         width: double.maxFinite,
