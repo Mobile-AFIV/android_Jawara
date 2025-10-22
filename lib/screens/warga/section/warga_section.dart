@@ -16,14 +16,9 @@ class WargaSection extends StatefulWidget {
   State<WargaSection> createState() => _WargaSectionState();
 }
 
-class _WargaSectionState extends State<WargaSection>
-    with TickerProviderStateMixin {
+class _WargaSectionState extends State<WargaSection> {
   late List<bool> _expandedList;
-  late AnimationController _fabController;
-  late Animation<double> _fabScaleAnimation;
-  late Animation<double> _fabRotationAnimation;
   final ScrollController _scrollController = ScrollController();
-  bool _showFab = true;
 
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
@@ -35,8 +30,6 @@ class _WargaSectionState extends State<WargaSection>
   void initState() {
     super.initState();
     _initExpandedList();
-    _initFabAnimation();
-    _setupScrollListener();
     _initSearchAndFilter();
   }
 
@@ -50,41 +43,6 @@ class _WargaSectionState extends State<WargaSection>
   void _initSearchAndFilter() {
     _filteredData = List.from(WargaDummy.dummyData);
     _searchController.addListener(_filterData);
-  }
-
-  void _initFabAnimation() {
-    _fabController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _fabScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabController,
-      curve: Curves.easeOutBack,
-    ));
-
-    _fabRotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabController,
-      curve: Curves.easeInOut,
-    ));
-
-    _fabController.forward();
-  }
-
-  void _setupScrollListener() {
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 100 && _showFab) {
-        setState(() => _showFab = false);
-      } else if (_scrollController.offset <= 100 && !_showFab) {
-        setState(() => _showFab = true);
-      }
-    });
   }
 
   void _filterData() {
@@ -134,7 +92,6 @@ class _WargaSectionState extends State<WargaSection>
 
   @override
   void dispose() {
-    _fabController.dispose();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -210,35 +167,20 @@ class _WargaSectionState extends State<WargaSection>
           ],
         ),
       ),
-      floatingActionButton: AnimatedScale(
-        scale: _showFab ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: ScaleTransition(
-          scale: _fabScaleAnimation,
-          child: RotationTransition(
-            turns: _fabRotationAnimation,
-            child: FloatingActionButton.extended(
-              backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-              foregroundColor: Colors.white,
-              onPressed: () async {
-                await _fabController.reverse();
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: () async {
+          final result = await context.pushNamed('warga_tambah');
 
-                final result = await context.pushNamed('warga_tambah');
-
-                _fabController.forward();
-
-                if (result == true) {
-                  setState(() {
-                    _initExpandedList();
-                  });
-                }
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah Warga'),
-            ),
-          ),
-        ),
+          if (result == true) {
+            setState(() {
+              _initExpandedList();
+            });
+          }
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Warga'),
       ),
     );
   }

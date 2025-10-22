@@ -18,14 +18,9 @@ class RumahSection extends StatefulWidget {
   State<RumahSection> createState() => _RumahSectionState();
 }
 
-class _RumahSectionState extends State<RumahSection>
-    with TickerProviderStateMixin {
+class _RumahSectionState extends State<RumahSection> {
   late List<bool> _expandedList;
-  late AnimationController _fabController;
-  late Animation<double> _fabScaleAnimation;
-  late Animation<double> _fabRotationAnimation;
   final ScrollController _scrollController = ScrollController();
-  bool _showFab = true;
 
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
@@ -37,8 +32,6 @@ class _RumahSectionState extends State<RumahSection>
   void initState() {
     super.initState();
     _initExpandedList();
-    _initFabAnimation();
-    _setupScrollListener();
     _initSearchAndFilter();
   }
 
@@ -52,41 +45,6 @@ class _RumahSectionState extends State<RumahSection>
   void _initSearchAndFilter() {
     _filteredData = List.from(RumahDummy.dummyData);
     _searchController.addListener(_filterData);
-  }
-
-  void _initFabAnimation() {
-    _fabController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _fabScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabController,
-      curve: Curves.easeOutBack,
-    ));
-
-    _fabRotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabController,
-      curve: Curves.easeInOut,
-    ));
-
-    _fabController.forward();
-  }
-
-  void _setupScrollListener() {
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 100 && _showFab) {
-        setState(() => _showFab = false);
-      } else if (_scrollController.offset <= 100 && !_showFab) {
-        setState(() => _showFab = true);
-      }
-    });
   }
 
   void _filterData() {
@@ -122,16 +80,12 @@ class _RumahSectionState extends State<RumahSection>
   }
 
   Future<void> _showAddHouseBottomSheet() async {
-    await _fabController.reverse();
-    
     final result = await ModalBottomSheet.showCustomModalBottomSheet(
       context: context,
       children: (setModalState) => [
         const RumahTambah(),
       ],
     );
-
-    _fabController.forward();
 
     if (result == true) {
       setState(() {
@@ -153,7 +107,6 @@ class _RumahSectionState extends State<RumahSection>
 
   @override
   void dispose() {
-    _fabController.dispose();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -229,23 +182,12 @@ class _RumahSectionState extends State<RumahSection>
           ],
         ),
       ),
-      floatingActionButton: AnimatedScale(
-        scale: _showFab ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        child: ScaleTransition(
-          scale: _fabScaleAnimation,
-          child: RotationTransition(
-            turns: _fabRotationAnimation,
-            child: FloatingActionButton.extended(
-              backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-              foregroundColor: Colors.white,
-              onPressed: _showAddHouseBottomSheet,
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah Rumah'),
-            ),
-          ),
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+        onPressed: _showAddHouseBottomSheet,
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Rumah'),
       ),
     );
   }
