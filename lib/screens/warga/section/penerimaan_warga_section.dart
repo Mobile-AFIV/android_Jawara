@@ -29,13 +29,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   List<PenerimaanWargaModel> _filteredData = [];
   bool _isSearching = false;
 
-  // Pagination states
-  static const int _itemsPerPage = 10;
-  int _currentPage = 1;
-  bool _isLoadingMore = false;
-  bool _hasMoreData = true;
-  List<PenerimaanWargaModel> _displayedData = [];
-
   @override
   void initState() {
     super.initState();
@@ -54,14 +47,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
 
   void _initSearchAndFilter() {
     _filteredData = List.from(PenerimaanWargaDummy.dummyData);
-    _loadInitialData();
     _searchController.addListener(_filterData);
-  }
-
-  void _loadInitialData() {
-    _displayedData = _filteredData.take(_itemsPerPage).toList();
-    _hasMoreData = _filteredData.length > _itemsPerPage;
-    _currentPage = 1;
   }
 
   void _initScrollButton() {
@@ -78,7 +64,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
 
   void _setupScrollListener() {
     _scrollController.addListener(() {
-      // Scroll to top button
       if (_scrollController.offset > 200 && !_showScrollToTop) {
         setState(() => _showScrollToTop = true);
         _scrollButtonController.forward();
@@ -86,40 +71,6 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
         setState(() => _showScrollToTop = false);
         _scrollButtonController.reverse();
       }
-
-      // Pagination
-      if (_scrollController.position.pixels >= 
-          _scrollController.position.maxScrollExtent - 200) {
-        _loadMoreData();
-      }
-    });
-  }
-
-  Future<void> _loadMoreData() async {
-    if (_isLoadingMore || !_hasMoreData) return;
-
-    setState(() => _isLoadingMore = true);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      int startIndex = _currentPage * _itemsPerPage;
-      int endIndex = startIndex + _itemsPerPage;
-      
-      if (startIndex < _filteredData.length) {
-        _displayedData.addAll(
-          _filteredData.sublist(
-            startIndex,
-            endIndex > _filteredData.length ? _filteredData.length : endIndex,
-          ),
-        );
-        _currentPage++;
-        _hasMoreData = endIndex < _filteredData.length;
-      } else {
-        _hasMoreData = false;
-      }
-      
-      _isLoadingMore = false;
     });
   }
 
@@ -134,8 +85,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                              penerimaan.registrationStatus == _selectedFilter;
         return matchesSearch && matchesFilter;
       }).toList();
-      _loadInitialData();
-      _expandedList = List.generate(_displayedData.length, (index) => index == 0);
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -249,13 +199,9 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16.0),
                       physics: const BouncingScrollPhysics(),
-                      itemCount: _displayedData.length + (_hasMoreData ? 1 : 0),
+                      itemCount: _filteredData.length,
                       itemBuilder: (context, index) {
-                        if (index < _displayedData.length) {
-                          return _buildAnimatedCard(index);
-                        } else {
-                          return _buildLoadingIndicator();
-                        }
+                        return _buildAnimatedCard(index);
                       },
                       separatorBuilder: (context, index) => const SizedBox(height: 12),
                     ),
@@ -399,19 +345,8 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     }
   }
 
-  Widget _buildLoadingIndicator() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAnimatedCard(int index) {
-    final penerimaan = _displayedData[index];
+    final penerimaan = _filteredData[index];
     final originalIndex = PenerimaanWargaDummy.dummyData.indexOf(penerimaan);
 
     return TweenAnimationBuilder<double>(

@@ -26,19 +26,11 @@ class _WargaSectionState extends State<WargaSection> {
   List<WargaModel> _filteredData = [];
   bool _isSearching = false;
 
-  // Pagination states
-  static const int _itemsPerPage = 10;
-  int _currentPage = 1;
-  bool _isLoadingMore = false;
-  bool _hasMoreData = true;
-  List<WargaModel> _displayedData = [];
-
   @override
   void initState() {
     super.initState();
     _initExpandedList();
     _initSearchAndFilter();
-    _setupPaginationListener();
   }
 
   void _initExpandedList() {
@@ -50,52 +42,7 @@ class _WargaSectionState extends State<WargaSection> {
 
   void _initSearchAndFilter() {
     _filteredData = List.from(WargaDummy.dummyData);
-    _loadInitialData();
     _searchController.addListener(_filterData);
-  }
-
-  void _loadInitialData() {
-    _displayedData = _filteredData.take(_itemsPerPage).toList();
-    _hasMoreData = _filteredData.length > _itemsPerPage;
-    _currentPage = 1;
-  }
-
-  void _setupPaginationListener() {
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= 
-          _scrollController.position.maxScrollExtent - 200) {
-        _loadMoreData();
-      }
-    });
-  }
-
-  Future<void> _loadMoreData() async {
-    if (_isLoadingMore || !_hasMoreData) return;
-
-    setState(() => _isLoadingMore = true);
-
-    // Simulate loading delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      int startIndex = _currentPage * _itemsPerPage;
-      int endIndex = startIndex + _itemsPerPage;
-      
-      if (startIndex < _filteredData.length) {
-        _displayedData.addAll(
-          _filteredData.sublist(
-            startIndex,
-            endIndex > _filteredData.length ? _filteredData.length : endIndex,
-          ),
-        );
-        _currentPage++;
-        _hasMoreData = endIndex < _filteredData.length;
-      } else {
-        _hasMoreData = false;
-      }
-      
-      _isLoadingMore = false;
-    });
   }
 
   void _filterData() {
@@ -109,8 +56,7 @@ class _WargaSectionState extends State<WargaSection> {
                              warga.domicileStatus == _selectedFilter;
         return matchesSearch && matchesFilter;
       }).toList();
-      _loadInitialData();
-      _expandedList = List.generate(_displayedData.length, (index) => index == 0);
+      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -210,13 +156,9 @@ class _WargaSectionState extends State<WargaSection> {
                   controller: _scrollController,
                   padding: const EdgeInsets.all(16.0),
                   physics: const BouncingScrollPhysics(),
-                  itemCount: _displayedData.length + (_hasMoreData ? 1 : 0),
+                  itemCount: _filteredData.length,
                   itemBuilder: (context, index) {
-                    if (index < _displayedData.length) {
-                      return _buildAnimatedCard(index);
-                    } else {
-                      return _buildLoadingIndicator();
-                    }
+                    return _buildAnimatedCard(index);
                   },
                   separatorBuilder: (context, index) => const SizedBox(height: 12),
                 ),
@@ -243,19 +185,8 @@ class _WargaSectionState extends State<WargaSection> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppStyles.primaryColor),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAnimatedCard(int index) {
-    final warga = _displayedData[index];
+    final warga = _filteredData[index];
     final originalIndex = WargaDummy.dummyData.indexOf(warga);
     bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
     MaterialColor statusColor = warga.domicileStatus == "Aktif" 
