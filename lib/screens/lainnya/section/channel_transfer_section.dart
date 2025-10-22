@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:go_router/go_router.dart';
 
 class ChannelTransferSection extends StatelessWidget {
   const ChannelTransferSection({super.key});
@@ -12,8 +14,13 @@ class ChannelTransferSection extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            SizedBox(),
+            const SizedBox(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child:
             DataTable(
+              dataRowMinHeight: 40,
+              dataRowMaxHeight: 60,
               columns: const [
                 DataColumn(label: Text('NO')),
                 DataColumn(label: Text('Nama')),
@@ -37,8 +44,18 @@ class ChannelTransferSection extends StatelessWidget {
                 ]),
               ],
             ),
+            )
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.pushNamed('tambah_channel_transfer');
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: AppStyles.primaryColor,
+        foregroundColor: Colors.white,
+        tooltip: 'Tambah Channel Transfer',
       ),
     );
   }
