@@ -13,7 +13,8 @@ class TambahPenggunaSection extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Tambah Pengguna"),
       ),
-      body: Column(
+      body: SingleChildScrollView(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -74,12 +75,12 @@ class TambahPenggunaSection extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Text('Role Pengguna'),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const CustomDropdown(
-              // hintText: '-- Pilih Role--',
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(8.0),
+          //   child: const CustomDropdown(
+          //     // hintText: '-- Pilih Role--',
+          //   ),
+          // ),
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
@@ -93,6 +94,7 @@ class TambahPenggunaSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
