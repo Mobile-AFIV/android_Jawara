@@ -12,8 +12,12 @@ class LogAktivitasSection extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            SizedBox(),
-            DataTable(
+            const SizedBox(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+              dataRowMinHeight: 60,
+              dataRowMaxHeight: 80,
               columns: const [
                 DataColumn(label: Text('NO')),
                 DataColumn(label: Text('Deskripsi')),
@@ -37,6 +41,7 @@ class LogAktivitasSection extends StatelessWidget {
                 ]),
               ],
             ),
+            )
           ],
         ),
       ),

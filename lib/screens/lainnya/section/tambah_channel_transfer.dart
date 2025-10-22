@@ -4,8 +4,8 @@ import 'package:jawara_pintar/screens/widgets/custom_dropdown.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
-class TambahPenggunaSection extends StatelessWidget {
-  const TambahPenggunaSection({super.key});
+class TambahChannelSection extends StatelessWidget {
+  const TambahChannelSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,66 +19,42 @@ class TambahPenggunaSection extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Nama Lengkap'),
+            child: Text('Nama Channel'),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: const CustomTextField(
+              hintText: 'Masukkan nama channel',
+            ),
           ),  
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const CustomTextField(
-              hintText: 'Masukkan nama lengkap',
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('Email'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const CustomTextField(
-              hintText: 'Masukkan email aktif',
-              keyboardType: TextInputType.emailAddress
-            ),
-          ),
            Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Nomor HP'),
+            child: Text('Tipe'),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+             padding: const EdgeInsets.all(8.0),
             child: const CustomTextField(
-              hintText: 'Masukkan nomor HP (cth: 08xxxxxxxxxx)',
-              keyboardType: TextInputType.phone
+              hintText: 'Masukkan Tipe Transfer Cth: Bank, E-Wallet, Qris',
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Password'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const CustomTextField(
-              hintText: 'Masukkan password',
-              obscureText: true,
-            ),
+            child: Text('Nomor Rekening / Akun'),
           ),
            Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('Konfirmasi Password'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+             padding: const EdgeInsets.all(8.0),
             child: const CustomTextField(
-              hintText: 'Masukkan ulang password',
-              obscureText: true,
+              hintText: 'Masukkan nomor rekening',
             ),
           ),
-           Padding(
+          Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Role Pengguna'),
+            child: Text('Nama Pemilik Akun'),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: const CustomTextField(
-              hintText: 'Masukkan role pengguna (cth: admin, pengguna)',
+              hintText: 'Masukkan nama pemilik akun',
             ),
           ),
           Align(
