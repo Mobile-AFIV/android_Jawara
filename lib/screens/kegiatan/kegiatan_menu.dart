@@ -67,11 +67,11 @@ class _MenuCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: item.color.withOpacity(0.1),
+          color: item.color.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: item.color.withOpacity(0.2),
+              color: item.color.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(2, 4),
             ),
