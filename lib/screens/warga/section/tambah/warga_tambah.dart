@@ -315,7 +315,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions, 'Lainnya'].map((String job) {
+              items: [...WargaDummy.jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),

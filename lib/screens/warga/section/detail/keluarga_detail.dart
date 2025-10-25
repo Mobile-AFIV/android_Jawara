@@ -106,6 +106,7 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

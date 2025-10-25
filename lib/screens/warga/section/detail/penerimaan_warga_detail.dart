@@ -217,6 +217,7 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context, true), // Return with refresh flag
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

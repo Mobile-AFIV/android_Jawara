@@ -73,8 +73,8 @@ class _RumahSectionState extends State<RumahSection> {
       showIcons: true,
       optionIcons: {
         'Semua': Icons.list,
-        'Tersedia': Icons.home,
-        'Ditempati': Icons.people,
+        'Tersedia': Icons.check_circle,
+        'Ditempati': Icons.home,
       },
     );
   }
@@ -97,9 +97,9 @@ class _RumahSectionState extends State<RumahSection> {
   IconData? _getIconForFilter(String filter) {
     switch (filter) {
       case 'Tersedia':
-        return Icons.home;
+        return Icons.check_circle;
       case 'Ditempati':
-        return Icons.people;
+        return Icons.home;
       default:
         return null;
     }
@@ -351,10 +351,8 @@ class _RumahSectionState extends State<RumahSection> {
     switch (status.toLowerCase()) {
       case 'tersedia':
         return Icons.check_circle;
-      case 'terisi':
+      case 'ditempati':
         return Icons.home;
-      case 'tidak tersedia':
-        return Icons.cancel;
       default:
         return Icons.info;
     }

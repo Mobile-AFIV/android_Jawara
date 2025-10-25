@@ -130,6 +130,7 @@ class _WargaDetailState extends State<WargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

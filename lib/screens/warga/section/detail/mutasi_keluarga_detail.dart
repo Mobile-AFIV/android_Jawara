@@ -76,6 +76,7 @@ class _MutasiKeluargaDetailState extends State<MutasiKeluargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

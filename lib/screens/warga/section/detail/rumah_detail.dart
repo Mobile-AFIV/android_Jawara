@@ -124,6 +124,7 @@ class _RumahDetailState extends State<RumahDetail> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

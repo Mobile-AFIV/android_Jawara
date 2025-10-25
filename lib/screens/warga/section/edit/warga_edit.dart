@@ -236,6 +236,7 @@ class _WargaEditState extends State<WargaEdit> {
         title: const Text("Data Pribadi"),
         content: Column(
           children: [
+            const SizedBox(height: 5),
             // Full Name
             FormTextField(
               controller: _nameController,
@@ -371,6 +372,7 @@ class _WargaEditState extends State<WargaEdit> {
         title: const Text("Data Tambahan"),
         content: Column(
           children: [
+            const SizedBox(height: 5),
             // Education
             FormDropdownField<String>(
               label: "Pendidikan Terakhir",
@@ -393,7 +395,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions, 'Lainnya'].map((String job) {
+              items: [...WargaDummy.jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),
