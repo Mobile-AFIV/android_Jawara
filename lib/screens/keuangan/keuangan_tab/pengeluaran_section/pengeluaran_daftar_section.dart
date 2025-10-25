@@ -6,7 +6,7 @@ import 'package:jawara_pintar/screens/keuangan/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PengeluaranDaftarSection extends StatefulWidget {
-  PengeluaranDaftarSection({super.key});
+  const PengeluaranDaftarSection({super.key});
 
   @override
   State<PengeluaranDaftarSection> createState() =>

@@ -7,7 +7,7 @@ class LaporanPemasukanSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Laporan Pemasukan"),
+        title: const Text("Laporan Pemasukan"),
       ),
       body: const Center(
         child: Text("Ini Section Laporan Pemasukan di Menu Keuangan di Tab Laporan"),

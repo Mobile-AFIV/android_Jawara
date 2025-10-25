@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
 
@@ -72,7 +71,7 @@ class _ManajemenPenggunaSectionState extends State<ManajemenPenggunaSection> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: status,
+                  initialValue: status,
                   decoration: const InputDecoration(labelText: 'Status'),
                   items: const [
                     DropdownMenuItem(value: 'aktif', child: Text('Aktif')),

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 class AuthService {
   // Check for specific credentials

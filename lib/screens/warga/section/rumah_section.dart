@@ -324,10 +324,10 @@ class _RumahSectionState extends State<RumahSection> {
   void _showEditNotAvailableSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
+        content: const Row(
           children: [
             Icon(Icons.info_outline, color: Colors.white),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Hanya rumah dengan status "Tersedia" yang dapat diedit',

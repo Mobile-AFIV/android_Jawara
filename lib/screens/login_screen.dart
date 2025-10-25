@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
@@ -110,12 +109,12 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   // Logo
                   Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
                       color: AppStyles.primaryColor,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.menu_book_rounded,
                       color: Colors.white,
                       size: 16,
@@ -227,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.maxFinite,
                     onPressed: _isLoading ? null : _handleLogin,
                     child: _isLoading
-                        ? SizedBox(
+                        ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(

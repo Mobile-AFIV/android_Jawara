@@ -32,9 +32,9 @@ class ResidentApplicationActions extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.check_circle_rounded, size: 20),
                   SizedBox(width: 8),
                   Text(
@@ -61,9 +61,9 @@ class ResidentApplicationActions extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.cancel_rounded, size: 20),
                   SizedBox(width: 8),
                   Text(
@@ -97,9 +97,9 @@ class ResidentApplicationActions extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(Icons.check_circle_rounded, size: 20),
               SizedBox(width: 8),
               Text(

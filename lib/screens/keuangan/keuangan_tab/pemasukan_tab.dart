@@ -278,7 +278,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
                     decorationColor: Colors.grey.shade500,
                   ),
                 ),
-                const Expanded(child: const SizedBox(width: 32)),
+                const Expanded(child: SizedBox(width: 32)),
                 // const SizedBox(width: 8),
                 Container(
                   padding:

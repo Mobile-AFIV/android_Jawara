@@ -29,7 +29,7 @@ class FormInputDecoration {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppStyles.primaryColor, width: 2),
+        borderSide: const BorderSide(color: AppStyles.primaryColor, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -45,7 +45,7 @@ class FormInputDecoration {
         color: Colors.grey.shade700,
         fontSize: 14,
       ),
-      floatingLabelStyle: TextStyle(
+      floatingLabelStyle: const TextStyle(
         color: AppStyles.primaryColor,
         fontSize: 16,
         fontWeight: FontWeight.w600,

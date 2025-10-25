@@ -15,18 +15,18 @@ class _LainnyaMenuState extends State<LainnyaMenu> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Ini Menu Lainnya"),
+          const Text("Ini Menu Lainnya"),
           TextButton(
             onPressed: () => context.pushNamed('channel_transfer'),
-            child: Text("Ke Section Channel transfer"),
+            child: const Text("Ke Section Channel transfer"),
           ),
           TextButton(
             onPressed: () => context.pushNamed('log_aktivitas'),
-            child: Text("Ke Section Log Aktivitas"),
+            child: const Text("Ke Section Log Aktivitas"),
           ),
           TextButton(
             onPressed: () => context.pushNamed('manajemen_pengguna'),
-            child: Text("Ke Section Manajemen Pengguna"),
+            child: const Text("Ke Section Manajemen Pengguna"),
           ),
         ],
       ),

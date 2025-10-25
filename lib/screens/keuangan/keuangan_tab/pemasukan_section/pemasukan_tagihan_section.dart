@@ -7,7 +7,7 @@ import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PemasukanTagihanSection extends StatefulWidget {
-  PemasukanTagihanSection({super.key});
+  const PemasukanTagihanSection({super.key});
 
   @override
   State<PemasukanTagihanSection> createState() =>
@@ -68,7 +68,7 @@ class _PemasukanTagihanSectionState extends State<PemasukanTagihanSection> {
                 Size(MediaQuery.sizeOf(context).width - 24, 200),
               ),
               padding:
-                  WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
+                  const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -148,7 +148,7 @@ class _PemasukanTagihanSectionState extends State<PemasukanTagihanSection> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppStyles.primaryColor, width: 1.5),
+                  borderSide: const BorderSide(color: AppStyles.primaryColor, width: 1.5),
                 ),
               ),
             ),

@@ -8,7 +8,7 @@ class BroadcastDaftarSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Broadcast Daftar"),
+        title: const Text("Broadcast Daftar"),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

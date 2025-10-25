@@ -43,39 +43,39 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Tambah Kegiatan Baru"),
+        title: const Text("Tambah Kegiatan Baru"),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _namaKegiatanController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nama Kegiatan',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _lokasiController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Lokasi',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _penanggungJawabController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Penanggung Jawab',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
-              value: _selectedKategoriKegiatan,
+              initialValue: _selectedKategoriKegiatan,
               items: _kategoriKegiatanList
                   .map((kategori) => DropdownMenuItem<String>(
                         value: kategori,
@@ -87,21 +87,21 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
                   _selectedKategoriKegiatan = value;
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Kategori Kegiatan',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _deskripsiController,
               maxLines: 4,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Deskripsi',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Row(
               children: [
                 Expanded(
@@ -113,11 +113,11 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
                 ),
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
-                  child: Text('Pilih Tanggal'),
+                  child: const Text('Pilih Tanggal'),
                 ),
               ],
             ),
-            SizedBox(height: 24.0),
+            const SizedBox(height: 24.0),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -125,7 +125,7 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
                   // Validasi input dan simpan ke database atau backend
                   Navigator.pop(context);
                 },
-                child: Text('Simpan Kegiatan'),
+                child: const Text('Simpan Kegiatan'),
               ),
             ),
           ],

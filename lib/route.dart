@@ -283,12 +283,12 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'kategori_iuran',
       path: '/keuangan/pemasukan/kategori_iuran',
-      builder: (context, state) => KategoriIuranSection(),
+      builder: (context, state) => const KategoriIuranSection(),
     ),
     GoRoute(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
-      builder: (context, state) => PemasukanTagihanSection(),
+      builder: (context, state) => const PemasukanTagihanSection(),
     ),
     GoRoute(
       name: 'pemasukan_lain',
@@ -299,7 +299,7 @@ final GoRouter mainRouter = GoRouter(
           name: 'tambah_pemasukan_lain',
           path: 'tambah',
           builder: (context, state) {
-            return TambahPemasukanLainSection();
+            return const TambahPemasukanLainSection();
           },
         ),
       ],
@@ -308,7 +308,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'pengeluaran_daftar',
       path: '/keuangan/pengeluaran/pengeluaran_daftar',
-      builder: (context, state) => PengeluaranDaftarSection(),
+      builder: (context, state) => const PengeluaranDaftarSection(),
     ),
 
     // Push dari Menu Kegiatan

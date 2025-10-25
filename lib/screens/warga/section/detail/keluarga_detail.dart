@@ -4,7 +4,6 @@ import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/family_member_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
-import 'package:go_router/go_router.dart';
 
 class KeluargaDetail extends StatefulWidget {
   final int keluargaIndex;

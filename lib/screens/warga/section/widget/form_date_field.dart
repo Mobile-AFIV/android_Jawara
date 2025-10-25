@@ -36,12 +36,11 @@ class _FormDateFieldState extends State<FormDateField> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppStyles.primaryColor,
               onPrimary: Colors.white,
               surface: Colors.white,
             ),
-            dialogBackgroundColor: Colors.white,
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppStyles.primaryColor,
@@ -49,7 +48,7 @@ class _FormDateFieldState extends State<FormDateField> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
+            ), dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
