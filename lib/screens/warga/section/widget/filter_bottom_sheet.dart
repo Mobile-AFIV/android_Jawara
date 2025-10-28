@@ -125,7 +125,7 @@ class FilterBottomSheet extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Subtitle
-                  Text(
+                  const Text(
                     'Pilih filter yang diinginkan',
                     style: TextStyle(
                       fontSize: 14,

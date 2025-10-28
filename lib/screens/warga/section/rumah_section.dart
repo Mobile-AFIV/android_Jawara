@@ -73,8 +73,8 @@ class _RumahSectionState extends State<RumahSection> {
       showIcons: true,
       optionIcons: {
         'Semua': Icons.list,
-        'Tersedia': Icons.home,
-        'Ditempati': Icons.people,
+        'Tersedia': Icons.check_circle,
+        'Ditempati': Icons.home,
       },
     );
   }
@@ -97,9 +97,9 @@ class _RumahSectionState extends State<RumahSection> {
   IconData? _getIconForFilter(String filter) {
     switch (filter) {
       case 'Tersedia':
-        return Icons.home;
+        return Icons.check_circle;
       case 'Ditempati':
-        return Icons.people;
+        return Icons.home;
       default:
         return null;
     }
@@ -324,10 +324,10 @@ class _RumahSectionState extends State<RumahSection> {
   void _showEditNotAvailableSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
+        content: const Row(
           children: [
             Icon(Icons.info_outline, color: Colors.white),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Hanya rumah dengan status "Tersedia" yang dapat diedit',
@@ -351,10 +351,8 @@ class _RumahSectionState extends State<RumahSection> {
     switch (status.toLowerCase()) {
       case 'tersedia':
         return Icons.check_circle;
-      case 'terisi':
+      case 'ditempati':
         return Icons.home;
-      case 'tidak tersedia':
-        return Icons.cancel;
       default:
         return Icons.info;
     }

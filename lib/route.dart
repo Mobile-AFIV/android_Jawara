@@ -26,12 +26,10 @@ import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_tab.dart
 import 'package:jawara_pintar/screens/keuangan/tab_bar_keuangan.dart';
 import 'package:jawara_pintar/screens/lainnya/lainnya_menu.dart';
 import 'package:jawara_pintar/screens/lainnya/section/channel_transfer_section.dart';
-import 'package:jawara_pintar/screens/lainnya/section/edit/transfer_edit.dart';
 import 'package:jawara_pintar/screens/lainnya/section/log_aktivitas_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/manajemen_pengguna_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
-import 'package:jawara_pintar/screens/lainnya/section/detail/transfer_detail.dart';
 import 'package:jawara_pintar/screens/login_screen.dart';
 import 'package:jawara_pintar/screens/register_screen.dart';
 import 'package:jawara_pintar/screens/warga/section/keluarga_section.dart';
@@ -285,12 +283,12 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'kategori_iuran',
       path: '/keuangan/pemasukan/kategori_iuran',
-      builder: (context, state) => KategoriIuranSection(),
+      builder: (context, state) => const KategoriIuranSection(),
     ),
     GoRoute(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
-      builder: (context, state) => PemasukanTagihanSection(),
+      builder: (context, state) => const PemasukanTagihanSection(),
     ),
     GoRoute(
       name: 'pemasukan_lain',
@@ -301,7 +299,7 @@ final GoRouter mainRouter = GoRouter(
           name: 'tambah_pemasukan_lain',
           path: 'tambah',
           builder: (context, state) {
-            return TambahPemasukanLainSection();
+            return const TambahPemasukanLainSection();
           },
         ),
       ],
@@ -310,7 +308,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'pengeluaran_daftar',
       path: '/keuangan/pengeluaran/pengeluaran_daftar',
-      builder: (context, state) => PengeluaranDaftarSection(),
+      builder: (context, state) => const PengeluaranDaftarSection(),
     ),
 
     // Push dari Menu Kegiatan
@@ -362,11 +360,6 @@ final GoRouter mainRouter = GoRouter(
           name: 'tambah_channel_transfer',
           path: 'tambah_channel_transfer',
           builder: (context, state) => const TambahChannelSection(),
-        ),
-        GoRoute(
-          name: 'transfer_detail',
-          path: 'transfer_detail',
-          builder: (context, state) => const TransferDetail(),
         ),
         // GoRoute(
         //   name: 'transfer_edit',

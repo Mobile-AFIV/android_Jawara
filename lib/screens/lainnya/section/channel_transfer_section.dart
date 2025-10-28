@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
 
@@ -171,13 +170,13 @@ class _ChannelTransferSectionState extends State<ChannelTransferSection> {
         childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppStyles.primaryColor,
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.account_balance,
-            color: const Color.fromARGB(255, 18, 17, 23),
+            color: Color.fromARGB(255, 18, 17, 23),
             size: 20,
           ),
         ),

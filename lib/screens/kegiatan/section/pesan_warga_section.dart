@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class PesanWargaSection extends StatelessWidget {
   const PesanWargaSection({super.key});
@@ -8,7 +7,7 @@ class PesanWargaSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pesan Warga"),
+        title: const Text("Pesan Warga"),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

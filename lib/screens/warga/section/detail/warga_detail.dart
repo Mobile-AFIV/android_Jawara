@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
-import 'package:go_router/go_router.dart';
 
 class WargaDetail extends StatefulWidget {
   final int wargaIndex;
@@ -130,6 +129,7 @@ class _WargaDetailState extends State<WargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

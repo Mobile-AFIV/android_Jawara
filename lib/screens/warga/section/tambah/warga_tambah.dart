@@ -6,8 +6,6 @@ import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.d
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_city_autocomplete.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
-import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:intl/intl.dart';
 
 class WargaTambah extends StatefulWidget {
   const WargaTambah({super.key});
@@ -315,7 +313,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions, 'Lainnya'].map((String job) {
+              items: [...WargaDummy.jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),

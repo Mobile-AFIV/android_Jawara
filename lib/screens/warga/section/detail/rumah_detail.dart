@@ -4,7 +4,6 @@ import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_history_item.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
-import 'package:go_router/go_router.dart';
 
 class RumahDetail extends StatefulWidget {
   final int rumahIndex;
@@ -124,6 +123,7 @@ class _RumahDetailState extends State<RumahDetail> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

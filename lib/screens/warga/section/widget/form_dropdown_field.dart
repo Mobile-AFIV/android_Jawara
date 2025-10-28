@@ -75,7 +75,7 @@ class _FormDropdownFieldState<T> extends State<FormDropdownField<T>> with Single
           hintText: widget.hintText,
           prefixIcon: widget.prefixIcon,
         ),
-        value: widget.value,
+        initialValue: widget.value,
         items: widget.items,
         onChanged: widget.onChanged,
         validator: widget.validator ?? (widget.isRequired
@@ -86,7 +86,7 @@ class _FormDropdownFieldState<T> extends State<FormDropdownField<T>> with Single
           return null;
         }
             : null),
-        icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppStyles.primaryColor),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppStyles.primaryColor),
         dropdownColor: Colors.white,
         borderRadius: BorderRadius.circular(12),
         elevation: 8,

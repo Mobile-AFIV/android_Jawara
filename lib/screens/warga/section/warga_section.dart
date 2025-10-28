@@ -64,7 +64,7 @@ class _WargaSectionState extends State<WargaSection> {
     custom_filter.FilterBottomSheet.show(
       context: context,
       title: 'Filter Status Domisili',
-      options: ['Semua', 'Aktif', 'Tidak Aktif'],
+      options: ['Semua', 'Aktif', 'Nonaktif'],
       selectedValue: _selectedFilter,
       onSelected: (filter) {
         setState(() => _selectedFilter = filter);
@@ -74,7 +74,7 @@ class _WargaSectionState extends State<WargaSection> {
       optionIcons: {
         'Semua': Icons.list,
         'Aktif': Icons.check_circle,
-        'Tidak Aktif': Icons.cancel,
+        'Nonaktif': Icons.cancel,
       },
     );
   }
@@ -83,7 +83,7 @@ class _WargaSectionState extends State<WargaSection> {
     switch (filter) {
       case 'Aktif':
         return Icons.check_circle;
-      case 'Tidak Aktif':
+      case 'Nonaktif':
         return Icons.cancel;
       default:
         return null;

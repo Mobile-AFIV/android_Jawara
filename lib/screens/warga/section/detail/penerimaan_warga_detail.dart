@@ -4,7 +4,6 @@ import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_application_actions.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
-import 'package:go_router/go_router.dart';
 
 class PenerimaanWargaDetail extends StatefulWidget {
   final int penerimaanIndex;
@@ -217,6 +216,7 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context, true), // Return with refresh flag
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

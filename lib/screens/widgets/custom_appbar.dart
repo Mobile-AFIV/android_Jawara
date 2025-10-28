@@ -21,7 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: AppStyles.primaryColor,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.menu_book_rounded,
                 size: 16,
@@ -29,8 +29,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          SizedBox(width: 8),
-          Text(
+          const SizedBox(width: 8),
+          const Text(
             "Jawara\nPintar",
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
@@ -51,9 +51,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Column(
+                      const Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const [
+                        children: [
                           Text(
                             "Hello, Admin Jawara",
                             style: TextStyle(
@@ -88,7 +88,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         backgroundColor: AppStyles.primaryColor.withValues(
                           alpha: 0.2,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.person,
                           size: 16,
                           color: AppStyles.primaryColor,

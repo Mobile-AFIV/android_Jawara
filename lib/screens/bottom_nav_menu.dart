@@ -41,7 +41,7 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       body: widget.child,
       bottomNavigationBar: Container(
         clipBehavior: Clip.antiAlias,
@@ -67,10 +67,10 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
           selectedItemColor: AppStyles.primaryColor,
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
-          selectedIconTheme: IconThemeData(
+          selectedIconTheme: const IconThemeData(
             color: AppStyles.primaryColor,
           ),
-          unselectedIconTheme: IconThemeData(
+          unselectedIconTheme: const IconThemeData(
             color: Colors.grey,
           ),
           onTap: (value) {

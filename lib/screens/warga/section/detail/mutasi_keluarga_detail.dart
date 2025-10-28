@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/mutasi_keluarga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
-import 'package:go_router/go_router.dart';
 
 class MutasiKeluargaDetail extends StatefulWidget {
   final int mutasiIndex;
@@ -76,6 +75,7 @@ class _MutasiKeluargaDetailState extends State<MutasiKeluargaDetail> {
               DetailBackButton(
                 onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
