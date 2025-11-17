@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "677414590656",
+    "project_id": "khip01-jawara-app",
+    "storage_bucket": "khip01-jawara-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677414590656:android:f6c30559a13f63600bf525",
+        "android_client_info": {
+          "package_name": "com.AFIV.jawara"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjxgxXJbv-jHlU7U9P0Rz9mb6ETY_r9eY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
