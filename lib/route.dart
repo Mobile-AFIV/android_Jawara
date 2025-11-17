@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/bottom_nav_menu.dart';
 import 'package:jawara_pintar/screens/dashboard/dashboard_menu.dart';
@@ -31,6 +32,7 @@ import 'package:jawara_pintar/screens/lainnya/section/manajemen_pengguna_section
 import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
 import 'package:jawara_pintar/screens/login_screen.dart';
+import 'package:jawara_pintar/screens/profile_screen.dart';
 import 'package:jawara_pintar/screens/register_screen.dart';
 import 'package:jawara_pintar/screens/warga/section/keluarga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/mutasi_keluarga_section.dart';
@@ -50,6 +52,19 @@ import 'package:jawara_pintar/screens/warga/warga_menu.dart';
 
 final GoRouter mainRouter = GoRouter(
   initialLocation: '/login',
+  redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser;
+    final loggingIn = state.matchedLocation == "/login";
+
+    if (user == null && !loggingIn) {
+      return "/login";
+    }
+    if (user != null && loggingIn) {
+      return "/dashboard";
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       name: 'login',
@@ -60,6 +75,11 @@ final GoRouter mainRouter = GoRouter(
       name: 'register',
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      name: 'profile',
+      path: '/profile',
+      builder: (context, state) => ProfileScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) {
@@ -352,22 +372,21 @@ final GoRouter mainRouter = GoRouter(
 
     // Push dari Menu Lainnya
     GoRoute(
-      name: 'channel_transfer',
-      path: '/channel_transfer',
-      builder: (context, state) => const ChannelTransferSection(),
-      routes: [
-        GoRoute(
-          name: 'tambah_channel_transfer',
-          path: 'tambah_channel_transfer',
-          builder: (context, state) => const TambahChannelSection(),
-        ),
-        // GoRoute(
-        //   name: 'transfer_edit',
-        //   path: 'transfer_edit',
-        //   builder: (context, state) => const TransferChannel(),
-        // )  
-        ]
-    ),
+        name: 'channel_transfer',
+        path: '/channel_transfer',
+        builder: (context, state) => const ChannelTransferSection(),
+        routes: [
+          GoRoute(
+            name: 'tambah_channel_transfer',
+            path: 'tambah_channel_transfer',
+            builder: (context, state) => const TambahChannelSection(),
+          ),
+          // GoRoute(
+          //   name: 'transfer_edit',
+          //   path: 'transfer_edit',
+          //   builder: (context, state) => const TransferChannel(),
+          // )
+        ]),
     GoRoute(
       name: 'log_aktivitas',
       path: '/log_aktivitas',

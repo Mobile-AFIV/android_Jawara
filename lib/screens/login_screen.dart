@@ -62,8 +62,8 @@ class _LoginPageState extends State<LoginPage> {
             title: const Text(
               'Login Berhasil',
             ),
-            content: const Text(
-              'Selamat datang admin!',
+            content: Text(
+              'Selamat datang ${_authService.currentUser?.displayName ?? "Anonym"}!',
             ),
             actions: [
               CustomDialog.actionFilledButton(

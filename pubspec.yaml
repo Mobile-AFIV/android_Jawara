@@ -18,6 +18,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
 
 dev_dependencies:
   flutter_test:

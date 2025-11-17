@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/widgets/custom_dialog.dart';
+import 'package:jawara_pintar/services/auth_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/utils/util.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final GlobalKey accountButtonKey;
+  final AuthService _authService = AuthService();
 
-  const CustomAppBar({super.key, required this.accountButtonKey});
+  CustomAppBar({super.key, required this.accountButtonKey});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
@@ -25,7 +27,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               textButton: "Cancel",
             ),
             CustomDialog.actionFilledButton(
-              onPressed: () => context.goNamed("login"),
+              onPressed: () async {
+                await _authService.logout();
+                if (!context.mounted) return;
+                context.goNamed('login');
+              },
               textButton: 'OK',
               customButtonColor: AppStyles.errorColor,
             )
@@ -41,7 +47,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         'icon': Icons.person_2_outlined,
         'value': 'Profile',
         'color': AppStyles.primaryColor.withValues(alpha: 0.6),
-        'onTap': () {},
+        'onTap': () => context.pushNamed('profile'),
       },
       {
         'icon': Icons.logout_rounded,
