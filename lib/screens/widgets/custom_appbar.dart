@@ -1,11 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/widgets/custom_dialog.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/utils/util.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  final GlobalKey accountButtonKey;
+
+  const CustomAppBar({super.key, required this.accountButtonKey});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
+
+  void onLogout(BuildContext context) {
+    CustomDialog.show(
+      context: context,
+      builder: (context) {
+        return CustomDialog.alertDialog(
+          title: const Text('Logout'),
+          content: const Text("Apakah anda yakin untuk logout?"),
+          actions: [
+            CustomDialog.actionTextButton(
+              onPressed: () => context.pop(),
+              textButton: "Cancel",
+            ),
+            CustomDialog.actionFilledButton(
+              onPressed: () => context.goNamed("login"),
+              textButton: 'OK',
+              customButtonColor: AppStyles.errorColor,
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  void showDropdownFloatingMenu(BuildContext context) {
+    List<Map<String, dynamic>> dropdownValueList = [
+      {
+        'icon': Icons.person_2_outlined,
+        'value': 'Profile',
+        'color': AppStyles.primaryColor.withValues(alpha: 0.6),
+        'onTap': () {},
+      },
+      {
+        'icon': Icons.logout_rounded,
+        'value': 'Logout',
+        'color': AppStyles.errorColor.withValues(alpha: 0.6),
+        'onTap': () => onLogout(context),
+      }
+    ];
+
+    Widget menuItem({
+      required String value,
+      required IconData iconData,
+      required Color color,
+    }) {
+      return SizedBox(
+        // width: 150,
+        height: 48,
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 16),
+              child: Icon(iconData, color: color),
+            ),
+            // const SizedBox(width: 12),
+            Text(value),
+          ],
+        ),
+      );
+    }
+
+    List<PopupMenuItem> dropdownList = dropdownValueList.map<PopupMenuItem>(
+      (Map<String, dynamic> dropdownValue) {
+        return PopupMenuItem(
+          onTap: dropdownValue['onTap'],
+          child: menuItem(
+            iconData: dropdownValue['icon'],
+            value: dropdownValue['value'],
+            color: dropdownValue['color'],
+          ),
+        );
+      },
+    ).toList();
+
+    showMenu(
+      clipBehavior: Clip.antiAlias,
+      context: context,
+      position: Util.getRectPositionFromAccountButtom(
+        context: context,
+        parentKey: accountButtonKey,
+      ),
+      elevation: 4,
+      menuPadding: EdgeInsets.zero,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadiusGeometry.only(
+          topRight: Radius.zero,
+          topLeft: Radius.zero,
+          bottomRight: Radius.circular(8),
+          bottomLeft: Radius.circular(8),
+        ),
+      ),
+      color: Colors.white,
+      items: dropdownList,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +143,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {},
+                key: accountButtonKey,
+                borderRadius: BorderRadius.circular(6),
+                onTap: () {
+                  showDropdownFloatingMenu(context);
+                },
                 child: Ink(
                   padding:
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -94,6 +197,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           color: AppStyles.primaryColor,
                         ),
                       ),
+                      const Icon(Icons.more_vert_rounded),
                     ],
                   ),
                 ),

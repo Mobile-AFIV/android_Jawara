@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
+import 'package:jawara_pintar/screens/widgets/custom_dialog.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import '../services/auth_service.dart';
@@ -54,26 +55,20 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (mounted) {
-        showDialog(
+        CustomDialog.show(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(
+          barrierDismissible: false,
+          builder: (context) => CustomDialog.alertDialog(
+            title: const Text(
               'Login Berhasil',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-              ),
             ),
-            content: Text(
+            content: const Text(
               'Selamat datang admin!',
-              style: GoogleFonts.poppins(),
             ),
             actions: [
-              TextButton(
+              CustomDialog.actionFilledButton(
                 onPressed: () => context.goNamed('dashboard'),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.poppins(),
-                ),
+                textButton: "OK",
               ),
             ],
           ),

@@ -27,12 +27,6 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
               subHeadingText: "Pengeluaran Daftar",
               lainnyaOnPressed: () => context.pushNamed('pengeluaran_daftar'),
             ),
-            // Container(
-            //   height: 200,
-            //   width: double.infinity,
-            //   color: Colors.red.shade50,
-            //   child: const Center(child: Text("Body")),
-            // ),
             pengeluaranSection(),
           ],
         ),
@@ -172,13 +166,16 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
             !(topPemasukanLain.length < limitItemShowed))
           Positioned(
             bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 20),
-              width: MediaQuery.sizeOf(context).width,
-              child: Text(
-                "+${pengeluaranList.length - limitItemShowed + 1} lainnya",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                textAlign: TextAlign.center,
+            child: InkWell(
+              onTap: () => context.pushNamed('pengeluaran_daftar'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.sizeOf(context).width,
+                child: Text(
+                  "+${pengeluaranList.length - limitItemShowed + 1} lainnya",
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
