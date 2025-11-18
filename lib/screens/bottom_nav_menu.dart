@@ -41,7 +41,7 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      appBar: const CustomAppBar(),
+      appBar: CustomAppBar(),
       body: widget.child,
       bottomNavigationBar: Container(
         clipBehavior: Clip.antiAlias,
