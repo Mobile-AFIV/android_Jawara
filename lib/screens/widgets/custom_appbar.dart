@@ -120,7 +120,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
       elevation: 4,
       menuPadding: EdgeInsets.zero,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadiusGeometry.only(
+        borderRadius: BorderRadius.only(
           topRight: Radius.zero,
           topLeft: Radius.zero,
           bottomRight: Radius.circular(8),
