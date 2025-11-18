@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class Util {
-  static RelativeRect getRectPositionFromAccountButtom({
+  static RelativeRect getRectPositionFromAccountButton({
     required BuildContext context,
     required GlobalKey parentKey,
   }) {
