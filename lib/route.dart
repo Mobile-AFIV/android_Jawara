@@ -54,7 +54,7 @@ final GoRouter mainRouter = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
-    final loggingIn = state.matchedLocation == "/login";
+    final loggingIn = state.matchedLocation == "/login" || state.matchedLocation == "/register";
 
     if (user == null && !loggingIn) {
       return "/login";
