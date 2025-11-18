@@ -137,7 +137,7 @@ class AuthService {
       case 'weak-password':
         return 'Password setidaknya ada 6 karakter';
       case 'email-already-in-use':
-        return 'Email ini sudah dipernah digunakan';
+        return 'Email ini sudah pernah digunakan';
       default:
         return 'Terjadi kesalahan. Coba lagi.';
     }
