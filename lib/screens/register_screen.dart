@@ -147,7 +147,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       alamatManual: alamatManual,
     );
 
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
     if (result['success']) {
       if (mounted) {
         CustomDialog.show(
