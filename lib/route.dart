@@ -79,7 +79,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'profile',
       path: '/profile',
-      builder: (context, state) => ProfileScreen(),
+      builder: (context, state) => const ProfileScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) {
