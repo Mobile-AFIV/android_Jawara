@@ -20,7 +20,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
   bool _isLoading = false;
   String _errorMessage = '';
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -43,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final result = await _authService.login(
+    final result = await AuthService.instance.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
@@ -63,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
               'Login Berhasil',
             ),
             content: Text(
-              'Selamat datang ${_authService.currentUser?.displayName ?? "Anonym"}!',
+              'Selamat datang ${AuthService.instance.currentUser?.displayName ?? "Anonym"}!',
             ),
             actions: [
               CustomDialog.actionFilledButton(
@@ -251,9 +250,10 @@ class _LoginPageState extends State<LoginPage> {
                             color: AppStyles.textSecondaryColor,
                           ),
                         ),
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
                             context.goNamed('register');
+                            debugPrint("Hello World Register");
                           },
                           child: Text(
                             'Daftar',

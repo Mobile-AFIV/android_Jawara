@@ -16,7 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<Map<String, dynamic>?> loadFullProfile(String uid) async {
     // Get Profil
     final UserProfile? profile =
-        await UserProfileService().getUserProfileByUid(uid);
+        await UserProfileService.instance.getUserProfileByUid(uid);
     if (profile == null) return null;
 
     // Get Rumah

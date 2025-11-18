@@ -18,7 +18,6 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _CustomAppBarState extends State<CustomAppBar> {
   late GlobalKey _accountButtonKey;
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -28,7 +27,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   @override
   void dispose() {
-    _accountButtonKey.currentState!.dispose();
+    if (_accountButtonKey.currentState != null) {
+      _accountButtonKey.currentState!.dispose();
+    }
     super.dispose();
   }
 
@@ -46,7 +47,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
             ),
             CustomDialog.actionFilledButton(
               onPressed: () async {
-                await _authService.logout();
+                await AuthService.instance.logout();
                 if (!context.mounted) return;
                 context.goNamed('login');
               },
@@ -182,7 +183,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "Hello, ${_authService.currentUser!.displayName}!",
+                            "Hello, ${AuthService.instance.currentUser!.displayName}!",
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
