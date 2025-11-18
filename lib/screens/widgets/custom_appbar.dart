@@ -5,14 +5,32 @@ import 'package:jawara_pintar/services/auth_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/utils/util.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final GlobalKey accountButtonKey;
-  final AuthService _authService = AuthService();
+class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 
-  CustomAppBar({super.key, required this.accountButtonKey});
+  const CustomAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
+
+  @override
+  State<CustomAppBar> createState() => _CustomAppBarState();
+}
+
+class _CustomAppBarState extends State<CustomAppBar> {
+  late GlobalKey _accountButtonKey;
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    _accountButtonKey = GlobalKey();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _accountButtonKey.currentState!.dispose();
+    super.dispose();
+  }
 
   void onLogout(BuildContext context) {
     CustomDialog.show(
@@ -96,7 +114,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       context: context,
       position: Util.getRectPositionFromAccountButtom(
         context: context,
-        parentKey: accountButtonKey,
+        parentKey: _accountButtonKey,
       ),
       elevation: 4,
       menuPadding: EdgeInsets.zero,
@@ -149,7 +167,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                key: accountButtonKey,
+                key: _accountButtonKey,
                 borderRadius: BorderRadius.circular(6),
                 onTap: () {
                   showDropdownFloatingMenu(context);
@@ -160,17 +178,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            "Hello, Admin Jawara",
-                            style: TextStyle(
+                            "Hello, ${_authService.currentUser!.displayName}!",
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
+                          const Text(
                             "admin1@gmail.com",
                             style: TextStyle(fontSize: 10),
                           ),

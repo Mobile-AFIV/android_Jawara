@@ -14,8 +14,6 @@ class BottomNavMenu extends StatefulWidget {
 }
 
 class _BottomNavMenuState extends State<BottomNavMenu> {
-  final GlobalKey accountTopButtonGlobalKey = GlobalKey();
-
   int activeMenuIndex = 0;
 
   final List<String> routerName = [
@@ -43,7 +41,7 @@ class _BottomNavMenuState extends State<BottomNavMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      appBar: CustomAppBar(accountButtonKey: accountTopButtonGlobalKey),
+      appBar: CustomAppBar(),
       body: widget.child,
       bottomNavigationBar: Container(
         clipBehavior: Clip.antiAlias,
