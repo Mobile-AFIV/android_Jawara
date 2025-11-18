@@ -113,7 +113,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
     showMenu(
       clipBehavior: Clip.antiAlias,
       context: context,
-      position: Util.getRectPositionFromAccountButtom(
+      position: Util.getRectPositionFromAccountButton(
         context: context,
         parentKey: _accountButtonKey,
       ),
