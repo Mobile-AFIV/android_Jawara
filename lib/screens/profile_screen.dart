@@ -6,7 +6,7 @@ import 'package:jawara_pintar/models/user_profile.dart';
 import 'package:jawara_pintar/services/user_profile_service.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({super.key});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
