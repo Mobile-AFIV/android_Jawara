@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 
-class KegiatanDetail extends StatefulWidget {
+class KegiatanDetail extends StatelessWidget {
   const KegiatanDetail({super.key});
 
-  @override
-  State<KegiatanDetail> createState() => _KegiatanDetailState();
-}
-
-class _KegiatanDetailState extends State<KegiatanDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
