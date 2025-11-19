@@ -10,18 +10,18 @@ class DashboardMenu extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Ini Menu Dashboard"),
+          const Text("Ini Menu Dashboard"),
           TextButton(
             onPressed: () => context.pushNamed('dashboard_kegiatan'),
-            child: Text("Ke Section Dashboard Kegiatan"),
+            child: const Text("Ke Section Dashboard Kegiatan"),
           ),
           TextButton(
             onPressed: () => context.pushNamed('dashboard_kependudukan'),
-            child: Text("Ke Section Dashboard Kependudukan"),
+            child: const Text("Ke Section Dashboard Kependudukan"),
           ),
           TextButton(
             onPressed: () => context.pushNamed('dashboard_keuangan'),
-            child: Text("Ke Section Dashboard Keuangan"),
+            child: const Text("Ke Section Dashboard Keuangan"),
           ),
         ],
       ),

@@ -41,7 +41,7 @@ class _TabBarKeuanganState extends State<TabBarKeuangan> {
               overlayColor: WidgetStatePropertyAll(
                 AppStyles.primaryColor.withValues(alpha: 0.04),
               ),
-              splashBorderRadius: BorderRadius.only(
+              splashBorderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),

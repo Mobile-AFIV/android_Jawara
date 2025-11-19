@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
-import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/resident_application_actions.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class PenerimaanWargaDetail extends StatefulWidget {
   final int penerimaanIndex;
@@ -184,156 +186,40 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
               const SizedBox(height: 24),
 
               // NIK
-              _buildDetailField("NIK:", penerimaan.nik),
+              DetailField(label: "NIK:", value: penerimaan.nik),
 
               // Gender
-              _buildDetailField("Jenis Kelamin:", penerimaan.gender),
+              DetailField(label: "Jenis Kelamin:", value: penerimaan.gender),
 
               // Registration Status
-              _buildStatusField("Status Pendaftaran:", penerimaan.registrationStatus, penerimaan.statusColor),
+              StatusField(
+                  label: "Status Pendaftaran:",
+                  value: penerimaan.registrationStatus,
+                  color: penerimaan.statusColor
+              ),
 
               // Show rejection reason if status is Ditolak
               if (penerimaan.registrationStatus == 'Ditolak' && penerimaan.rejectionReason != null)
-                _buildDetailField("Alasan Ditolak:", penerimaan.rejectionReason!),
+                DetailField(label: "Alasan Ditolak:", value: penerimaan.rejectionReason!),
 
               const SizedBox(height: 24),
 
               // Actions based on status
-              _buildActionButtons(),
+              ResidentApplicationActions(
+                penerimaan: penerimaan,
+                onAccept: _acceptResident,
+                onShowRejectionDialog: _showRejectionDialog,
+              ),
 
               const SizedBox(height: 16),
               // Back button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, true); // Return with refresh flag
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppStyles.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text('Kembali'),
-                ),
+              DetailBackButton(
+                onPressed: () => Navigator.pop(context, true), // Return with refresh flag
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // Helper method to build appropriate action buttons based on status
-  Widget _buildActionButtons() {
-    // For applications with "Menunggu" status, show both accept and reject buttons
-    if (penerimaan.registrationStatus == 'Menunggu') {
-      return Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _acceptResident,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[100],
-                foregroundColor: Colors.green[800],
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text('Terima'),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _showRejectionDialog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[100],
-                foregroundColor: Colors.red[800],
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text('Tolak'),
-            ),
-          ),
-        ],
-      );
-    }
-    // For rejected applications, show only the accept button
-    else if (penerimaan.registrationStatus == 'Ditolak') {
-      return SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: _acceptResident,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green[100],
-            foregroundColor: Colors.green[800],
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          child: const Text('Terima Pendaftaran'),
-        ),
-      );
-    }
-    // For accepted applications, show no action buttons
-    else {
-      return const SizedBox.shrink();
-    }
-  }
-
-  Widget _buildDetailField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusField(String label, String value, MaterialColor color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: color[100],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value,
-              style: TextStyle(
-                color: color[800],
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

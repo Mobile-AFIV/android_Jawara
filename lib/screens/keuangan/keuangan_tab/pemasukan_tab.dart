@@ -160,13 +160,16 @@ class _PemasukanTabState extends State<PemasukanTab> {
         if (topKategori.length != 1 && !(topKategori.length < limitItemShowed))
           Positioned(
             bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 20),
-              width: MediaQuery.sizeOf(context).width,
-              child: Text(
-                "+${kategoriList.length - limitItemShowed + 1} lainnya",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                textAlign: TextAlign.center,
+            child: InkWell(
+              onTap: () => context.pushNamed('kategori_iuran'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.sizeOf(context).width,
+                child: Text(
+                  "+${kategoriList.length - limitItemShowed + 1} lainnya",
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -278,7 +281,7 @@ class _PemasukanTabState extends State<PemasukanTab> {
                     decorationColor: Colors.grey.shade500,
                   ),
                 ),
-                const Expanded(child: const SizedBox(width: 32)),
+                const Expanded(child: SizedBox(width: 32)),
                 // const SizedBox(width: 8),
                 Container(
                   padding:
@@ -336,13 +339,16 @@ class _PemasukanTabState extends State<PemasukanTab> {
         if (topTagihan.length != 1 && !(topTagihan.length < limitItemShowed))
           Positioned(
             bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 20),
-              width: MediaQuery.sizeOf(context).width,
-              child: Text(
-                "+${tagihanList.length - limitItemShowed + 1} lainnya",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                textAlign: TextAlign.center,
+            child: InkWell(
+              onTap: () => context.pushNamed('pemasukan_tagihan'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.sizeOf(context).width,
+                child: Text(
+                  "+${tagihanList.length - limitItemShowed + 1} lainnya",
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -482,13 +488,16 @@ class _PemasukanTabState extends State<PemasukanTab> {
             !(topPemasukanLain.length < limitItemShowed))
           Positioned(
             bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 20),
-              width: MediaQuery.sizeOf(context).width,
-              child: Text(
-                "+${pemasukanLainList.length - limitItemShowed + 1} lainnya",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                textAlign: TextAlign.center,
+            child: InkWell(
+              onTap: () => context.pushNamed('pemasukan_lain'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                width: MediaQuery.sizeOf(context).width,
+                child: Text(
+                  "+${pemasukanLainList.length - limitItemShowed + 1} lainnya",
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),

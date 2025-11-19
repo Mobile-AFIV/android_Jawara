@@ -7,7 +7,7 @@ class DashboardKegiatanSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Dashboard Kegiatan"),
+        title: const Text("Dashboard Kegiatan"),
       ),
       body: const Center(
         child: Text("Ini Section Dashboard Kegiatan di Menu Dashboard"),

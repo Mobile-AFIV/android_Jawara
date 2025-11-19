@@ -158,12 +158,12 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
         DropdownMenuTheme(
           data: DropdownMenuThemeData(
             inputDecorationTheme: InputDecorationTheme(
-              hintStyle: TextStyle(
+              hintStyle: const TextStyle(
                 color: Colors.grey,
               ),
               focusColor: AppStyles.primaryColor,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 borderSide: BorderSide(
                   color: Colors.grey.shade300,
                   width: 1,
@@ -178,7 +178,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                 Size(MediaQuery.sizeOf(context).width - 24, 200),
               ),
               padding:
-                  WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
+                  const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

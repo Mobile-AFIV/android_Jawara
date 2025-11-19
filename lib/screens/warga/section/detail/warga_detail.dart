@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
-import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class WargaDetail extends StatefulWidget {
   final int wargaIndex;
@@ -92,82 +92,47 @@ class _WargaDetailState extends State<WargaDetail> {
               const SizedBox(height: 24),
 
               // Full name
-              _buildDetailField("Nama Lengkap:", warga.name),
+              DetailField(label: "Nama Lengkap:", value: warga.name),
 
               // Birth place and date
-              _buildDetailField("Tempat, Tanggal Lahir:", "${warga.birthPlace}, ${warga.birthDate}"),
+              DetailField(label: "Tempat, Tanggal Lahir:", value: "${warga.birthPlace}, ${warga.birthDate}"),
 
               // Phone number
-              _buildDetailField("Nomor telepon:", warga.phoneNumber),
+              DetailField(label: "Nomor telepon:", value: warga.phoneNumber),
 
               // Gender
-              _buildDetailField("Jenis Kelamin:", warga.gender),
+              DetailField(label: "Jenis Kelamin:", value: warga.gender),
 
               // Religion
-              _buildDetailField("Agama:", warga.religion),
+              DetailField(label: "Agama:", value: warga.religion),
 
               // Blood type
-              _buildDetailField("Golongan Darah:", warga.bloodType),
+              DetailField(label: "Golongan Darah:", value: warga.bloodType),
 
               // Education
-              _buildDetailField("Pendidikan Terakhir:", warga.education),
+              DetailField(label: "Pendidikan Terakhir:", value: warga.education),
 
               // Job
-              _buildDetailField("Pekerjaan:", warga.job),
+              DetailField(label: "Pekerjaan:", value: warga.job),
 
               // Family role
-              _buildDetailField("Peran dalam Keluarga:", warga.familyRole),
+              DetailField(label: "Peran dalam Keluarga:", value: warga.familyRole),
 
               // Domicile status
-              _buildDetailField("Status Penduduk:", warga.domicileStatus),
+              DetailField(label: "Status Penduduk:", value: warga.domicileStatus),
 
               // Family name
-              _buildDetailField("Keluarga:", warga.family),
+              DetailField(label: "Keluarga:", value: warga.family),
 
               const SizedBox(height: 24),
               // Back button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppStyles.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text('Kembali'),
-                ),
+              DetailBackButton(
+                onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/bottom_nav_menu.dart';
 import 'package:jawara_pintar/screens/dashboard/dashboard_menu.dart';
@@ -31,13 +32,13 @@ import 'package:jawara_pintar/screens/lainnya/section/manajemen_pengguna_section
 import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
 import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
 import 'package:jawara_pintar/screens/login_screen.dart';
+import 'package:jawara_pintar/screens/profile_screen.dart';
 import 'package:jawara_pintar/screens/register_screen.dart';
 import 'package:jawara_pintar/screens/warga/section/keluarga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/mutasi_keluarga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/penerimaan_warga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/rumah_section.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/mutasi_keluarga_tambah.dart';
-import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/warga_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/warga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/detail/keluarga_detail.dart';
@@ -51,6 +52,19 @@ import 'package:jawara_pintar/screens/warga/warga_menu.dart';
 
 final GoRouter mainRouter = GoRouter(
   initialLocation: '/login',
+  redirect: (context, state) {
+    final user = FirebaseAuth.instance.currentUser;
+    final loggingIn = state.matchedLocation == "/login" || state.matchedLocation == "/register";
+
+    if (user == null && !loggingIn) {
+      return "/login";
+    }
+    if (user != null && loggingIn) {
+      return "/dashboard";
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       name: 'login',
@@ -61,6 +75,11 @@ final GoRouter mainRouter = GoRouter(
       name: 'register',
       path: '/register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      name: 'profile',
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) {
@@ -209,11 +228,6 @@ final GoRouter mainRouter = GoRouter(
       builder: (context, state) => const RumahSection(),
       routes: [
         GoRoute(
-          name: 'rumah_tambah',
-          path: 'rumah_tambah',
-          builder: (context, state) => const RumahTambah(),
-        ),
-        GoRoute(
           path: 'rumah_detail',
           name: 'rumah_detail',
           builder: (context, state) {
@@ -289,12 +303,12 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'kategori_iuran',
       path: '/keuangan/pemasukan/kategori_iuran',
-      builder: (context, state) => KategoriIuranSection(),
+      builder: (context, state) => const KategoriIuranSection(),
     ),
     GoRoute(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
-      builder: (context, state) => PemasukanTagihanSection(),
+      builder: (context, state) => const PemasukanTagihanSection(),
     ),
     GoRoute(
       name: 'pemasukan_lain',
@@ -305,7 +319,7 @@ final GoRouter mainRouter = GoRouter(
           name: 'tambah_pemasukan_lain',
           path: 'tambah',
           builder: (context, state) {
-            return TambahPemasukanLainSection();
+            return const TambahPemasukanLainSection();
           },
         ),
       ],
@@ -314,7 +328,7 @@ final GoRouter mainRouter = GoRouter(
     GoRoute(
       name: 'pengeluaran_daftar',
       path: '/keuangan/pengeluaran/pengeluaran_daftar',
-      builder: (context, state) => PengeluaranDaftarSection(),
+      builder: (context, state) => const PengeluaranDaftarSection(),
     ),
 
     // Push dari Menu Kegiatan
@@ -358,17 +372,21 @@ final GoRouter mainRouter = GoRouter(
 
     // Push dari Menu Lainnya
     GoRoute(
-      name: 'channel_transfer',
-      path: '/channel_transfer',
-      builder: (context, state) => const ChannelTransferSection(),
-      routes: [
-        GoRoute(
-          name: 'tambah_channel_transfer',
-          path: 'tambah_channel_transfer',
-          builder: (context, state) => const TambahChannelSection(),
-        ),  
-        ]
-    ),
+        name: 'channel_transfer',
+        path: '/channel_transfer',
+        builder: (context, state) => const ChannelTransferSection(),
+        routes: [
+          GoRoute(
+            name: 'tambah_channel_transfer',
+            path: 'tambah_channel_transfer',
+            builder: (context, state) => const TambahChannelSection(),
+          ),
+          // GoRoute(
+          //   name: 'transfer_edit',
+          //   path: 'transfer_edit',
+          //   builder: (context, state) => const TransferChannel(),
+          // )
+        ]),
     GoRoute(
       name: 'log_aktivitas',
       path: '/log_aktivitas',

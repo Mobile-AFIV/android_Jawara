@@ -9,16 +9,16 @@ class KegiatanDetail extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Kegiatan Detail"),
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           children: [
             Card(
-              margin: const EdgeInsets.all(16.0),
+              margin: EdgeInsets.all(16.0),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Nama Kegiatan: Rapat RT 05',
                       style: TextStyle(

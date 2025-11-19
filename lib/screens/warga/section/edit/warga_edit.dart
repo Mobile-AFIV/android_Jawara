@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
-import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_city_autocomplete.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
 import 'package:intl/intl.dart';
 
 class WargaEdit extends StatefulWidget {
@@ -131,35 +135,6 @@ class _WargaEditState extends State<WargaEdit> {
     super.dispose();
   }
 
-  // Select date method
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppStyles.primaryColor,
-              onPrimary: Colors.white,
-            ),
-            dialogBackgroundColor: Colors.white,
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _birthDateController.text = DateFormat('d MMMM yyyy', 'id_ID').format(picked);
-      });
-    }
-  }
-
   // Save the edited data
   void _saveData() {
     if (_formKey.currentState!.validate()) {
@@ -237,45 +212,14 @@ class _WargaEditState extends State<WargaEdit> {
             }
           },
           controlsBuilder: (context, details) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: details.onStepContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppStyles.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        _currentStep == getSteps().length - 1 ? 'Simpan' : 'Lanjut',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: details.onStepCancel,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppStyles.primaryColor,
-                        side: BorderSide(color: AppStyles.primaryColor),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        _currentStep == 0 ? 'Batal' : 'Kembali',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            final isLastStep = _currentStep == getSteps().length - 1;
+            final isFirstStep = _currentStep == 0;
+
+            return FormStepperControls(
+              onContinue: details.onStepContinue!,
+              onCancel: details.onStepCancel!,
+              isLastStep: isLastStep,
+              isFirstStep: isFirstStep,
             );
           },
           steps: getSteps(),
@@ -292,10 +236,12 @@ class _WargaEditState extends State<WargaEdit> {
         title: const Text("Data Pribadi"),
         content: Column(
           children: [
+            const SizedBox(height: 5),
             // Full Name
-            TextFormField(
+            FormTextField(
               controller: _nameController,
-              decoration: _inputDecoration("Nama Lengkap *"),
+              label: "Nama Lengkap",
+              isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Nama tidak boleh kosong';
@@ -306,9 +252,10 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // NIK
-            TextFormField(
+            FormTextField(
               controller: _nikController,
-              decoration: _inputDecoration("NIK *"),
+              label: "NIK",
+              isRequired: true,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -327,8 +274,9 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Gender
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Jenis Kelamin *"),
+            FormDropdownField<String>(
+              label: "Jenis Kelamin",
+              isRequired: true,
               value: _selectedGender,
               items: WargaDummy.genderOptions.map((String gender) {
                 return DropdownMenuItem<String>(
@@ -351,62 +299,29 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Birth Place with autocomplete
-            Autocomplete<String>(
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                if (textEditingValue.text.isEmpty) {
-                  return const Iterable<String>.empty();
-                }
-                return WargaDummy.cityOptions.where((String city) {
-                  return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                });
-              },
-              initialValue: TextEditingValue(text: _birthPlaceController.text),
-              onSelected: (String selection) {
-                _birthPlaceController.text = selection;
-              },
-              fieldViewBuilder: (
-                  BuildContext context,
-                  TextEditingController fieldController,
-                  FocusNode fieldFocusNode,
-                  VoidCallback onFieldSubmitted
-                  ) {
-                // Update the controller without losing existing text
-                if (fieldController.text.isEmpty && _birthPlaceController.text.isNotEmpty) {
-                  fieldController.text = _birthPlaceController.text;
-                }
-                _birthPlaceController = fieldController;
-
-                return TextFormField(
-                  controller: fieldController,
-                  focusNode: fieldFocusNode,
-                  decoration: _inputDecoration("Tempat Lahir"),
-                  onFieldSubmitted: (String value) {
-                    onFieldSubmitted();
-                  },
-                );
-              },
+            FormCityAutocomplete(
+              controller: _birthPlaceController,
+              label: "Tempat Lahir",
             ),
             const SizedBox(height: 16),
 
             // Birth Date
-            GestureDetector(
-              onTap: () => _selectDate(context),
-              child: AbsorbPointer(
-                child: TextFormField(
-                  controller: _birthDateController,
-                  decoration: _inputDecoration(
-                    "Tanggal Lahir",
-                    suffixIcon: Icons.calendar_today,
-                  ),
-                ),
-              ),
+            FormDateField(
+              controller: _birthDateController,
+              label: "Tanggal Lahir",
+              initialDate: _selectedDate,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedDate = date;
+                });
+              },
             ),
             const SizedBox(height: 16),
 
             // Phone Number
-            TextFormField(
+            FormTextField(
               controller: _phoneController,
-              decoration: _inputDecoration("Nomor Telepon"),
+              label: "Nomor Telepon",
               keyboardType: TextInputType.phone,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -415,8 +330,8 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Religion
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Agama"),
+            FormDropdownField<String>(
+              label: "Agama",
               value: _selectedReligion,
               items: WargaDummy.religionOptions.map((String religion) {
                 return DropdownMenuItem<String>(
@@ -433,8 +348,8 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Blood Type
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Golongan Darah"),
+            FormDropdownField<String>(
+              label: "Golongan Darah",
               value: _selectedBloodType,
               items: WargaDummy.bloodTypeOptions.map((String bloodType) {
                 return DropdownMenuItem<String>(
@@ -457,9 +372,10 @@ class _WargaEditState extends State<WargaEdit> {
         title: const Text("Data Tambahan"),
         content: Column(
           children: [
+            const SizedBox(height: 5),
             // Education
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Pendidikan Terakhir"),
+            FormDropdownField<String>(
+              label: "Pendidikan Terakhir",
               value: _selectedEducation,
               items: WargaDummy.educationOptions.map((String education) {
                 return DropdownMenuItem<String>(
@@ -476,10 +392,10 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Job
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Pekerjaan"),
+            FormDropdownField<String>(
+              label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions, 'Lainnya'].map((String job) {
+              items: [...WargaDummy.jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),
@@ -497,9 +413,10 @@ class _WargaEditState extends State<WargaEdit> {
             if (_selectedJob == 'Lainnya')
               Column(
                 children: [
-                  TextFormField(
+                  FormTextField(
                     controller: _jobController,
-                    decoration: _inputDecoration("Pekerjaan Lainnya"),
+                    label: "Pekerjaan Lainnya",
+                    isRequired: _selectedJob == 'Lainnya',
                     validator: (value) {
                       if (_selectedJob == 'Lainnya' && (value == null || value.isEmpty)) {
                         return 'Mohon isi jenis pekerjaan';
@@ -512,9 +429,10 @@ class _WargaEditState extends State<WargaEdit> {
               ),
 
             // Family Name
-            TextFormField(
+            FormTextField(
               controller: _familyController,
-              decoration: _inputDecoration("Nama Keluarga *"),
+              label: "Nama Keluarga",
+              isRequired: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Nama keluarga tidak boleh kosong';
@@ -525,8 +443,9 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Family Role
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Peran dalam Keluarga *"),
+            FormDropdownField<String>(
+              label: "Peran dalam Keluarga",
+              isRequired: true,
               value: _selectedFamilyRole,
               items: WargaDummy.familyRoleOptions.map((String role) {
                 return DropdownMenuItem<String>(
@@ -549,8 +468,8 @@ class _WargaEditState extends State<WargaEdit> {
             const SizedBox(height: 16),
 
             // Domicile Status
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Status Penduduk"),
+            FormDropdownField<String>(
+              label: "Status Penduduk",
               value: _selectedDomicileStatus,
               items: WargaDummy.statusOptions.map((String status) {
                 return DropdownMenuItem<String>(
@@ -559,16 +478,18 @@ class _WargaEditState extends State<WargaEdit> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                setState(() {
-                  _selectedDomicileStatus = newValue!;
-                });
+                if (newValue != null) {
+                  setState(() {
+                    _selectedDomicileStatus = newValue;
+                  });
+                }
               },
             ),
             const SizedBox(height: 16),
 
             // Life Status
-            DropdownButtonFormField<String>(
-              decoration: _inputDecoration("Status Kehidupan"),
+            FormDropdownField<String>(
+              label: "Status Kehidupan",
               value: _selectedLifeStatus,
               items: WargaDummy.lifeStatusOptions.map((String status) {
                 return DropdownMenuItem<String>(
@@ -577,27 +498,16 @@ class _WargaEditState extends State<WargaEdit> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                setState(() {
-                  _selectedLifeStatus = newValue!;
-                });
+                if (newValue != null) {
+                  setState(() {
+                    _selectedLifeStatus = newValue;
+                  });
+                }
               },
             ),
           ],
         ),
       ),
     ];
-  }
-
-  // Helper method for consistent input decoration
-  InputDecoration _inputDecoration(String label, {IconData? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-    );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
@@ -18,7 +17,7 @@ class HeadingSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 4),
-      padding: EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: 16),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: Colors.grey.shade300),
@@ -35,29 +34,29 @@ class HeadingSection extends StatelessWidget {
                   child: Text(
                     subHeadingText!,
                     style:
-                    TextStyle(color: AppStyles.primaryColor, fontSize: 12),
+                    const TextStyle(color: AppStyles.primaryColor, fontSize: 12),
                   ),
                 ),
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               SizedBox(
                 width: MediaQuery.sizeOf(context).width / 2,
                 child: Text(
                   headingText,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           TextButton(
             style: TextButton.styleFrom(
-              padding: EdgeInsets.only(left: 12, right: 4),
+              padding: const EdgeInsets.only(left: 12, right: 4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadiusGeometry.circular(8),
               ),
               overlayColor: AppStyles.primaryColor,
             ),
             onPressed: lainnyaOnPressed,
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(

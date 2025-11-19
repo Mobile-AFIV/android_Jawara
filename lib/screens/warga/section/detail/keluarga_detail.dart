@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
-import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/family_member_card.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class KeluargaDetail extends StatefulWidget {
   final int keluargaIndex;
@@ -49,22 +51,22 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
               const SizedBox(height: 16),
 
               // Family name
-              _buildDetailField("Nama Keluarga:", keluarga.familyName),
+              DetailField(label: "Nama Keluarga:", value: keluarga.familyName),
 
               // Head of family
-              _buildDetailField("Kepala Keluarga:", keluarga.headOfFamily),
+              DetailField(label: "Kepala Keluarga:", value: keluarga.headOfFamily),
 
               // Current house
-              _buildDetailField("Rumah Saat Ini:", keluarga.address),
+              DetailField(label: "Rumah Saat Ini:", value: keluarga.address),
 
               // Ownership status
-              _buildDetailField("Status Kepemilikan:", keluarga.ownershipStatus),
+              DetailField(label: "Status Kepemilikan:", value: keluarga.ownershipStatus),
 
               // Family status
-              _buildStatusField("Status Keluarga:", keluarga.status, keluarga.statusColor),
+              StatusField(label: "Status Keluarga:", value: keluarga.status, color: keluarga.statusColor),
 
               // Family members
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               const Text(
                 "Anggota Keluarga:",
                 style: TextStyle(
@@ -72,154 +74,41 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Divider(height: 1),
+              const SizedBox(height: 16),
 
-              // List of family members
-              ...keluarga.members.map((member) => _buildFamilyMemberCard(member)).toList(),
+              // List of family members (matching ResidentHistoryItem style)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: keluarga.members.length,
+                  itemBuilder: (context, index) {
+                    return FamilyMemberCard(member: keluarga.members[index]);
+                  },
+                ),
+              ),
 
               const SizedBox(height: 24),
               // Back button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppStyles.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text('Kembali'),
-                ),
+              DetailBackButton(
+                onPressed: () => Navigator.pop(context),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusField(String label, String value, MaterialColor color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: color[100],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value,
-              style: TextStyle(
-                color: color[800],
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFamilyMemberCard(FamilyMember member) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[300]!),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            member.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "NIK: ${member.nik}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Peran: ${member.role}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.blue[700],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Jenis Kelamin: ${member.gender}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.blue[700],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Tanggal Lahir: ${member.birthDate}",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.blue[700],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            member.status,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.green[700],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

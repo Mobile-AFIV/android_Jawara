@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
+import 'package:jawara_pintar/screens/widgets/custom_dialog.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import '../services/auth_service.dart';
@@ -20,7 +20,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
   bool _isLoading = false;
   String _errorMessage = '';
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -43,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = '';
     });
 
-    final result = await _authService.login(
+    final result = await AuthService.instance.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
@@ -55,26 +54,20 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (mounted) {
-        showDialog(
+        CustomDialog.show(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(
+          barrierDismissible: false,
+          builder: (context) => CustomDialog.alertDialog(
+            title: const Text(
               'Login Berhasil',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-              ),
             ),
             content: Text(
-              'Selamat datang admin!',
-              style: GoogleFonts.poppins(),
+              'Selamat datang ${AuthService.instance.currentUser?.displayName ?? "Anonym"}!',
             ),
             actions: [
-              TextButton(
+              CustomDialog.actionFilledButton(
                 onPressed: () => context.goNamed('dashboard'),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.poppins(),
-                ),
+                textButton: "OK",
               ),
             ],
           ),
@@ -110,12 +103,12 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   // Logo
                   Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
                       color: AppStyles.primaryColor,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.menu_book_rounded,
                       color: Colors.white,
                       size: 16,
@@ -227,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.maxFinite,
                     onPressed: _isLoading ? null : _handleLogin,
                     child: _isLoading
-                        ? SizedBox(
+                        ? const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
@@ -257,9 +250,10 @@ class _LoginPageState extends State<LoginPage> {
                             color: AppStyles.textSecondaryColor,
                           ),
                         ),
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
                             context.goNamed('register');
+                            debugPrint("Hello World Register");
                           },
                           child: Text(
                             'Daftar',

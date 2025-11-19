@@ -7,7 +7,7 @@ import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:go_router/go_router.dart';
 
 class TambahPemasukanLainSection extends StatefulWidget {
-  TambahPemasukanLainSection({super.key});
+  const TambahPemasukanLainSection({super.key});
 
   @override
   State<TambahPemasukanLainSection> createState() => _TambahPemasukanLainSectionState();
@@ -56,7 +56,7 @@ class _TambahPemasukanLainSectionState extends State<TambahPemasukanLainSection>
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 const SizedBox(height: 4),
-                CustomTextField(
+                const CustomTextField(
                   hintText: "Masukkan nama pemasukan",
                 ),
                 const SizedBox(height: 16),
@@ -106,7 +106,7 @@ class _TambahPemasukanLainSectionState extends State<TambahPemasukanLainSection>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppStyles.primaryColor, width: 1.5),
+                          borderSide: const BorderSide(color: AppStyles.primaryColor, width: 1.5),
                         ),
                       ),
                     ),
@@ -142,7 +142,7 @@ class _TambahPemasukanLainSectionState extends State<TambahPemasukanLainSection>
                         Size(MediaQuery.sizeOf(context).width - 24, 200),
                       ),
                       padding:
-                      WidgetStatePropertyAll(const EdgeInsets.symmetric(vertical: 12)),
+                      const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
                       shape: WidgetStatePropertyAll(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
