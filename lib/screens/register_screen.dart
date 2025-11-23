@@ -52,7 +52,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
-    setState(() => _isLoading = true);
     final nama = _namaController.text.trim();
     final nik = _nikController.text.trim();
     final email = _emailController.text.trim();
@@ -134,6 +133,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     debugPrint("Rumah: ${_selectedRumah ?? alamatManual}");
     debugPrint("Status Rumah: $_selectedStatus");
     debugPrint("Password: $pass");
+
+    setState(() => _isLoading = true);
 
     Map<String, dynamic> result = await AuthService.instance.register(
       namaLengkap: nama,
