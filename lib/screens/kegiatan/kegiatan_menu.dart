@@ -145,72 +145,6 @@ class _KegiatanMenuState extends State<KegiatanMenu>
                   ),
                 ),
               ),
-
-              // ===============================
-              //         STATISTIK SECTION
-              // ===============================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.analytics_outlined,
-                                color: Color(0xFF4A90E2),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Statistik Singkat',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          _buildStatItem(
-                            'Total Warga',
-                            '156',
-                            Icons.people,
-                            const Color(0xFF4A90E2),
-                          ),
-
-                          const Divider(height: 24),
-
-                          _buildStatItem(
-                            'Keluarga Terdaftar',
-                            '45',
-                            Icons.family_restroom,
-                            const Color(0xFF7B68EE),
-                          ),
-
-                          const Divider(height: 24),
-
-                          _buildStatItem(
-                            'Rumah Aktif',
-                            '42',
-                            Icons.home,
-                            const Color(0xFF50C878),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -248,41 +182,4 @@ class _KegiatanMenuState extends State<KegiatanMenu>
   // ===============================
   //         ITEM STATISTIK
   // ===============================
-  Widget _buildStatItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
 }
