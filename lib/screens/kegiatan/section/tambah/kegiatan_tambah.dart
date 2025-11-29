@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/data/kegiatan_dummy.dart'; // pastikan ada
 
 class KegiatanTambah extends StatefulWidget {
   const KegiatanTambah({super.key});
@@ -8,14 +15,21 @@ class KegiatanTambah extends StatefulWidget {
 }
 
 class _KegiatanTambahState extends State<KegiatanTambah> {
-  final TextEditingController _namaKegiatanController = TextEditingController();
-  final TextEditingController _lokasiController = TextEditingController();
-  final TextEditingController _penanggungJawabController = TextEditingController();
-  final TextEditingController _deskripsiController = TextEditingController();
-  DateTime? _selectedDate;
-  String? _selectedKategoriKegiatan;
+  final _formKey = GlobalKey<FormState>();
 
-  final List<String> _kategoriKegiatanList = [
+  // Controller
+  final TextEditingController _namaController = TextEditingController();
+  final TextEditingController _lokasiController = TextEditingController();
+  final TextEditingController _penanggungController = TextEditingController();
+  final TextEditingController _deskripsiController = TextEditingController();
+  final TextEditingController _tanggalController = TextEditingController();
+
+  // Dropdown
+  String? _selectedKategori;
+
+  int _currentStep = 0;
+
+  final List<String> kategoriList = [
     'Komunitas dan Sosial',
     'Kebersihan & Keamanan',
     'Keagamaan',
@@ -24,18 +38,38 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
     'Lainnya'
   ];
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-      helpText: 'Pilih Tanggal Kegiatan',
-    );
-    if (picked != null && picked != _selectedDate) {
+  // Save data
+  void _saveData() {
+    // manual validasi tanggal & kategori karena FormDateField tidak punya validator
+    if ((_tanggalController.text).isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tanggal kegiatan wajib diisi")),
+      );
+      // pindah ke step tanggal (misal step 0)
       setState(() {
-        _selectedDate = picked;
+        _currentStep = 0;
       });
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      final newKegiatan = KegiatanModel(
+        namaKegiatan: _namaController.text,
+        kategori: _selectedKategori ?? '',
+        deskripsi: _deskripsiController.text,
+        tanggal: _tanggalController.text, // sesuai field model
+        lokasi: _lokasiController.text,
+        penanggungJawab: _penanggungController.text,
+        dibuatOleh: "Admin RT", // set default / nanti ambil dari user
+        dokumentasi: [],
+      );
+
+      KegiatanDummy.dummyKegiatan
+          .add(newKegiatan); // atau KegiatanDummy.addKegiatan jika ada
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
+      );
+      Navigator.pop(context, true);
     }
   }
 
@@ -45,92 +79,106 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
       appBar: AppBar(
         title: const Text("Tambah Kegiatan Baru"),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Form(
+        key: _formKey,
+        child: Stepper(
+          type: StepperType.vertical,
+          currentStep: _currentStep,
+          onStepContinue: () {
+            bool isLast = _currentStep == getSteps().length - 1;
+
+            if (isLast) {
+              _saveData();
+            } else {
+              setState(() => _currentStep++);
+            }
+          },
+          onStepCancel: () {
+            if (_currentStep > 0) {
+              setState(() => _currentStep--);
+            }
+          },
+          controlsBuilder: (context, details) {
+            final isLast = _currentStep == getSteps().length - 1;
+            final isFirst = _currentStep == 0;
+
+            return FormStepperControls(
+              onContinue: details.onStepContinue!,
+              onCancel: details.onStepCancel!,
+              isLastStep: isLast,
+              isFirstStep: isFirst,
+            );
+          },
+          steps: getSteps(),
+        ),
+      ),
+    );
+  }
+
+  List<Step> getSteps() {
+    return [
+      Step(
+        state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 0,
+        title: const Text("Informasi Kegiatan"),
+        content: Column(
           children: [
-            TextField(
-              controller: _namaKegiatanController,
-              decoration: const InputDecoration(
-                labelText: 'Nama Kegiatan',
-                border: OutlineInputBorder(),
-              ),
+            FormTextField(
+              label: "Nama Kegiatan",
+              controller: _namaController,
+              validator: (v) => v!.isEmpty ? "Wajib diisi" : null,
             ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _lokasiController,
-              decoration: const InputDecoration(
-                labelText: 'Lokasi',
-                border: OutlineInputBorder(),
-              ),
+            const SizedBox(height: 16),
+            FormDropdownField<String>(
+              label: "Kategori",
+              value: _selectedKategori,
+              items: kategoriList.map((k) {
+                return DropdownMenuItem<String>(
+                  value: k,
+                  child: Text(k),
+                );
+              }).toList(),
+              onChanged: (v) => setState(() => _selectedKategori = v),
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Pilih kategori" : null,
             ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _penanggungJawabController,
-              decoration: const InputDecoration(
-                labelText: 'Penanggung Jawab',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedKategoriKegiatan,
-              items: _kategoriKegiatanList
-                  .map((kategori) => DropdownMenuItem<String>(
-                        value: kategori,
-                        child: Text(kategori),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedKategoriKegiatan = value;
-                });
+            const SizedBox(height: 16),
+            FormDateField(
+              label: "Tanggal Kegiatan",
+              controller: _tanggalController,
+              onDateSelected: (date) {
+                _tanggalController.text = DateFormat('yyyy-MM-dd').format(date);
               },
-              decoration: const InputDecoration(
-                labelText: 'Kategori Kegiatan',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _deskripsiController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Deskripsi',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedDate == null
-                        ? 'Tanggal Kegiatan belum dipilih'
-                        : 'Tanggal Kegiatan: ${_selectedDate!.toLocal().toString().split(' ')[0]}',
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => _selectDate(context),
-                  child: const Text('Pilih Tanggal'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24.0),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Simpan data kegiatan
-                  // Validasi input dan simpan ke database atau backend
-                  Navigator.pop(context);
-                },
-                child: const Text('Simpan Kegiatan'),
-              ),
             ),
           ],
         ),
       ),
-    );
+      Step(
+        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 1,
+        title: const Text("Detail Pelaksanaan"),
+        content: Column(
+          children: [
+            FormTextField(
+              label: "Lokasi",
+              controller: _lokasiController,
+              validator: (v) => v!.isEmpty ? "Wajib diisi" : null,
+            ),
+            const SizedBox(height: 16),
+            FormTextField(
+              label: "Penanggung Jawab",
+              controller: _penanggungController,
+              validator: (v) => v!.isEmpty ? "Wajib diisi" : null,
+            ),
+            const SizedBox(height: 16),
+            FormTextField(
+              label: "Deskripsi",
+              controller: _deskripsiController,
+              maxLines: 4,
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }

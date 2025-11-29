@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-// ← penting, untuk ambil gambar
+
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
 
 class BroadcastTambah extends StatefulWidget {
   const BroadcastTambah({super.key});
@@ -11,109 +15,172 @@ class BroadcastTambah extends StatefulWidget {
 }
 
 class _BroadcastTambahState extends State<BroadcastTambah> {
-  final TextEditingController _judulBroadcastController =
-      TextEditingController();
-  final TextEditingController _isiBroadcastController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
+  // Controller
+  final TextEditingController _judulController = TextEditingController();
+  final TextEditingController _isiController = TextEditingController();
+  final TextEditingController _tanggalController = TextEditingController();
+
+  // File
   final ImagePicker _picker = ImagePicker();
-  XFile? _image; // ← simpan gambar yang dipilih di sini
+  XFile? _imageFile;
+  File? _pdfFile;
 
+  int _currentStep = 0;
+
+  // Upload foto
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = pickedFile;
-      });
+    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() => _imageFile = picked);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Foto berhasil dipilih: ${pickedFile.name}')),
+        SnackBar(content: Text("Gambar dipilih: ${picked.name}")),
       );
+    }
+  }
+
+  // Upload PDF
+
+  /// Simpan data
+  void _saveBroadcast() {
+    if ((_tanggalController.text).isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tanggal publikasi wajib diisi")),
+      );
+      setState(() => _currentStep = 0);
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      debugPrint("Judul : ${_judulController.text}");
+      debugPrint("Isi : ${_isiController.text}");
+      debugPrint("Tanggal : ${_tanggalController.text}");
+      debugPrint("Gambar : ${_imageFile?.path}");
+      debugPrint("PDF : ${_pdfFile?.path}");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Broadcast berhasil disimpan")),
+      );
+
+      Navigator.pop(context, true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tambah Broadcast Baru"),
+      appBar: AppBar(title: const Text("Tambah Broadcast Baru")),
+      body: Form(
+        key: _formKey,
+        child: Stepper(
+          type: StepperType.vertical,
+          currentStep: _currentStep,
+          onStepContinue: () {
+            final isLast = _currentStep == getSteps().length - 1;
+
+            if (isLast) {
+              _saveBroadcast();
+            } else {
+              setState(() => _currentStep++);
+            }
+          },
+          onStepCancel: () {
+            if (_currentStep > 0) setState(() => _currentStep--);
+          },
+          controlsBuilder: (context, details) {
+            return FormStepperControls(
+              onContinue: details.onStepContinue!,
+              onCancel: details.onStepCancel!,
+              isLastStep: _currentStep == getSteps().length - 1,
+              isFirstStep: _currentStep == 0,
+            );
+          },
+          steps: getSteps(),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  List<Step> getSteps() {
+    return [
+      // STEP 1 ────────────── Info Utama
+      Step(
+        state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 0,
+        title: const Text("Informasi Broadcast"),
+        content: Column(
           children: [
-            TextField(
-              controller: _judulBroadcastController,
-              maxLines: 1,
-              decoration: const InputDecoration(
-                labelText: 'Judul Broadcast',
-                border: OutlineInputBorder(),
-              ),
+            FormTextField(
+              label: "Judul Broadcast",
+              controller: _judulController,
+              validator: (v) => v!.isEmpty ? "Wajib diisi" : null,
             ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _isiBroadcastController,
+            const SizedBox(height: 16),
+            FormTextField(
+              label: "Isi Broadcast",
+              controller: _isiController,
               maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Isi Broadcast',
-                border: OutlineInputBorder(),
-              ),
+              validator: (v) => v!.isEmpty ? "Wajib diisi" : null,
             ),
-            const SizedBox(height: 16.0),
-            Row( mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (_image != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Image.file(
-                      File(_image!.path),
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text('Upload Foto'),
-                ),
-                
-                if (_image != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Image.file(
-                      File(_image!.path),
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text('Upload Dokumen PDF'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24.0),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Simpan data broadcast di sini
-                  String judul = _judulBroadcastController.text;
-                  String isi = _isiBroadcastController.text;
-                  String? fotoPath = _image?.path;
-
-                  // Contoh: Tampilkan data di konsol
-                  debugPrint('Judul: $judul');
-                  debugPrint('Isi: $isi');
-                  debugPrint('Foto Path: $fotoPath');
-
-                  // Kembali ke halaman sebelumnya setelah simpan
-                  Navigator.pop(context);
-                },
-                child: const Text('Simpan Broadcast'),
-              ),
+            const SizedBox(height: 16),
+            FormDateField(
+              label: "Tanggal Publikasi",
+              controller: _tanggalController,
+              onDateSelected: (date) {
+                _tanggalController.text = DateFormat('yyyy-MM-dd').format(date);
+              },
             ),
           ],
         ),
       ),
-    );
+
+      // STEP 2 ────────────── Lampiran
+      Step(
+        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 1,
+        title: const Text("Lampiran"),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Foto
+            Row(children: [
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text("Upload Gambar"),
+              ),
+            ]),
+            if (_imageFile != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Image.file(
+                  File(_imageFile!.path),
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            const SizedBox(height: 24),
+
+            // PDF
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    // Implement PDF picking logic here
+                  },
+                  child: const Text("Upload PDF"),
+                ),
+              ],
+            ),
+            if (_pdfFile != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text("File PDF: ${_pdfFile!.path.split('/').last}"),
+              ),
+          ],
+        ),
+      ),
+    ];
   }
 }
