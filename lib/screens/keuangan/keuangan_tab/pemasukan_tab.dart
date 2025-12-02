@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:jawara_pintar/models/kategori_iuran.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/kategori_iuran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
+import 'package:jawara_pintar/screens/keuangan/widget/body_section_info.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/heading_section.dart';
+import 'package:jawara_pintar/services/kegiatan_iuran_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PemasukanTab extends StatefulWidget {
@@ -57,12 +60,11 @@ class _PemasukanTabState extends State<PemasukanTab> {
   // ----------------- SECTION KATEGORI IURAN -----------------
   Widget kategoriIuranSection() {
     const int limitItemShowed = 3;
-    final kategoriList = PemasukanSectionData.kategoriIuranData;
-    final topKategori = kategoriList.take(limitItemShowed).toList();
 
-    Widget kategoriItem(Map<String, dynamic> json) {
-      final KategoriIuranData kategori = KategoriIuranData.fromJson(json);
-
+    Widget kategoriItem({
+      required KategoriIuran kategori,
+      required List<KategoriIuran> topKategori,
+    }) {
       return Container(
         width: MediaQuery.sizeOf(context).width,
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -134,47 +136,92 @@ class _PemasukanTabState extends State<PemasukanTab> {
       );
     }
 
-    return Stack(
-      children: [
-        Column(
-          children: List.generate(
-            topKategori.length,
-            (index) {
-              return kategoriItem(topKategori[index]);
-            },
-          ),
-        ),
-        if (topKategori.length != 1 && !(topKategori.length < limitItemShowed))
-          Positioned.fill(
-            child: Container(
-              width: double.maxFinite,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.white.withValues(alpha: .0), Colors.white],
-                  begin: Alignment.topCenter,
-                  end: const Alignment(0, 0.65),
+    return FutureBuilder<List<KategoriIuran>>(
+        future: KategoriIuranService.instance.getAllKategori(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return BodySectionInfo(
+              height: 80,
+              backgroundColor: Colors.grey.withValues(alpha: 0.2),
+              textInfo: "Loading...",
+            );
+          }
+
+          if (snapshot.hasError) {
+            return BodySectionInfo(
+              backgroundColor: AppStyles.errorColor.withValues(alpha: 0.1),
+              textInfo: snapshot.error.toString(),
+            );
+          }
+
+          if (!snapshot.hasData && snapshot.data == null) {
+            return BodySectionInfo(
+              backgroundColor: AppStyles.primaryColor.withValues(alpha: 0.1),
+              textInfo: "Data kategori tidak ditemukan.",
+            );
+          }
+
+          if (snapshot.data!.isEmpty) {
+            return BodySectionInfo(
+              backgroundColor: AppStyles.primaryColor.withValues(alpha: 0.1),
+              textInfo: "Tidak ada kategori,\ncobalah untuk membuatnya",
+            );
+          }
+
+          final kategoriList = snapshot.data!;
+          final topKategori = kategoriList.take(limitItemShowed).toList();
+
+          return Stack(
+            children: [
+              Column(
+                children: List.generate(
+                  topKategori.length,
+                  (index) {
+                    return kategoriItem(
+                      kategori: topKategori[index],
+                      topKategori: topKategori,
+                    );
+                  },
                 ),
               ),
-            ),
-          ),
-        if (topKategori.length != 1 && !(topKategori.length < limitItemShowed))
-          Positioned(
-            bottom: 0,
-            child: InkWell(
-              onTap: () => context.pushNamed('kategori_iuran'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                width: MediaQuery.sizeOf(context).width,
-                child: Text(
-                  "+${kategoriList.length - limitItemShowed + 1} lainnya",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  textAlign: TextAlign.center,
+              if (topKategori.length != 1 &&
+                  !(topKategori.length < limitItemShowed))
+                Positioned.fill(
+                  child: Container(
+                    width: double.maxFinite,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: .0),
+                          Colors.white
+                        ],
+                        begin: Alignment.topCenter,
+                        end: const Alignment(0, 0.65),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-      ],
-    );
+              if (topKategori.length != 1 &&
+                  !(topKategori.length < limitItemShowed))
+                Positioned(
+                  bottom: 0,
+                  child: InkWell(
+                    onTap: () => context.pushNamed('kategori_iuran'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      width: MediaQuery.sizeOf(context).width,
+                      child: Text(
+                        "+${kategoriList.length - limitItemShowed + 1} lainnya",
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        });
   }
 
   // ----------------- SECTION TAGIHAN IURAN -----------------

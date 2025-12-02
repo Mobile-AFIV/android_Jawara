@@ -60,7 +60,7 @@ class HeadingSection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Lihat semua",
+                  "Kelola",
                   style: TextStyle(color: AppStyles.primaryColor),
                 ),
                 SizedBox(width: 6),
