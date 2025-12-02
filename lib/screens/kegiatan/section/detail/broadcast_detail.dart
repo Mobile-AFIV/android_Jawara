@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 
-class BroadcastDetail extends StatefulWidget {
+class BroadcastDetail extends StatelessWidget {
   const BroadcastDetail({super.key});
 
-  @override
-  State<BroadcastDetail> createState() => _BroadcastDetailState();
-}
-
-class _BroadcastDetailState extends State<BroadcastDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
