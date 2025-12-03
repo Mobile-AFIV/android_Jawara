@@ -179,15 +179,57 @@ Widget _kegiatanPerBulan() {
         ),
         const SizedBox(height: 20),
         SizedBox(
-          height: 200,
+          height: 250,
           child: BarChart(
             BarChartData(
+              titlesData: FlTitlesData(
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 30,
+                    getTitlesWidget: (value, meta) {
+                      const months = [
+                        "", // dummy index 0
+                        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                        "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+                      ];
+
+                      return Text(
+                        value.toInt() >= 1 && value.toInt() <= 12
+                            ? months[value.toInt()]
+                            : "",
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: true),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+              borderData: FlBorderData(show: false),
               barGroups: [
                 BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 0)]),
+                BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 5)]),
                 BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 0)]),
+                BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 3)]),
                 BarChartGroupData(x: 5, barRods: [BarChartRodData(toY: 1)]),
+                BarChartGroupData(x: 6, barRods: [BarChartRodData(toY: 1)]),
+                BarChartGroupData(x: 7, barRods: [BarChartRodData(toY: 7)]),
+                BarChartGroupData(x: 8, barRods: [BarChartRodData(toY: 1)]),
+                BarChartGroupData(x: 9, barRods: [BarChartRodData(toY: 3)]),
+                BarChartGroupData(x: 10, barRods: [BarChartRodData(toY: 1)]),
+                BarChartGroupData(x: 11, barRods: [BarChartRodData(toY: 1)]),
+                BarChartGroupData(x: 12, barRods: [BarChartRodData(toY: 1)]),
               ],
             ),
           ),
