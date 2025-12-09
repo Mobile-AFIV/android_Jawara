@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
@@ -73,7 +72,9 @@ class _WargaTambahState extends State<WargaTambah> {
         religion: _selectedReligion ?? '',
         bloodType: _selectedBloodType ?? '',
         education: _selectedEducation ?? '',
-        job: _selectedJob == 'Lainnya' ? _jobController.text : (_selectedJob ?? ''),
+        job: _selectedJob == 'Lainnya'
+            ? _jobController.text
+            : (_selectedJob ?? ''),
         familyRole: _selectedFamilyRole ?? '',
       );
 
@@ -336,7 +337,8 @@ class _WargaTambahState extends State<WargaTambah> {
                     label: "Pekerjaan Lainnya",
                     isRequired: _selectedJob == 'Lainnya',
                     validator: (value) {
-                      if (_selectedJob == 'Lainnya' && (value == null || value.isEmpty)) {
+                      if (_selectedJob == 'Lainnya' &&
+                          (value == null || value.isEmpty)) {
                         return 'Mohon isi jenis pekerjaan';
                       }
                       return null;

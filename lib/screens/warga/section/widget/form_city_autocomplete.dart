@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_input_decoration.dart';
 
 class FormCityAutocomplete extends StatelessWidget {
@@ -22,19 +21,19 @@ class FormCityAutocomplete extends StatelessWidget {
           return const Iterable<String>.empty();
         }
         return WargaDummy.cityOptions.where((String city) {
-          return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
+          return city
+              .toLowerCase()
+              .contains(textEditingValue.text.toLowerCase());
         });
       },
       initialValue: TextEditingValue(text: controller.text),
       onSelected: (String selection) {
         controller.text = selection;
       },
-      fieldViewBuilder: (
-          BuildContext context,
+      fieldViewBuilder: (BuildContext context,
           TextEditingController fieldController,
           FocusNode fieldFocusNode,
-          VoidCallback onFieldSubmitted
-          ) {
+          VoidCallback onFieldSubmitted) {
         // Update the controller without losing existing text
         if (fieldController.text.isEmpty && controller.text.isNotEmpty) {
           fieldController.text = controller.text;
@@ -50,12 +49,14 @@ class FormCityAutocomplete extends StatelessWidget {
             onFieldSubmitted();
             controller.text = fieldController.text;
           },
-          validator: isRequired ? (value) {
-            if (value == null || value.isEmpty) {
-              return '$label tidak boleh kosong';
-            }
-            return null;
-          } : null,
+          validator: isRequired
+              ? (value) {
+                  if (value == null || value.isEmpty) {
+                    return '$label tidak boleh kosong';
+                  }
+                  return null;
+                }
+              : null,
         );
       },
     );

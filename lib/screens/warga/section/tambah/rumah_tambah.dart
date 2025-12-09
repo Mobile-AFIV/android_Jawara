@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_radio_group.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
@@ -31,7 +30,8 @@ class _RumahTambahState extends State<RumahTambah> {
   void _saveData() {
     if (_formKey.currentState!.validate()) {
       // Determine status color
-      final statusColor = _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
+      final statusColor =
+          _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
 
       // Create new RumahModel
       final newRumah = RumahModel(

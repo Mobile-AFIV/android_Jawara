@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 
 class FamilyMemberCard extends StatelessWidget {
   final FamilyMember member;
@@ -23,7 +22,8 @@ class FamilyMemberCard extends StatelessWidget {
   IconData _getRoleIcon() {
     final role = member.role.toLowerCase();
     if (role.contains('kepala')) return Icons.star_rounded;
-    if (role.contains('istri') || role.contains('suami')) return Icons.favorite_rounded;
+    if (role.contains('istri') || role.contains('suami'))
+      return Icons.favorite_rounded;
     if (role.contains('anak')) return Icons.child_care_rounded;
     return Icons.person_rounded;
   }
@@ -31,7 +31,7 @@ class FamilyMemberCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -101,7 +101,8 @@ class FamilyMemberCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -114,8 +115,8 @@ class FamilyMemberCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        member.status.toLowerCase() == 'hidup' 
-                            ? Icons.check_circle_rounded 
+                        member.status.toLowerCase() == 'hidup'
+                            ? Icons.check_circle_rounded
                             : Icons.cancel_rounded,
                         size: 16,
                         color: statusColor,
@@ -136,7 +137,7 @@ class FamilyMemberCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Content with birth date
           Padding(
             padding: const EdgeInsets.all(16),

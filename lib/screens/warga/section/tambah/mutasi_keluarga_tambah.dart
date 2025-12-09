@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/mutasi_keluarga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
@@ -64,7 +63,8 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
   void _saveData() {
     if (_formKey.currentState!.validate()) {
       // Get status color based on mutation type
-      final statusColor = MutasiKeluargaDummy.getStatusColor(_selectedMutationType!);
+      final statusColor =
+          MutasiKeluargaDummy.getStatusColor(_selectedMutationType!);
 
       // Create new MutasiKeluargaModel
       final newMutasi = MutasiKeluargaModel(
@@ -82,7 +82,8 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data mutasi keluarga berhasil ditambahkan')),
+        const SnackBar(
+            content: Text('Data mutasi keluarga berhasil ditambahkan')),
       );
 
       // Return to previous screen
@@ -113,7 +114,8 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                     label: "Keluarga",
                     isRequired: true,
                     value: _selectedFamily,
-                    items: MutasiKeluargaDummy.familyOptions.map((String family) {
+                    items:
+                        MutasiKeluargaDummy.familyOptions.map((String family) {
                       return DropdownMenuItem<String>(
                         value: family,
                         child: Text(family),
@@ -132,7 +134,8 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                     label: "Jenis Mutasi",
                     isRequired: true,
                     value: _selectedMutationType,
-                    items: MutasiKeluargaDummy.mutationTypeOptions.map((String type) {
+                    items: MutasiKeluargaDummy.mutationTypeOptions
+                        .map((String type) {
                       return DropdownMenuItem<String>(
                         value: type,
                         child: Text(type),
@@ -179,7 +182,8 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                               _selectedMutationType == 'Keluar Wilayah',
                           validator: (value) {
                             if ((_selectedMutationType == 'Pindah Rumah' ||
-                                _selectedMutationType == 'Keluar Wilayah') &&
+                                    _selectedMutationType ==
+                                        'Keluar Wilayah') &&
                                 (value == null || value.isEmpty)) {
                               return 'Alamat lama harus diisi';
                             }
@@ -200,7 +204,7 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                           _selectedMutationType == 'Pindah Masuk',
                       validator: (value) {
                         if ((_selectedMutationType == 'Pindah Rumah' ||
-                            _selectedMutationType == 'Pindah Masuk') &&
+                                _selectedMutationType == 'Pindah Masuk') &&
                             (value == null || value.isEmpty)) {
                           return 'Alamat baru harus diisi';
                         }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
 
 class ResidentApplicationActions extends StatelessWidget {
   final PenerimaanWargaModel penerimaan;
