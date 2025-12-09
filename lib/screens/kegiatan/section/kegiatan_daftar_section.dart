@@ -7,7 +7,6 @@ import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
     as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart'
     as custom_filter;
-import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 import 'package:jawara_pintar/services/kegiatan_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/models/kegiatan.dart';
@@ -181,10 +180,30 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           }
 
           _kegiatanList = snapshot.data!;
-          _filteredData = List.from(_kegiatanList);
+          final oldFilteredLength = _filteredData.length; // Tambahkan ini
 
-          // FIX: Jangan reset expandedList setiap build
-          if (!_expandedInitialized) {
+          // Panggil _filterData() untuk menerapkan search/filter dan menginisialisasi _filteredData
+          // PENTING: Karena _filterData memanggil setState, kita panggil di luar builder
+          // atau kita lakukan logika filtering/expanded list di sini.
+
+          // Lakukan filtering dan inisialisasi list expanded di sini:
+          final query = _searchController.text.toLowerCase();
+          final newFilteredData = _kegiatanList.where((k) {
+            bool matchSearch = k.namaKegiatan.toLowerCase().contains(query) ||
+                k.kategori.toLowerCase().contains(query) ||
+                k.lokasi.toLowerCase().contains(query);
+
+            bool matchFilter =
+                _selectedFilter == 'Semua' || k.kategori == _selectedFilter;
+
+            return matchSearch && matchFilter;
+          }).toList();
+
+          _filteredData = newFilteredData;
+
+          // Perbarui _expandedList hanya jika panjang list berubah
+          if (!_expandedInitialized ||
+              _filteredData.length != oldFilteredLength) {
             _initExpandedList();
             _expandedInitialized = true;
           }
@@ -260,15 +279,23 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           const SizedBox(height: 12),
           SectionActionButtons(
             showEditButton: true,
+            // Tombol Detail dihapus (tidak ada onDetailPressed)
             onEditPressed: () async {
               final result = await context.pushNamed(
                 'kegiatan_edit',
+                // Ganti queryParameters menjadi pathParameters untuk mengirim ID
+                pathParameters: {
+                  // Kunci 'kegiatanId' HARUS sesuai dengan nama parameter di GoRoute Anda
+                  // Nilai diambil dari ID dokumen Firebase (kegiatan.id)
+                  'kegiatanId': kegiatan.id,
+                },
+                // 'title' dapat tetap dikirim melalui queryParameters (Opsional)
                 queryParameters: {
-                  'index': originalIndex.toString(),
                   'title': kegiatan.namaKegiatan,
                 },
               );
               if (result == true) {
+                // Memuat ulang state setelah kembali dari halaman edit
                 setState(() {});
               }
             },
