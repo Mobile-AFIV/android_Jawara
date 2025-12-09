@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
@@ -38,13 +39,83 @@ class _KeluargaSectionState extends State<KeluargaSection>
     _loadData();
   }
 
-  void _loadData() {
-    // TODO: Load data from Firebase
+  Future<void> _loadData() async {
     setState(() {
-      _filteredData = [];
-      _expandedList = [];
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      // Get all warga data from Firebase
+      final snapshot = await FirebaseFirestore.instance
+          .collection('warga')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      // Group warga by family name
+      Map<String, Map<String, dynamic>> familyMap = {};
+
+      for (var doc in snapshot.docs) {
+        final warga = doc.data();
+        final familyName = warga['family'] ?? 'Tidak Diketahui';
+
+        if (!familyMap.containsKey(familyName)) {
+          // Create new family entry
+          familyMap[familyName] = {
+            'id': familyName, // Use family name as ID
+            'familyName': familyName,
+            'headOfFamily': '',
+            'address': '',
+            'ownershipStatus': 'Milik Sendiri',
+            'status': 'Aktif',
+            'members': [],
+            'memberCount': 0,
+          };
+        }
+
+        // Add member to family
+        familyMap[familyName]!['members'].add({
+          'name': warga['name'] ?? '',
+          'role': warga['familyRole'] ?? '',
+          'status': warga['lifeStatus'] ?? 'Hidup',
+          'birthDate': warga['birthDate'] ?? '',
+          'gender': warga['gender'] ?? '',
+        });
+
+        // Set head of family
+        if (warga['familyRole'] == 'Kepala Keluarga') {
+          familyMap[familyName]!['headOfFamily'] = warga['name'] ?? '';
+        }
+
+        // Update member count
+        familyMap[familyName]!['memberCount'] =
+            (familyMap[familyName]!['members'] as List).length;
+      }
+
+      // Get address from rumah_warga collection if available
+      final rumahSnapshot =
+          await FirebaseFirestore.instance.collection('rumah_warga').get();
+
+      for (var rumahDoc in rumahSnapshot.docs) {
+        final rumahData = rumahDoc.data();
+        // You can implement logic to link rumah to keluarga here
+        // For now, we'll use the first available address
+      }
+
+      setState(() {
+        _filteredData = familyMap.values.toList();
+        _filterData();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+    }
   }
 
   void _initScrollButton() {
@@ -72,8 +143,28 @@ class _KeluargaSectionState extends State<KeluargaSection>
   }
 
   void _filterData() {
-    // TODO: Implement filter with Firebase data
     setState(() {
+      List<Map<String, dynamic>> tempData = _filteredData;
+
+      // Filter by status
+      if (_selectedFilter != 'Semua') {
+        tempData = tempData.where((keluarga) {
+          return keluarga['status'] == _selectedFilter;
+        }).toList();
+      }
+
+      // Filter by search
+      if (_searchController.text.isNotEmpty) {
+        final searchQuery = _searchController.text.toLowerCase();
+        tempData = tempData.where((keluarga) {
+          final familyName = (keluarga['familyName'] ?? '').toLowerCase();
+          final headOfFamily = (keluarga['headOfFamily'] ?? '').toLowerCase();
+          return familyName.contains(searchQuery) ||
+              headOfFamily.contains(searchQuery);
+        }).toList();
+      }
+
+      _filteredData = tempData;
       _expandedList =
           List.generate(_filteredData.length, (index) => index == 0);
     });
@@ -296,6 +387,12 @@ class _KeluargaSectionState extends State<KeluargaSection>
             Icons.home,
             "Status Kepemilikan",
             keluarga['ownershipStatus'] ?? '',
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+            Icons.group,
+            "Jumlah Anggota",
+            "${keluarga['memberCount'] ?? 0} orang",
           ),
           const SizedBox(height: 16),
           SectionActionButtons(

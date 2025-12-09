@@ -37,15 +37,48 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
       });
     } else if (widget.keluargaId != null && widget.keluargaId!.isNotEmpty) {
       try {
-        final doc = await FirebaseFirestore.instance
-            .collection('keluarga')
-            .doc(widget.keluargaId)
+        // Get all warga with matching family name
+        final snapshot = await FirebaseFirestore.instance
+            .collection('warga')
+            .where('family', isEqualTo: widget.keluargaId)
             .get();
 
-        if (doc.exists) {
+        if (snapshot.docs.isNotEmpty) {
+          // Build family data from warga collection
+          Map<String, dynamic> familyData = {
+            'id': widget.keluargaId,
+            'familyName': widget.keluargaId,
+            'headOfFamily': '',
+            'address': '',
+            'ownershipStatus': 'Milik Sendiri',
+            'status': 'Aktif',
+            'members': [],
+            'memberCount': 0,
+          };
+
+          for (var doc in snapshot.docs) {
+            final warga = doc.data();
+
+            // Add member to family
+            familyData['members'].add({
+              'name': warga['name'] ?? '',
+              'role': warga['familyRole'] ?? '',
+              'status': warga['lifeStatus'] ?? 'Hidup',
+              'birthDate': warga['birthDate'] ?? '',
+              'gender': warga['gender'] ?? '',
+            });
+
+            // Set head of family
+            if (warga['familyRole'] == 'Kepala Keluarga') {
+              familyData['headOfFamily'] = warga['name'] ?? '';
+            }
+
+            // Update member count
+            familyData['memberCount'] = (familyData['members'] as List).length;
+          }
+
           setState(() {
-            keluarga = doc.data()!;
-            keluarga['id'] = doc.id;
+            keluarga = familyData;
             _isLoading = false;
           });
         } else {
