@@ -6,6 +6,25 @@ class FormCityAutocomplete extends StatelessWidget {
   final String label;
   final bool isRequired;
 
+  // Indonesian cities list
+  static const List<String> cityOptions = [
+    'Jakarta',
+    'Surabaya',
+    'Bandung',
+    'Medan',
+    'Semarang',
+    'Makassar',
+    'Palembang',
+    'Tangerang',
+    'Depok',
+    'Bekasi',
+    'Bogor',
+    'Yogyakarta',
+    'Malang',
+    'Solo',
+    'Denpasar',
+  ];
+
   const FormCityAutocomplete({
     Key? key,
     required this.controller,
@@ -20,7 +39,7 @@ class FormCityAutocomplete extends StatelessWidget {
         if (textEditingValue.text.isEmpty) {
           return const Iterable<String>.empty();
         }
-        return WargaDummy.cityOptions.where((String city) {
+        return cityOptions.where((String city) {
           return city
               .toLowerCase()
               .contains(textEditingValue.text.toLowerCase());

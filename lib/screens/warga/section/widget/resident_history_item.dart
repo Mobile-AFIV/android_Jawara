@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ResidentHistoryItem extends StatelessWidget {
-  final ResidentHistory resident;
+  final Map<String, dynamic> resident;
 
   const ResidentHistoryItem({
     Key? key,
@@ -10,7 +10,8 @@ class ResidentHistoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrentResident = resident.moveOutDate == null;
+    final isCurrentResident = resident['moveOutDate'] == null ||
+        (resident['moveOutDate'] as String).isEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -70,7 +71,7 @@ class ResidentHistoryItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        resident.familyName,
+                        resident['familyName'] ?? '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -88,7 +89,7 @@ class ResidentHistoryItem extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              resident.headOfFamily,
+                              resident['headOfFamily'] ?? '',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -143,7 +144,7 @@ class ResidentHistoryItem extends StatelessWidget {
                   child: _buildDateInfo(
                     icon: Icons.login_rounded,
                     label: "Masuk",
-                    date: resident.moveInDate,
+                    date: resident['moveInDate'] ?? '',
                     color: Colors.blue,
                   ),
                 ),
@@ -159,7 +160,10 @@ class ResidentHistoryItem extends StatelessWidget {
                         ? Icons.check_circle_rounded
                         : Icons.logout_rounded,
                     label: "Keluar",
-                    date: resident.moveOutDate ?? "Masih Tinggal",
+                    date: (resident['moveOutDate'] == null ||
+                            (resident['moveOutDate'] as String).isEmpty)
+                        ? "Masih Tinggal"
+                        : resident['moveOutDate'] as String,
                     color: isCurrentResident ? Colors.green : Colors.orange,
                   ),
                 ),
