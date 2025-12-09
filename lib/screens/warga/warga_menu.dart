@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/menu_card_item.dart';
 
 class WargaMenu extends StatefulWidget {
@@ -12,6 +13,10 @@ class WargaMenu extends StatefulWidget {
 class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  int _pendingPenerimaanCount = 0;
+  int _totalWarga = 0;
+  int _totalKeluarga = 0;
+  int _totalRumahAktif = 0;
 
   @override
   void initState() {
@@ -25,6 +30,60 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     );
     _fadeController.forward();
+    _loadPendingPenerimaanCount();
+    _loadStatistics();
+  }
+
+  Future<void> _loadPendingPenerimaanCount() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('penerimaan_warga')
+          .where('registrationStatus', isEqualTo: 'Menunggu')
+          .get();
+
+      setState(() {
+        _pendingPenerimaanCount = querySnapshot.docs.length;
+      });
+    } catch (e) {
+      // Silently fail, keep count at 0
+      setState(() {
+        _pendingPenerimaanCount = 0;
+      });
+    }
+  }
+
+  Future<void> _loadStatistics() async {
+    try {
+      // Load Total Warga
+      final wargaSnapshot =
+          await FirebaseFirestore.instance.collection('warga').get();
+
+      // Load Total Keluarga (unique families)
+      final wargaData = wargaSnapshot.docs.map((doc) => doc.data()).toList();
+      final uniqueFamilies = wargaData
+          .map((data) => data['family'] as String?)
+          .where((family) => family != null && family.isNotEmpty)
+          .toSet();
+
+      // Load Total Rumah Aktif (status "Ditempati")
+      final rumahSnapshot = await FirebaseFirestore.instance
+          .collection('rumah_warga')
+          .where('status', isEqualTo: 'Ditempati')
+          .get();
+
+      setState(() {
+        _totalWarga = wargaSnapshot.docs.length;
+        _totalKeluarga = uniqueFamilies.length;
+        _totalRumahAktif = rumahSnapshot.docs.length;
+      });
+    } catch (e) {
+      // Silently fail, keep counts at 0
+      setState(() {
+        _totalWarga = 0;
+        _totalKeluarga = 0;
+        _totalRumahAktif = 0;
+      });
+    }
   }
 
   @override
@@ -64,7 +123,7 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
           'icon': Icons.person_add,
           'color': const Color(0xFFFF6B6B),
           'route': 'penerimaan_warga',
-          'badgeCount': 3, // Example badge count
+          'badgeCount': _pendingPenerimaanCount,
         },
         {
           'title': 'Mutasi Keluarga',
@@ -185,21 +244,21 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
                           const SizedBox(height: 16),
                           _buildStatItem(
                             'Total Warga',
-                            '156',
+                            _totalWarga.toString(),
                             Icons.people,
                             const Color(0xFF4A90E2),
                           ),
                           const Divider(height: 24),
                           _buildStatItem(
                             'Keluarga Terdaftar',
-                            '45',
+                            _totalKeluarga.toString(),
                             Icons.family_restroom,
                             const Color(0xFF7B68EE),
                           ),
                           const Divider(height: 24),
                           _buildStatItem(
                             'Rumah Aktif',
-                            '42',
+                            _totalRumahAktif.toString(),
                             Icons.home,
                             const Color(0xFF50C878),
                           ),
@@ -235,7 +294,13 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
         icon: item['icon'],
         color: item['color'],
         badgeCount: item['badgeCount'],
-        onTap: () => context.pushNamed(item['route']),
+        onTap: () async {
+          await context.pushNamed(item['route']);
+          // Refresh pending count after returning from penerimaan_warga
+          if (item['route'] == 'penerimaan_warga') {
+            _loadPendingPenerimaanCount();
+          }
+        },
       ),
     );
   }
