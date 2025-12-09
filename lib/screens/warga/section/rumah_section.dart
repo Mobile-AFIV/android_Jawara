@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
@@ -35,20 +36,76 @@ class _RumahSectionState extends State<RumahSection> {
     _loadData();
   }
 
-  void _loadData() {
-    // TODO: Load data from Firebase using RumahService
+  Future<void> _loadData() async {
     setState(() {
-      _filteredData = [];
-      _expandedList = [];
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('rumah')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      setState(() {
+        _filteredData = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        _filterData();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+    }
   }
 
   void _filterData() {
-    // TODO: Implement filter with Firebase data
     setState(() {
-      _expandedList =
-          List.generate(_filteredData.length, (index) => index == 0);
+      List<Map<String, dynamic>> tempData = [];
+
+      // Load all data from collection
+      FirebaseFirestore.instance
+          .collection('rumah')
+          .orderBy('createdAt', descending: true)
+          .get()
+          .then((snapshot) {
+        tempData = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+
+        // Filter by status
+        if (_selectedFilter != 'Semua') {
+          tempData = tempData.where((rumah) {
+            return rumah['status'] == _selectedFilter;
+          }).toList();
+        }
+
+        // Filter by search
+        if (_searchController.text.isNotEmpty) {
+          final searchQuery = _searchController.text.toLowerCase();
+          tempData = tempData.where((rumah) {
+            final address = (rumah['address'] ?? '').toLowerCase();
+            return address.contains(searchQuery);
+          }).toList();
+        }
+
+        setState(() {
+          _filteredData = tempData;
+          _expandedList =
+              List.generate(_filteredData.length, (index) => index == 0);
+        });
+      });
     });
   }
 
