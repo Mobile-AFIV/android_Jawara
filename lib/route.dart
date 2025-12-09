@@ -54,7 +54,8 @@ final GoRouter mainRouter = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
-    final loggingIn = state.matchedLocation == "/login" || state.matchedLocation == "/register";
+    final loggingIn = state.matchedLocation == "/login" ||
+        state.matchedLocation == "/register";
 
     if (user == null && !loggingIn) {
       return "/login";
@@ -176,9 +177,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'keluarga_detail',
           name: 'keluarga_detail',
           builder: (context, state) {
-            final keluargaIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            return KeluargaDetail(keluargaIndex: keluargaIndex);
+            final keluargaId = state.uri.queryParameters['id'];
+            return KeluargaDetail(keluargaId: keluargaId);
           },
         ),
       ],
@@ -197,9 +197,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'mutasi_keluarga_detail',
           name: 'mutasi_keluarga_detail',
           builder: (context, state) {
-            final mutasiIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            return MutasiKeluargaDetail(mutasiIndex: mutasiIndex);
+            final mutasiId = state.uri.queryParameters['id'];
+            return MutasiKeluargaDetail(mutasiId: mutasiId);
           },
         ),
       ],
@@ -213,11 +212,8 @@ final GoRouter mainRouter = GoRouter(
           path: 'penerimaan_warga_detail',
           name: 'penerimaan_warga_detail',
           builder: (context, state) {
-            final penerimaanIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            final name = state.uri.queryParameters['name'];
-            return PenerimaanWargaDetail(
-                penerimaanIndex: penerimaanIndex, name: name);
+            final penerimaanId = state.uri.queryParameters['id'];
+            return PenerimaanWargaDetail(penerimaanId: penerimaanId);
           },
         ),
       ],
@@ -231,20 +227,16 @@ final GoRouter mainRouter = GoRouter(
           path: 'rumah_detail',
           name: 'rumah_detail',
           builder: (context, state) {
-            final rumahIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            final address = state.uri.queryParameters['address'];
-            return RumahDetail(rumahIndex: rumahIndex, address: address);
+            final rumahId = state.uri.queryParameters['id'];
+            return RumahDetail(rumahId: rumahId);
           },
         ),
         GoRoute(
           path: 'rumah_edit',
           name: 'rumah_edit',
           builder: (context, state) {
-            final rumahIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            final address = state.uri.queryParameters['address'];
-            return RumahEdit(rumahIndex: rumahIndex, address: address);
+            final rumahId = state.uri.queryParameters['id'];
+            return RumahEdit(rumahId: rumahId);
           },
         ),
       ],
@@ -263,20 +255,16 @@ final GoRouter mainRouter = GoRouter(
           path: 'warga_detail',
           name: 'warga_detail',
           builder: (context, state) {
-            final wargaIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            final name = state.uri.queryParameters['name'];
-            return WargaDetail(wargaIndex: wargaIndex, name: name);
+            final wargaId = state.uri.queryParameters['id'];
+            return WargaDetail(wargaId: wargaId);
           },
         ),
         GoRoute(
           path: 'warga_edit',
           name: 'warga_edit',
           builder: (context, state) {
-            final wargaIndex =
-                int.tryParse(state.uri.queryParameters['index'] ?? '0') ?? 0;
-            final name = state.uri.queryParameters['name'];
-            return WargaEdit(wargaIndex: wargaIndex, name: name);
+            final wargaId = state.uri.queryParameters['id'];
+            return WargaEdit(wargaId: wargaId);
           },
         ),
       ],
