@@ -28,6 +28,7 @@ class _RumahEditState extends State<RumahEdit> {
 
   // Text controllers for form fields
   late TextEditingController _addressController;
+  late TextEditingController _moveInDateController;
 
   // Status selection
   String _selectedStatus = 'Tersedia';
@@ -35,11 +36,78 @@ class _RumahEditState extends State<RumahEdit> {
   // Options for status dropdown
   final List<String> _statusOptions = ['Tersedia', 'Ditempati'];
 
+  // Family selection
+  String? _selectedFamily;
+  List<String> _familyOptions = [];
+  bool _isLoadingFamilies = true;
+
   @override
   void initState() {
     super.initState();
     _addressController = TextEditingController();
+    _moveInDateController = TextEditingController();
+    _loadFamilies();
     _loadData();
+  }
+
+  Future<void> _loadFamilies() async {
+    try {
+      // Get all warga data
+      final wargaSnapshot = await FirebaseFirestore.instance
+          .collection('warga')
+          .orderBy('family')
+          .get();
+
+      final families = <String>{};
+      for (var doc in wargaSnapshot.docs) {
+        final family = doc.data()['family']?.toString();
+        if (family != null && family.isNotEmpty) {
+          families.add(family);
+        }
+      }
+
+      // Get all houses with assigned families
+      final rumahSnapshot = await FirebaseFirestore.instance
+          .collection('rumah_warga')
+          .where('family', isNotEqualTo: '')
+          .get();
+
+      final assignedFamilies = <String>{};
+      for (var doc in rumahSnapshot.docs) {
+        // Skip current house being edited
+        if (doc.id != widget.rumahId) {
+          final family = doc.data()['family']?.toString();
+          if (family != null && family.isNotEmpty) {
+            assignedFamilies.add(family);
+          }
+        }
+      }
+
+      // Filter out families that already have houses
+      final availableFamilies = families.difference(assignedFamilies).toList();
+
+      // Add current family to options if editing and family exists
+      if (rumah['family'] != null && rumah['family'].toString().isNotEmpty) {
+        final currentFamily = rumah['family'].toString();
+        if (!availableFamilies.contains(currentFamily)) {
+          availableFamilies.add(currentFamily);
+        }
+      }
+
+      setState(() {
+        _familyOptions = availableFamilies..sort();
+        _isLoadingFamilies = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingFamilies = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data keluarga: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadData() async {
@@ -95,12 +163,33 @@ class _RumahEditState extends State<RumahEdit> {
   void _initializeControllers() {
     _addressController.text = rumah['address'] ?? '';
     _selectedStatus = rumah['status'] ?? 'Tersedia';
+    _selectedFamily = rumah['family']?.toString();
+    _moveInDateController.text = _formatDate(DateTime.now());
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        _moveInDateController.text = _formatDate(picked);
+      });
+    }
   }
 
   @override
   void dispose() {
     // Dispose controllers
     _addressController.dispose();
+    _moveInDateController.dispose();
     super.dispose();
   }
 
@@ -121,10 +210,47 @@ class _RumahEditState extends State<RumahEdit> {
         final MaterialColor statusColor =
             _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
 
+        // Get current resident history
+        List<dynamic> residentHistory =
+            List.from(rumah['residentHistory'] ?? []);
+
+        // If changing from Ditempati to Tersedia, mark last resident as moved out
+        final oldStatus = rumah['status']?.toString();
+        if (oldStatus == 'Ditempati' && _selectedStatus == 'Tersedia') {
+          // Find and update the current resident (without moveOutDate)
+          for (int i = residentHistory.length - 1; i >= 0; i--) {
+            if (residentHistory[i]['status'] == 'Menempati' &&
+                (residentHistory[i]['moveOutDate'] == null ||
+                    residentHistory[i]['moveOutDate'].toString().isEmpty)) {
+              residentHistory[i]['moveOutDate'] = _formatDate(DateTime.now());
+              residentHistory[i]['status'] = 'Pindah';
+              break;
+            }
+          }
+        }
+
+        // If family changed and new family is selected, add to history
+        final oldFamily = rumah['family']?.toString();
+        if (_selectedFamily != null &&
+            _selectedFamily!.isNotEmpty &&
+            _selectedFamily != oldFamily) {
+          residentHistory.add({
+            'family': _selectedFamily,
+            'movedInDate': _moveInDateController.text,
+            'status': 'Menempati',
+          });
+        }
+
+        // Clear family field if status is Tersedia
+        final familyValue =
+            _selectedStatus == 'Tersedia' ? '' : (_selectedFamily ?? '');
+
         final updatedRumah = {
           'address': _addressController.text,
           'status': _selectedStatus,
           'statusColor': statusColor.value,
+          'family': familyValue,
+          'residentHistory': residentHistory,
           'updatedAt': FieldValue.serverTimestamp(),
         };
 
@@ -171,45 +297,6 @@ class _RumahEditState extends State<RumahEdit> {
       );
     }
 
-    // Check if the house can be edited (status must be "Tersedia")
-    if (rumah['status'] != null && rumah['status'] != 'Tersedia') {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Edit Data Rumah"),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.amber,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Hanya rumah dengan status 'Tersedia' yang dapat diedit.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppStyles.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text('Kembali'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Regular edit form for editable houses
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Data Rumah"),
@@ -257,10 +344,67 @@ class _RumahEditState extends State<RumahEdit> {
                   if (newValue != null) {
                     setState(() {
                       _selectedStatus = newValue;
+                      // Reset family selection when changing to Tersedia
+                      if (newValue == 'Tersedia') {
+                        _selectedFamily = null;
+                      }
                     });
                   }
                 },
               ),
+              const SizedBox(height: 16),
+
+              // Family Section (only show if status is Ditempati)
+              if (_selectedStatus == 'Ditempati') ...[
+                _isLoadingFamilies
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : FormDropdownField<String>(
+                        label: "Keluarga Penghuni",
+                        value: _familyOptions.contains(_selectedFamily)
+                            ? _selectedFamily
+                            : null,
+                        items: _familyOptions.map((String family) {
+                          return DropdownMenuItem<String>(
+                            value: family,
+                            child: Text(family),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedFamily = newValue;
+                          });
+                        },
+                        isRequired: _selectedStatus == 'Ditempati',
+                        validator: (value) {
+                          if (_selectedStatus == 'Ditempati' &&
+                              (value == null || value.isEmpty)) {
+                            return 'Pilih keluarga penghuni';
+                          }
+                          return null;
+                        },
+                      ),
+                const SizedBox(height: 16),
+                FormTextField(
+                  controller: _moveInDateController,
+                  label: "Tanggal Masuk",
+                  isRequired: true,
+                  readOnly: true,
+                  onTap: () => _selectDate(context),
+                  suffixIcon: Icons.calendar_today,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Pilih tanggal masuk';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
               const SizedBox(height: 32),
 
               // Action buttons

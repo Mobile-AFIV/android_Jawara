@@ -141,6 +141,72 @@ class _RumahSectionState extends State<RumahSection> {
     }
   }
 
+  Future<void> _deleteRumah(String rumahId) async {
+    // Show confirmation dialog
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus data rumah ini? Tindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        // Show loading
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+
+        // Delete from Firebase
+        await FirebaseFirestore.instance
+            .collection('rumah_warga')
+            .doc(rumahId)
+            .delete();
+
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Reload data
+        _loadData();
+
+        // Show success
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data rumah berhasil dihapus')),
+          );
+        }
+      } catch (e) {
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Show error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menghapus data: $e')),
+          );
+        }
+      }
+    }
+  }
+
   IconData? _getIconForFilter(String filter) {
     switch (filter) {
       case 'Tersedia':
@@ -262,8 +328,8 @@ class _RumahSectionState extends State<RumahSection> {
         index < _expandedList.length ? _expandedList[index] : false;
     String status = rumah['status'] ?? 'Tersedia';
     String address = rumah['address'] ?? '';
-    bool isAvailable = status.toLowerCase() == 'tersedia';
-    MaterialColor statusColor = isAvailable ? Colors.green : Colors.blue;
+    MaterialColor statusColor =
+        status.toLowerCase() == 'tersedia' ? Colors.green : Colors.blue;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -298,22 +364,18 @@ class _RumahSectionState extends State<RumahSection> {
           const SizedBox(height: 16),
           SectionActionButtons(
             showEditButton: true,
-            onEditPressed: isAvailable
-                ? () async {
-                    final result = await context.pushNamed(
-                      'rumah_edit',
-                      queryParameters: {
-                        'id': rumah['id']?.toString() ?? '',
-                        'address': address,
-                      },
-                    );
-                    if (result == true) {
-                      _loadData();
-                    }
-                  }
-                : () {
-                    _showEditNotAvailableSnackbar();
-                  },
+            onEditPressed: () async {
+              final result = await context.pushNamed(
+                'rumah_edit',
+                queryParameters: {
+                  'id': rumah['id']?.toString() ?? '',
+                  'address': address,
+                },
+              );
+              if (result == true) {
+                _loadData();
+              }
+            },
             onDetailPressed: () {
               context.pushNamed(
                 'rumah_detail',
@@ -323,6 +385,21 @@ class _RumahSectionState extends State<RumahSection> {
                 },
               );
             },
+          ),
+          const SizedBox(height: 12),
+          // Delete button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _deleteRumah(rumah['id']?.toString() ?? ''),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Hapus Rumah'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
           ),
         ],
       ),
@@ -378,32 +455,6 @@ class _RumahSectionState extends State<RumahSection> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showEditNotAvailableSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Hanya rumah dengan status "Tersedia" yang dapat diedit',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.orange[700],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
       ),
     );
   }

@@ -10,8 +10,15 @@ class ResidentHistoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrentResident = resident['moveOutDate'] == null ||
-        (resident['moveOutDate'] as String).isEmpty;
+    final isCurrentResident = resident['status'] == 'Menempati' ||
+        (resident['moveOutDate'] == null ||
+            (resident['moveOutDate'] is String &&
+                (resident['moveOutDate'] as String).isEmpty));
+
+    // Get the move in date with fallback
+    final moveInDate = resident['movedInDate']?.toString() ??
+        resident['moveInDate']?.toString() ??
+        '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -71,7 +78,7 @@ class ResidentHistoryItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        resident['familyName'] ?? '',
+                        resident['family'] ?? resident['familyName'] ?? '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -144,7 +151,7 @@ class ResidentHistoryItem extends StatelessWidget {
                   child: _buildDateInfo(
                     icon: Icons.login_rounded,
                     label: "Masuk",
-                    date: resident['moveInDate'] ?? '',
+                    date: moveInDate,
                     color: Colors.blue,
                   ),
                 ),
@@ -161,9 +168,10 @@ class ResidentHistoryItem extends StatelessWidget {
                         : Icons.logout_rounded,
                     label: "Keluar",
                     date: (resident['moveOutDate'] == null ||
-                            (resident['moveOutDate'] as String).isEmpty)
+                            (resident['moveOutDate'] is String &&
+                                (resident['moveOutDate'] as String).isEmpty))
                         ? "Masih Tinggal"
-                        : resident['moveOutDate'] as String,
+                        : resident['moveOutDate'].toString(),
                     color: isCurrentResident ? Colors.green : Colors.orange,
                   ),
                 ),
