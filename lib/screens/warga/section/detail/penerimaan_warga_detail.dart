@@ -4,6 +4,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_application_actions.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 
 class PenerimaanWargaDetail extends StatefulWidget {
   final String? penerimaanId;
@@ -124,12 +125,11 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
             children: [
               const Text('Masukkan alasan penolakan:'),
               const SizedBox(height: 16),
-              TextField(
+              FormTextField(
                 controller: reasonController,
-                decoration: const InputDecoration(
-                  hintText: 'Contoh: Data tidak lengkap',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Alasan Penolakan',
+                hintText: 'Contoh: Data tidak lengkap',
+                isRequired: true,
                 maxLines: 3,
               ),
             ],
