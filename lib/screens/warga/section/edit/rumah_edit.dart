@@ -52,7 +52,7 @@ class _RumahEditState extends State<RumahEdit> {
     } else if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
       try {
         final doc = await FirebaseFirestore.instance
-            .collection('rumah')
+            .collection('rumah_warga')
             .doc(widget.rumahId)
             .get();
 
@@ -131,7 +131,7 @@ class _RumahEditState extends State<RumahEdit> {
         // Update to Firebase
         if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
           await FirebaseFirestore.instance
-              .collection('rumah')
+              .collection('rumah_warga')
               .doc(widget.rumahId)
               .update(updatedRumah);
         }

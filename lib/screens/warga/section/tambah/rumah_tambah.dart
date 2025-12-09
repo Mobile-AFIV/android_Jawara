@@ -57,7 +57,9 @@ class _RumahTambahState extends State<RumahTambah> {
         };
 
         // Save to Firestore
-        await FirebaseFirestore.instance.collection('rumah').add(newRumah);
+        await FirebaseFirestore.instance
+            .collection('rumah_warga')
+            .add(newRumah);
 
         // Close loading dialog
         if (mounted) Navigator.pop(context);

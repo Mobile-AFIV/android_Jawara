@@ -43,7 +43,7 @@ class _RumahSectionState extends State<RumahSection> {
 
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection('rumah')
+          .collection('rumah_warga')
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -74,7 +74,7 @@ class _RumahSectionState extends State<RumahSection> {
 
       // Load all data from collection
       FirebaseFirestore.instance
-          .collection('rumah')
+          .collection('rumah_warga')
           .orderBy('createdAt', descending: true)
           .get()
           .then((snapshot) {
