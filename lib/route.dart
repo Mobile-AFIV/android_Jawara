@@ -9,6 +9,8 @@ import 'package:jawara_pintar/screens/kegiatan/kegiatan_menu.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/broadcast_daftar_section.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/detail/broadcast_detail.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/detail/kegiatan_detail.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/edit/broadcast_edit.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/edit/kegiatan_edit.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/kegiatan_daftar_section.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/pesan_warga_section.dart';
 import 'package:jawara_pintar/screens/kegiatan/section/tambah/broadcast_tambah.dart';
@@ -54,7 +56,8 @@ final GoRouter mainRouter = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
     final user = FirebaseAuth.instance.currentUser;
-    final loggingIn = state.matchedLocation == "/login" || state.matchedLocation == "/register";
+    final loggingIn = state.matchedLocation == "/login" ||
+        state.matchedLocation == "/register";
 
     if (user == null && !loggingIn) {
       return "/login";
@@ -346,7 +349,22 @@ final GoRouter mainRouter = GoRouter(
             name: 'broadcast_tambah',
             path: 'broadcast_tambah',
             builder: (context, state) => const BroadcastTambah(),
-          )
+          ),
+          GoRoute(
+            name: 'broadcast_edit',
+            // Path harus mendefinisikan parameter ID
+            path: 'broadcast_edit/:broadcastId', 
+            builder: (context, state) {
+              // Mengambil nilai 'broadcastId' dari pathParameters
+              final String broadcastId = state.pathParameters['broadcastId']!;
+              final String? title = state.uri.queryParameters['title'];
+
+              return BroadcastEdit(
+                broadcastId: broadcastId,
+                title: title, 
+              );
+            })
+
         ]),
     GoRoute(
         name: 'kegiatan_daftar',
@@ -362,7 +380,23 @@ final GoRouter mainRouter = GoRouter(
             name: 'kegiatan_tambah',
             path: 'kegiatan_tambah',
             builder: (context, state) => const KegiatanTambah(),
-          )
+          ),
+          GoRoute(
+              name: 'kegiatan_edit',
+              // Pastikan path menggunakan parameter :kegiatanId
+              path: 'kegiatan_edit/:kegiatanId',
+              builder: (context, state) {
+                // Mengambil ID dari pathParameters
+                final String kegiatanId = state.pathParameters['kegiatanId']!;
+
+                // Mengambil title dari queryParameters (jika dikirim)
+                final String? title = state.uri.queryParameters['title'];
+
+                return KegiatanEdit(
+                  kegiatanId: kegiatanId,
+                  title: title, // title bersifat opsional
+                );
+              })
         ]),
     GoRoute(
       name: 'pesan_warga',

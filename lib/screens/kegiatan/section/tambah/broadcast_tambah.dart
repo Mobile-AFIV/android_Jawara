@@ -1,13 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 
-// Model
+// Widget lokal (sesuaikan path jika berbeda)
+import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
+
+// Model + Firebase service
 import 'package:jawara_pintar/models/broadcast.dart';
-
-// Firebase service
 import 'package:jawara_pintar/services/broadcast_service.dart';
 
 class BroadcastTambah extends StatefulWidget {
@@ -22,7 +25,6 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _isiController = TextEditingController();
   final TextEditingController _tanggalController = TextEditingController();
-
   final ImagePicker _picker = ImagePicker();
   final BroadcastService _broadcastService = BroadcastService.instance;
 
@@ -30,16 +32,14 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
   File? _pdfFile;
 
   int _currentStep = 0;
-  bool _isLoading = false;
+  bool _isLoading = false; // Dipertahankan untuk logika _saveBroadcast
 
   // ---------------------------
   // PICK IMAGE
   // ---------------------------
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() => _imageFile = picked);
-    }
+    if (picked != null) setState(() => _imageFile = picked);
   }
 
   // ---------------------------
@@ -56,21 +56,24 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
   }
 
   // ---------------------------
-  // SAVE BROADCAST TO FIRESTORE
+  // SAVE BROADCAST
   // ---------------------------
   Future<void> _saveBroadcast() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Validasi di langkah terakhir (sebelum save)
+    if (!_formKey.currentState!.validate()) {
+      // Pindah ke langkah 0 jika validasi gagal, mirip dengan referensi Kegiatan
+      setState(() => _currentStep = 0); 
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      // Convert XFile/File ke List<String> path
-      final List<String> lampiranGambar =
-          _imageFile != null ? [_imageFile!.path] : [];
-      final List<String> lampiranPdf =
-          _pdfFile != null ? [_pdfFile!.path] : [];
+      final lampiranGambar =
+          _imageFile != null ? <String>[_imageFile!.path] : <String>[];
+      final lampiranPdf =
+          _pdfFile != null ? <String>[_pdfFile!.path] : <String>[];
 
-      // Buat object baru
       final newData = BroadcastModel(
         nama: _judulController.text,
         isi: _isiController.text,
@@ -82,11 +85,13 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
         lampiranPdf: lampiranPdf,
       );
 
-      // Simpan ke Firestore
       await _broadcastService.addBroadcast(newData);
 
-      // Tutup halaman
-      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Broadcast berhasil ditambahkan")),
+      );
+
+      Navigator.pop(context, true);
     } catch (e) {
       debugPrint("ERROR SAVE BROADCAST: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,88 +102,121 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
     setState(() => _isLoading = false);
   }
 
-  // ---------------------------
-  // UI
-  // ---------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Tambah Broadcast")),
-      body: Stack(
-        children: [
-          Form(
-            key: _formKey,
-            child: Stepper(
-              currentStep: _currentStep,
-              onStepContinue: () {
-                if (_currentStep == 1) {
-                  _saveBroadcast();
-                } else {
-                  setState(() => _currentStep++);
-                }
-              },
-              onStepCancel: () {
-                if (_currentStep > 0) setState(() => _currentStep--);
-              },
-              steps: [
-                Step(
-                  title: const Text("Informasi"),
-                  content: Column(
-                    children: [
-                      TextFormField(
-                        controller: _judulController,
-                        decoration: const InputDecoration(labelText: "Judul"),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? "Wajib diisi" : null,
-                      ),
-                      TextFormField(
-                        controller: _isiController,
-                        decoration: const InputDecoration(labelText: "Isi"),
-                        maxLines: 3,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? "Wajib diisi" : null,
-                      ),
-                      TextFormField(
-                        controller: _tanggalController,
-                        decoration: const InputDecoration(
-                          labelText: "Tanggal (YYYY-MM-DD)",
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Step(
-                  title: const Text("Lampiran"),
-                  content: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _pickImage,
-                        child: const Text("Upload Gambar"),
-                      ),
-                      if (_imageFile != null)
-                        Text("Gambar: ${_imageFile!.path.split('/').last}"),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _pickPdf,
-                        child: const Text("Upload PDF"),
-                      ),
-                      if (_pdfFile != null)
-                        Text("PDF: ${_pdfFile!.path.split('/').last}"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_isLoading)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
-        ],
+      body: Form(
+        key: _formKey,
+        child: Stepper(
+          type: StepperType.vertical,
+          currentStep: _currentStep,
+          onStepContinue: () {
+            final isLast = _currentStep == getSteps().length - 1;
+            if (isLast) {
+              _saveBroadcast();
+            } else {
+              // Hanya pindah ke langkah berikutnya jika langkah saat ini valid
+              if (getSteps()[_currentStep].title is Text && 
+                  (getSteps()[_currentStep].title as Text).data == "Informasi Broadcast" &&
+                  !_formKey.currentState!.validate()) {
+                // Biarkan validasi formulir terpicu
+                return;
+              }
+              setState(() => _currentStep++);
+            }
+          },
+          onStepCancel: () {
+            if (_currentStep > 0) setState(() => _currentStep--);
+          },
+          controlsBuilder: (context, details) {
+            final isLast = _currentStep == getSteps().length - 1;
+            final isFirst = _currentStep == 0;
+            return FormStepperControls(
+              // Menonaktifkan tombol "Lanjut/Simpan" saat loading
+              onContinue: _isLoading ? () {} : details.onStepContinue!,
+              onCancel: details.onStepCancel!,
+              isLastStep: isLast,
+              isFirstStep: isFirst,
+ // Tambahkan properti isLoading jika FormStepperControls mendukungnya
+            );
+          },
+          steps: getSteps(),
+        ),
       ),
+      // **Indikator Loading Dihapus/Dipotong dari build()**
+      // if (_isLoading)
+      //   Container(
+      //     color: Colors.black54,
+      //     child: const Center(
+      //       child: CircularProgressIndicator(color: Colors.white),
+      //     ),
+      //   ),
     );
+  }
+
+  List<Step> getSteps() {
+    return [
+      Step(
+        state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 0,
+        title: const Text("Informasi Broadcast"),
+        content: Column(
+          children: [
+            FormTextField(
+              label: "Judul",
+              controller: _judulController,
+              validator: (v) => v == null || v.isEmpty ? "Wajib diisi" : null,
+            ),
+            const SizedBox(height: 16),
+            FormTextField(
+              label: "Isi",
+              controller: _isiController,
+              maxLines: 4,
+              validator: (v) => v == null || v.isEmpty ? "Wajib diisi" : null,
+            ),
+            const SizedBox(height: 16),
+            FormDateField(
+              label: "Tanggal Broadcast",
+              controller: _tanggalController,
+              onDateSelected: (date) {
+                _tanggalController.text = DateFormat('yyyy-MM-dd').format(date);
+              },
+            ),
+          ],
+        ),
+      ),
+      Step(
+        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+        isActive: _currentStep >= 1,
+        title: const Text("Lampiran (Opsional)"),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ElevatedButton.icon(
+              onPressed: _pickImage,
+              icon: const Icon(Icons.image),
+              label: const Text("Upload Gambar"),
+            ),
+            const SizedBox(height: 8),
+            if (_imageFile != null)
+              Text("Gambar terpilih: ${_imageFile!.path.split('/').last}"),
+            if (_imageFile == null)
+              const Text("Belum ada gambar terpilih"),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _pickPdf,
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text("Upload PDF"),
+            ),
+            const SizedBox(height: 8),
+            if (_pdfFile != null)
+              Text("PDF terpilih: ${_pdfFile!.path.split('/').last}"),
+            if (_pdfFile == null)
+              const Text("Belum ada PDF terpilih"),
+          ],
+        ),
+      ),
+    ];
   }
 }

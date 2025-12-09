@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// Widgets custom
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
@@ -12,15 +10,11 @@ import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.d
     as custom_filter;
 import 'package:jawara_pintar/models/broadcast.dart';
 
-// -------------------------------------------------------
-// HALAMAN DAFTAR BROADCAST (Firebase Version)
-// -------------------------------------------------------
 class BroadcastDaftarSection extends StatefulWidget {
   const BroadcastDaftarSection({super.key});
 
   @override
-  State<BroadcastDaftarSection> createState() =>
-      _BroadcastDaftarSectionState();
+  State<BroadcastDaftarSection> createState() => _BroadcastDaftarSectionState();
 }
 
 class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
@@ -126,6 +120,7 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
   // EXPAND INIT
   // -------------------------------------------------------
   void _initExpandedList() {
+    // Memastikan ukuran list sesuai dengan _filteredData yang baru
     _expandedList = List.generate(_filteredData.length, (i) => i == 0);
   }
 
@@ -171,18 +166,18 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
           )
         ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Kegiatan'),
         onPressed: () async {
           final result = await context.pushNamed("broadcast_tambah");
 
-          if (result != null && result is BroadcastModel) {
-            // otomatis muncul karena Firestore stream
+          if (result != null) {
+            // Memaksa rebuild setelah kembali dari Tambah
+            setState(() {});
           }
         },
       ),
-
       body: StreamBuilder<List<BroadcastModel>>(
         stream: getBroadcastStream(),
         builder: (context, snapshot) {
@@ -190,16 +185,37 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          // Perbaikan Null Safety dan Empty Data
+          final List<BroadcastModel>? fetchedData = snapshot.data;
+
+          if (!snapshot.hasData || fetchedData == null || fetchedData.isEmpty) {
             return const Center(child: Text("Belum ada broadcast"));
           }
 
-          _allData = snapshot.data!;
-          _filteredData = _isSearching || _activeFilter != "Semua"
-              ? _filteredData
-              : List.from(_allData);
+          _allData = fetchedData;
 
-          if (!_expandedInitialized) {
+          final oldFilteredLength = _filteredData.length;
+
+          // Re-apply filter/search logic
+          if (!_isSearching && _activeFilter == "Semua") {
+            _filteredData = List.from(_allData);
+          } else {
+            // Jika sedang search/filter aktif, pastikan _filteredData diperbarui
+            // dengan data terbaru dari _allData sebelum memanggil _applySearch atau _applyFilterLogic
+            // Namun, karena _applySearch/Logic sudah memanggil setState, kita perlu sedikit modifikasi
+            // agar logika filtering dilakukan di sini jika terjadi perubahan data.
+
+            // Cek apakah ada perubahan data di stream (biasanya ini sudah cukup)
+            if (_filteredData.length != _allData.length &&
+                !_isSearching &&
+                _activeFilter == "Semua") {
+              _filteredData = List.from(_allData);
+            }
+          }
+
+          // Perbarui _expandedList hanya jika panjang list berubah
+          if (!_expandedInitialized ||
+              _filteredData.length != oldFilteredLength) {
             _initExpandedList();
             _expandedInitialized = true;
           }
@@ -215,9 +231,7 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
       controller: _scrollController,
       padding: const EdgeInsets.all(12),
       itemCount: _filteredData.length,
-      itemBuilder: (context, index) {
-        return _buildAnimatedCard(index);
-      },
+      itemBuilder: (context, index) => _buildAnimatedCard(index),
     );
   }
 
@@ -250,94 +264,69 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
           setState(() => _expandedList[index] = !isExpanded);
         },
         expandedContent: [
-          _buildDetail("Isi Broadcast", item.isi),
-          _buildDetail("Dibuat Oleh", item.dibuatOleh),
-
-          if (item.lampiranGambar.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Text("Lampiran Gambar",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _buildImageGrid(item.lampiranGambar),
-          ],
-
-          if (item.lampiranPdf.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Text("Lampiran PDF",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _buildPdfList(item.lampiranPdf),
-          ],
+          // Menggunakan _buildInfoRow sebagai pengganti _buildDetail
+          _buildInfoRow(Icons.subject, "Isi Broadcast", item.isi),
+          const SizedBox(height: 8),
+          _buildInfoRow(Icons.calendar_month, "Tanggal", item.tanggal),
+          const SizedBox(height: 8),
+          _buildInfoRow(Icons.account_circle, "Dibuat Oleh", item.dibuatOleh),
 
           const SizedBox(height: 12),
-         SectionActionButtons(
-  onDetailPressed: () {
-    context.pushNamed(
-      "broadcast_detail",
-      extra: {'id': item.id},
-    );
-  },
-  onEditPressed: () {
-    context.pushNamed(
-      "broadcast_edit",
-      extra: {'id': item.id},
-    );
-  },
-),
-
+          SectionActionButtons(
+            onDetailPressed: () {
+              context.pushNamed(
+                "kegiatan_detail", // Asumsi nama rute detail broadcast Anda adalah "kegiatan_detail" atau ganti sesuai rute Anda. Jika nama rutenya "broadcast_detail", gunakan itu.
+                // Menggunakan pathParameters, bukan extra, untuk ID
+                pathParameters: {'broadcastId': item.id},
+              );
+            },
+            onEditPressed: () {
+              context.pushNamed(
+                "broadcast_edit",
+                // Menggunakan pathParameters, bukan extra
+                pathParameters: {'broadcastId': item.id},
+                queryParameters: {'title': item.nama},
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDetail(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          Text(value),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageGrid(List<String> images) {
-    return GridView.count(
-      shrinkWrap: true,
-      crossAxisCount: 3,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      children: images
-          .map((url) => ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(url, fit: BoxFit.cover),
-              ))
-          .toList(),
-    );
-  }
-
-  Widget _buildPdfList(List<String> pdfs) {
-    return Column(
-      children: pdfs
-          .map(
-            (pdf) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading:
-                  const Icon(Icons.picture_as_pdf, color: Colors.red, size: 26),
-              title: Text(pdf),
-              trailing: IconButton(
-                icon: const Icon(Icons.download),
-                onPressed: () {},
-              ),
-            ),
-          )
-          .toList(),
+  // -------------------------------------------------------
+  // WIDGET BARU (Menggantikan _buildDetail)
+  // -------------------------------------------------------
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment
+          .start, // Penting agar icon dan teks sejajar di atas
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
