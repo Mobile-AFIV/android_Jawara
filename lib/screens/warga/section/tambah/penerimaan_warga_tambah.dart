@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
+import 'package:jawara_pintar/utils/cloudinary_config.dart';
 
 class PenerimaanWargaTambah extends StatefulWidget {
   const PenerimaanWargaTambah({super.key});
@@ -18,6 +19,9 @@ class PenerimaanWargaTambah extends StatefulWidget {
 
 class _PenerimaanWargaTambahState extends State<PenerimaanWargaTambah> {
   final _formKey = GlobalKey<FormState>();
+
+  // Cloudinary instance
+  late final CloudinaryPublic cloudinary;
 
   // Text controllers
   final TextEditingController _nameController = TextEditingController();
@@ -34,6 +38,12 @@ class _PenerimaanWargaTambahState extends State<PenerimaanWargaTambah> {
   final ImagePicker _imagePicker = ImagePicker();
   File? _selectedImage;
   String? _imageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    cloudinary = CloudinaryConfig.getCloudinary();
+  }
 
   @override
   void dispose() {
@@ -98,24 +108,36 @@ class _PenerimaanWargaTambahState extends State<PenerimaanWargaTambah> {
     );
   }
 
-  Future<String?> _uploadImageToFirebase(File imageFile) async {
+  Future<String?> _uploadImageToCloudinary(File imageFile) async {
     try {
-      // Create unique filename
-      final String fileName =
-          'ktp_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final Reference storageRef = FirebaseStorage.instance
-          .ref()
-          .child('penerimaan_warga')
-          .child(fileName);
+      print('Starting upload to Cloudinary...');
 
-      // Upload file
-      final UploadTask uploadTask = storageRef.putFile(imageFile);
-      final TaskSnapshot taskSnapshot = await uploadTask;
+      // Upload to Cloudinary
+      CloudinaryResponse response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(
+          imageFile.path,
+          folder: 'penerimaan_warga',
+          resourceType: CloudinaryResourceType.Image,
+        ),
+      );
 
-      // Get download URL
-      final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-      return downloadUrl;
+      print('Upload completed. URL: ${response.secureUrl}');
+
+      return response.secureUrl;
+    } on CloudinaryException catch (e) {
+      print('CloudinaryException: ${e.message}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Gagal mengupload gambar ke Cloudinary: ${e.message}'),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+      return null;
     } catch (e) {
+      print('General error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mengupload gambar: $e')),
@@ -145,8 +167,9 @@ class _PenerimaanWargaTambahState extends State<PenerimaanWargaTambah> {
           ),
         );
 
-        // Upload image to Firebase Storage
-        final String? imageUrl = await _uploadImageToFirebase(_selectedImage!);
+        // Upload image to Cloudinary
+        final String? imageUrl =
+            await _uploadImageToCloudinary(_selectedImage!);
 
         if (imageUrl == null) {
           if (mounted) Navigator.pop(context);
