@@ -53,10 +53,17 @@ class FormCityAutocomplete extends StatelessWidget {
           TextEditingController fieldController,
           FocusNode fieldFocusNode,
           VoidCallback onFieldSubmitted) {
-        // Update the controller without losing existing text
+        // Sync with main controller on init
         if (fieldController.text.isEmpty && controller.text.isNotEmpty) {
           fieldController.text = controller.text;
         }
+
+        // Listen to changes and sync to main controller
+        fieldController.addListener(() {
+          if (fieldController.text != controller.text) {
+            controller.text = fieldController.text;
+          }
+        });
 
         return TextFormField(
           controller: fieldController,
@@ -64,6 +71,10 @@ class FormCityAutocomplete extends StatelessWidget {
           decoration: FormInputDecoration.inputDecoration(
             isRequired ? "$label *" : label,
           ),
+          onChanged: (value) {
+            // Sync to main controller on every change
+            controller.text = value;
+          },
           onFieldSubmitted: (String value) {
             onFieldSubmitted();
             controller.text = fieldController.text;
