@@ -3,121 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
-import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart' as custom_filter;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart'
+    as custom_filter;
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
+import 'package:jawara_pintar/services/kegiatan_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/models/kegiatan.dart';
 
-/// ---------------------------
-/// Model & Dummy (Kegiatan)
-/// ---------------------------
-class KegiatanModel {
-  final String namaKegiatan;
-  final String kategori;
-  final String deskripsi;
-  final String tanggal;
-  final String lokasi;
-  final String penanggungJawab;
-  final String dibuatOleh;
-  final List<String> dokumentasi;
-
-  KegiatanModel({
-    required this.namaKegiatan,
-    required this.kategori,
-    required this.deskripsi,
-    required this.tanggal,
-    required this.lokasi,
-    required this.penanggungJawab,
-    required this.dibuatOleh,
-    this.dokumentasi = const [],
-  });
-}
-
-class KegiatanDummy {
-  static final List<String> kategoriOptions = [
-    "Sosial",
-    "Pendidikan",
-    "Keagamaan",
-    "Lingkungan",
-    "Kesehatan",
-    "Olahraga",
-    "Pelatihan",
-    "Rapat",
-    "Lainnya",
-  ];
-
-  static List<KegiatanModel> dummyKegiatan = [
-    KegiatanModel(
-      namaKegiatan: "Kerja Bakti Bersih Lingkungan",
-      kategori: "Lingkungan",
-      deskripsi:
-          "Membersihkan area sekitar RT termasuk selokan, taman, dan jalan umum. Semua warga diharapkan membawa alat sederhana seperti sapu dan cangkul.",
-      tanggal: "12 Oktober 2025",
-      lokasi: "Area RT 05 RW 03",
-      penanggungJawab: "Budi Santoso",
-      dibuatOleh: "Ketua RT",
-      dokumentasi: [
-        "https://via.placeholder.com/400x300.png?text=kerjabakti+1",
-        "https://via.placeholder.com/400x300.png?text=kerjabakti+2",
-      ],
-    ),
-    KegiatanModel(
-      namaKegiatan: "Pengajian Rutin Bulanan",
-      kategori: "Keagamaan",
-      deskripsi:
-          "Pengajian rutin bersama warga untuk meningkatkan wawasan spiritual dan kebersamaan antarwarga.",
-      tanggal: "05 Oktober 2025",
-      lokasi: "Musholla Al-Ikhlas",
-      penanggungJawab: "Ahmad Fauzi",
-      dibuatOleh: "Seksi Keagamaan",
-      dokumentasi: [
-        "https://via.placeholder.com/400x300.png?text=pengajian+1",
-      ],
-    ),
-    KegiatanModel(
-      namaKegiatan: "Senam Pagi Mingguan",
-      kategori: "Olahraga",
-      deskripsi:
-          "Senam pagi setiap minggu untuk meningkatkan kesehatan warga dan menumbuhkan kebiasaan olahraga.",
-      tanggal: "28 September 2025",
-      lokasi: "Lapangan RT 05",
-      penanggungJawab: "Dewi Lestari",
-      dibuatOleh: "Seksi Kesehatan",
-      dokumentasi: [
-        "https://via.placeholder.com/400x300.png?text=senam+1",
-        "https://via.placeholder.com/400x300.png?text=senam+2",
-      ],
-    ),
-    KegiatanModel(
-      namaKegiatan: "Pelatihan Pemanfaatan Limbah Rumah Tangga",
-      kategori: "Pendidikan",
-      deskripsi:
-          "Pelatihan membuat kerajinan dari limbah rumah tangga seperti botol, plastik, dan kertas agar bernilai ekonomis.",
-      tanggal: "20 November 2025",
-      lokasi: "Balai Warga RT 05",
-      penanggungJawab: "Rina Wijaya",
-      dibuatOleh: "Seksi Pendidikan",
-      dokumentasi: [
-        "https://via.placeholder.com/400x300.png?text=pelatihan+1",
-      ],
-    ),
-    KegiatanModel(
-      namaKegiatan: "Rapat Koordinasi Persiapan HUT RI",
-      kategori: "Rapat",
-      deskripsi:
-          "Rapat untuk membahas persiapan kegiatan perayaan Hari Kemerdekaan RI, pembagian tugas panitia, dan logistik.",
-      tanggal: "01 Agustus 2025",
-      lokasi: "Rumah Ketua RT",
-      penanggungJawab: "Dimas Prasetyo",
-      dibuatOleh: "Panitia HUT RI",
-      dokumentasi: [],
-    ),
-  ];
-}
-
-/// ---------------------------
-/// KegiatanDaftarSection Widget
-/// ---------------------------
 class KegiatanDaftarSection extends StatefulWidget {
   const KegiatanDaftarSection({super.key});
 
@@ -127,10 +21,12 @@ class KegiatanDaftarSection extends StatefulWidget {
 
 class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
     with TickerProviderStateMixin {
-  late List<bool> _expandedList;
+  late List<bool> _expandedList = [];
+  bool _expandedInitialized = false;
   final ScrollController _scrollController = ScrollController();
+  List<KegiatanModel> _kegiatanList = [];
 
-  // Search and filter states
+  // Search / Filter
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
   List<KegiatanModel> _filteredData = [];
@@ -142,52 +38,61 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
   @override
   void initState() {
     super.initState();
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut);
+
+    _fadeAnimation =
+        CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut);
+
     _fadeController.forward();
 
-    _initExpandedList();
-    _initSearchAndFilter();
+    _searchController.addListener(_filterData);
   }
 
   void _initExpandedList() {
-    _expandedList = List.generate(
-      KegiatanDummy.dummyKegiatan.length,
-      (index) => index == 0,
-    );
-  }
-
-  void _initSearchAndFilter() {
-    _filteredData = List.from(KegiatanDummy.dummyKegiatan);
-    _searchController.addListener(_filterData);
+    _expandedList = List.generate(_filteredData.length, (index) => index == 0);
   }
 
   void _filterData() {
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = KegiatanDummy.dummyKegiatan.where((kegiatan) {
-        bool matchesSearch = kegiatan.namaKegiatan.toLowerCase().contains(query) ||
-            kegiatan.kategori.toLowerCase().contains(query) ||
-            kegiatan.lokasi.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' || kegiatan.kategori == _selectedFilter;
-        return matchesSearch && matchesFilter;
+      final query = _searchController.text.toLowerCase();
+
+      _filteredData = _kegiatanList.where((k) {
+        bool matchSearch = k.namaKegiatan.toLowerCase().contains(query) ||
+            k.kategori.toLowerCase().contains(query) ||
+            k.lokasi.toLowerCase().contains(query);
+
+        bool matchFilter =
+            _selectedFilter == 'Semua' || k.kategori == _selectedFilter;
+
+        return matchSearch && matchFilter;
       }).toList();
 
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      _initExpandedList();
     });
+  }
+
+  List<String> _getKategoriUnik() {
+    final setKategori = <String>{};
+    for (var k in _kegiatanList) {
+      setKategori.add(k.kategori);
+    }
+    return setKategori.toList();
   }
 
   void _showFilterBottomSheet() {
     custom_filter.FilterBottomSheet.show(
       context: context,
-      title: 'Filter Kategori Kegiatan',
-      options: ['Semua', ...KegiatanDummy.kategoriOptions],
+      title: 'Filter Kategori',
+      options: ['Semua', ..._getKategoriUnik()],
       selectedValue: _selectedFilter,
-      onSelected: (filter) {
-        setState(() => _selectedFilter = filter);
+      onSelected: (v) {
+        setState(() {
+          _selectedFilter = v;
+        });
         _filterData();
       },
       showIcons: true,
@@ -206,30 +111,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
     );
   }
 
-  IconData? _getIconForFilter(String filter) {
-    switch (filter) {
-      case 'Sosial':
-        return Icons.volunteer_activism;
-      case 'Pendidikan':
-        return Icons.school;
-      case 'Keagamaan':
-        return Icons.self_improvement;
-      case 'Lingkungan':
-        return Icons.nature;
-      case 'Kesehatan':
-        return Icons.health_and_safety;
-      case 'Olahraga':
-        return Icons.sports;
-      case 'Pelatihan':
-        return Icons.workspace_premium;
-      case 'Rapat':
-        return Icons.meeting_room;
-      default:
-        return null;
-    }
-  }
-
-  Color _getCategoryColor(String kategori) {
+  MaterialColor _getCategoryColor(String kategori) {
     switch (kategori) {
       case 'Sosial':
         return Colors.deepOrange;
@@ -240,7 +122,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
       case 'Lingkungan':
         return Colors.green;
       case 'Kesehatan':
-        return Colors.redAccent;
+        return Colors.red;
       case 'Olahraga':
         return Colors.purple;
       case 'Pelatihan':
@@ -248,7 +130,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
       case 'Rapat':
         return Colors.brown;
       default:
-        return AppStyles.primaryColor.withValues(alpha: 1);
+        return Colors.blue;
     }
   }
 
@@ -268,11 +150,12 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
             ? custom_search.SearchBar(
                 controller: _searchController,
                 hintText: 'Cari nama kegiatan, kategori, atau lokasi...',
-                onChanged: (value) => _filterData(),
+                onChanged: (_) => _filterData(),
                 onClear: () {
                   setState(() {
                     _isSearching = false;
                     _searchController.clear();
+                    _filterData();
                   });
                 },
               )
@@ -290,54 +173,31 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           ),
         ],
       ),
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              ActiveFilterChip(
-                activeFilter: _selectedFilter,
-                icon: _getIconForFilter(_selectedFilter),
-                onClear: () {
-                  setState(() {
-                    _selectedFilter = 'Semua';
-                    _filterData();
-                  });
-                }, 
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    await Future.delayed(const Duration(milliseconds: 500));
-                    setState(() {
-                      _initExpandedList();
-                      _filterData();
-                    });
-                  },
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16.0),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _filteredData.length,
-                    itemBuilder: (context, index) => _buildAnimatedCard(index),
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      body: StreamBuilder<List<KegiatanModel>>(
+        stream: KegiatanService.instance.getAll(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          _kegiatanList = snapshot.data!;
+          _filteredData = List.from(_kegiatanList);
+
+          // FIX: Jangan reset expandedList setiap build
+          if (!_expandedInitialized) {
+            _initExpandedList();
+            _expandedInitialized = true;
+          }
+
+          return _buildBodyContent();
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
-        foregroundColor: Colors.white,
+        backgroundColor: AppStyles.primaryColor,
         onPressed: () async {
           final result = await context.pushNamed('kegiatan_tambah');
           if (result == true) {
-            setState(() {
-              _initExpandedList();
-              _filterData();
-            });
+            setState(() {});
           }
         },
         icon: const Icon(Icons.add),
@@ -346,17 +206,24 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
     );
   }
 
+  Widget _buildBodyContent() {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(12),
+      itemCount: _filteredData.length,
+      itemBuilder: (context, index) => _buildAnimatedCard(index),
+    );
+  }
+
   Widget _buildAnimatedCard(int index) {
     final kegiatan = _filteredData[index];
-    final originalIndex = KegiatanDummy.dummyKegiatan.indexOf(kegiatan);
-    bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
-    final categoryColor = _getCategoryColor(kegiatan.kategori);
+    final originalIndex = _kegiatanList.indexOf(kegiatan);
+    bool isExpanded = _expandedList[index];
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
-      curve: Curves.easeOutCubic,
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
+      tween: Tween(begin: 0, end: 1),
+      builder: (ctx, value, child) {
         return Transform.translate(
           offset: Offset(0, 20 * (1 - value)),
           child: Opacity(opacity: value, child: child),
@@ -367,14 +234,12 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
         subtitle: kegiatan.tanggal,
         statusChip: StatusChip(
           label: kegiatan.kategori,
-          color: categoryColor as MaterialColor? ?? Colors.blue as MaterialColor,
+          color: _getCategoryColor(kegiatan.kategori),
           icon: Icons.event,
         ),
         isExpanded: isExpanded,
         onToggleExpand: () {
-          setState(() {
-            if (index < _expandedList.length) _expandedList[index] = !_expandedList[index];
-          });
+          setState(() => _expandedList[index] = !isExpanded);
         },
         expandedContent: [
           _buildInfoRow(Icons.category, "Kategori", kegiatan.kategori),
@@ -385,9 +250,11 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           const SizedBox(height: 8),
           _buildInfoRow(Icons.place, "Lokasi", kegiatan.lokasi),
           const SizedBox(height: 8),
-          _buildInfoRow(Icons.person, "Penanggung Jawab", kegiatan.penanggungJawab),
+          _buildInfoRow(
+              Icons.person, "Penanggung Jawab", kegiatan.penanggungJawab),
           const SizedBox(height: 8),
-          _buildInfoRow(Icons.account_circle, "Dibuat Oleh", kegiatan.dibuatOleh),
+          _buildInfoRow(
+              Icons.account_circle, "Dibuat Oleh", kegiatan.dibuatOleh),
           const SizedBox(height: 12),
           _buildGallery(kegiatan.dokumentasi),
           const SizedBox(height: 12),
@@ -402,10 +269,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
                 },
               );
               if (result == true) {
-                setState(() {
-                  _initExpandedList();
-                  _filterData();
-                });
+                setState(() {});
               }
             },
             onDetailPressed: () {
@@ -432,28 +296,21 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
             color: Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: Colors.grey[700]),
+          child: Icon(icon, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -463,13 +320,8 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
 
   Widget _buildGallery(List<String> images) {
     if (images.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: const Text(
-          "Tidak ada dokumentasi",
-          style: TextStyle(fontSize: 14, color: Colors.black54),
-        ),
-      );
+      return const Text("Tidak ada dokumentasi",
+          style: TextStyle(fontSize: 14, color: Colors.black54));
     }
 
     return SizedBox(
@@ -477,39 +329,21 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: images.length,
-        padding: const EdgeInsets.only(left: 4),
-        itemBuilder: (context, index) {
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, index) {
           final img = images[index];
-          return GestureDetector(
-            onTap: () {
-              // Optional: buka viewer gambar besar atau route detail gambar
-              showDialog(
-                context: context,
-                builder: (_) => Dialog(
-                  child: InteractiveViewer(
-                    child: Image.network(img, fit: BoxFit.contain),
-                  ),
-                ),
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                img,
-                width: 140,
-                height: 96,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 140,
-                  height: 96,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-                ),
-              ),
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              img,
+              width: 140,
+              height: 96,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Container(width: 140, height: 96, color: Colors.grey[300]),
             ),
           );
         },
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
       ),
     );
   }

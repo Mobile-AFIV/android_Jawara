@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+// Widget lokal
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
-import 'package:jawara_pintar/screens/kegiatan/section/data/kegiatan_dummy.dart'; // pastikan ada
+
+// Model + Firestore service
+import 'package:jawara_pintar/models/kegiatan.dart';
+
+import 'package:jawara_pintar/services/kegiatan_service.dart';
 
 class KegiatanTambah extends StatefulWidget {
   const KegiatanTambah({super.key});
@@ -38,14 +43,12 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
     'Lainnya'
   ];
 
-  // Save data
-  void _saveData() {
-    // manual validasi tanggal & kategori karena FormDateField tidak punya validator
-    if ((_tanggalController.text).isEmpty) {
+  // Save data ke Firestore
+  Future<void> _saveData() async {
+    if (_tanggalController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Tanggal kegiatan wajib diisi")),
       );
-      // pindah ke step tanggal (misal step 0)
       setState(() {
         _currentStep = 0;
       });
@@ -57,15 +60,16 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
         namaKegiatan: _namaController.text,
         kategori: _selectedKategori ?? '',
         deskripsi: _deskripsiController.text,
-        tanggal: _tanggalController.text, // sesuai field model
+        tanggal: _tanggalController.text,
         lokasi: _lokasiController.text,
         penanggungJawab: _penanggungController.text,
-        dibuatOleh: "Admin RT", // set default / nanti ambil dari user
-        dokumentasi: [],
+        dibuatOleh: "Admin RT",
+        dokumentasi: [], id: '',
       );
 
-      KegiatanDummy.dummyKegiatan
-          .add(newKegiatan); // atau KegiatanDummy.addKegiatan jika ada
+      // ⬇ GANTI DUMMY → FIRESTORE
+      await KegiatanService.instance.create(newKegiatan);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
       );
