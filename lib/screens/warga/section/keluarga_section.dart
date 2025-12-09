@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -26,28 +26,25 @@ class _KeluargaSectionState extends State<KeluargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<KeluargaModel> _filteredData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
     _initScrollButton();
     _setupScrollListener();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      KeluargaDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
-
-  void _initSearchAndFilter() {
-    _filteredData = List.from(KeluargaDummy.dummyData);
-    _searchController.addListener(_filterData);
+  void _loadData() {
+    // TODO: Load data from Firebase
+    setState(() {
+      _filteredData = [];
+      _expandedList = [];
+      _isLoading = false;
+    });
   }
 
   void _initScrollButton() {
@@ -75,16 +72,10 @@ class _KeluargaSectionState extends State<KeluargaSection>
   }
 
   void _filterData() {
+    // TODO: Implement filter with Firebase data
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = KeluargaDummy.dummyData.where((keluarga) {
-        bool matchesSearch = keluarga.familyName.toLowerCase().contains(query) ||
-                             keluarga.headOfFamily.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             keluarga.status == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -181,47 +172,64 @@ class _KeluargaSectionState extends State<KeluargaSection>
               },
             ),
             Expanded(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(milliseconds: 500));
-                      setState(() {
-                        _initExpandedList();
-                        _filterData();
-                      });
-                    },
-                    child: ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16.0),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _filteredData.length,
-                      itemBuilder: (context, index) {
-                        return _buildAnimatedCard(index);
-                      },
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    ),
-                  ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.family_restroom,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada data keluarga',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Stack(
+                          children: [
+                            RefreshIndicator(
+                              onRefresh: () async {
+                                _loadData();
+                              },
+                              child: ListView.separated(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16.0),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: _filteredData.length,
+                                itemBuilder: (context, index) {
+                                  return _buildAnimatedCard(index);
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 12),
+                              ),
+                            ),
 
-                  // Scroll to top button
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: ScaleTransition(
-                      scale: _scrollButtonAnimation,
-                      child: FloatingActionButton.small(
-                        heroTag: 'scrollToTop',
-                        onPressed: _scrollToTop,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          color: Theme.of(context).primaryColor,
+                            // Scroll to top button
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: ScaleTransition(
+                                scale: _scrollButtonAnimation,
+                                child: FloatingActionButton.small(
+                                  heroTag: 'scrollToTop',
+                                  onPressed: _scrollToTop,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.keyboard_arrow_up,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -231,7 +239,10 @@ class _KeluargaSectionState extends State<KeluargaSection>
 
   Widget _buildAnimatedCard(int index) {
     final keluarga = _filteredData[index];
-    final originalIndex = KeluargaDummy.dummyData.indexOf(keluarga);
+    bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String status = keluarga['status'] ?? 'Aktif';
+    MaterialColor statusColor = status == 'Aktif' ? Colors.green : Colors.red;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -247,42 +258,44 @@ class _KeluargaSectionState extends State<KeluargaSection>
         );
       },
       child: ExpandableSectionCard(
-        title: keluarga.familyName,
-        subtitle: "kepala: ${keluarga.headOfFamily}",
+        title: keluarga['familyName'] ?? '',
+        subtitle: "kepala: ${keluarga['headOfFamily'] ?? ''}",
         statusChip: StatusChip(
-          label: keluarga.status,
-          color: keluarga.statusColor,
-          icon: _getStatusIcon(keluarga.status),
+          label: status,
+          color: statusColor,
+          icon: _getStatusIcon(status),
         ),
-        isExpanded: _expandedList[index],
+        isExpanded: isExpanded,
         onToggleExpand: () {
           setState(() {
-            _expandedList[index] = !_expandedList[index];
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
+            }
           });
         },
         expandedContent: [
           _buildInfoRow(
             Icons.family_restroom,
             "Nama Keluarga",
-            keluarga.familyName,
+            keluarga['familyName'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.person,
             "Kepala Keluarga",
-            keluarga.headOfFamily,
+            keluarga['headOfFamily'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.location_on,
             "Alamat",
-            keluarga.address,
+            keluarga['address'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.home,
             "Status Kepemilikan",
-            keluarga.ownershipStatus,
+            keluarga['ownershipStatus'] ?? '',
           ),
           const SizedBox(height: 16),
           SectionActionButtons(
@@ -290,7 +303,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
             onDetailPressed: () {
               context.pushNamed(
                 'keluarga_detail',
-                queryParameters: {'index': originalIndex.toString()},
+                queryParameters: {'id': keluarga['id']?.toString() ?? ''},
               );
             },
           ),

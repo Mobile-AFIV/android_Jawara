@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -26,28 +26,25 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<PenerimaanWargaModel> _filteredData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
     _initScrollButton();
     _setupScrollListener();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      PenerimaanWargaDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
-
-  void _initSearchAndFilter() {
-    _filteredData = List.from(PenerimaanWargaDummy.dummyData);
-    _searchController.addListener(_filterData);
+  void _loadData() {
+    // TODO: Load data from Firebase
+    setState(() {
+      _filteredData = [];
+      _expandedList = [];
+      _isLoading = false;
+    });
   }
 
   void _initScrollButton() {
@@ -75,17 +72,10 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   }
 
   void _filterData() {
+    // TODO: Implement filter with Firebase data
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = PenerimaanWargaDummy.dummyData.where((penerimaan) {
-        bool matchesSearch = penerimaan.name.toLowerCase().contains(query) ||
-                             penerimaan.nik.contains(query) ||
-                             penerimaan.email.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             penerimaan.registrationStatus == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -185,47 +175,64 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
               },
             ),
             Expanded(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(milliseconds: 500));
-                      setState(() {
-                        _initExpandedList();
-                        _filterData();
-                      });
-                    },
-                    child: ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16.0),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _filteredData.length,
-                      itemBuilder: (context, index) {
-                        return _buildAnimatedCard(index);
-                      },
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    ),
-                  ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_add_outlined,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada permohonan warga baru',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Stack(
+                          children: [
+                            RefreshIndicator(
+                              onRefresh: () async {
+                                _loadData();
+                              },
+                              child: ListView.separated(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16.0),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: _filteredData.length,
+                                itemBuilder: (context, index) {
+                                  return _buildAnimatedCard(index);
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 12),
+                              ),
+                            ),
 
-                  // Scroll to top button
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: ScaleTransition(
-                      scale: _scrollButtonAnimation,
-                      child: FloatingActionButton.small(
-                        heroTag: 'scrollToTop',
-                        onPressed: _scrollToTop,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          color: Theme.of(context).primaryColor,
+                            // Scroll to top button
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: ScaleTransition(
+                                scale: _scrollButtonAnimation,
+                                child: FloatingActionButton.small(
+                                  heroTag: 'scrollToTop',
+                                  onPressed: _scrollToTop,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.keyboard_arrow_up,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -274,7 +281,8 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white),
+                              icon:
+                                  const Icon(Icons.close, color: Colors.white),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -331,23 +339,34 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     );
   }
 
-  void _navigateToDetail(int index, PenerimaanWargaModel penerimaan) async {
+  void _navigateToDetail(Map<String, dynamic> penerimaan) async {
     final result = await context.pushNamed(
       'penerimaan_warga_detail',
       queryParameters: {
-        'index': index.toString(),
-        'name': penerimaan.name,
+        'id': penerimaan['id']?.toString() ?? '',
+        'name': penerimaan['name'] ?? '',
       },
     );
 
     if (result == true) {
-      setState(() {});
+      _loadData();
     }
   }
 
   Widget _buildAnimatedCard(int index) {
     final penerimaan = _filteredData[index];
-    final originalIndex = PenerimaanWargaDummy.dummyData.indexOf(penerimaan);
+    bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String registrationStatus = penerimaan['registrationStatus'] ?? 'Menunggu';
+    MaterialColor statusColor;
+
+    if (registrationStatus.toLowerCase().contains('diterima')) {
+      statusColor = Colors.green;
+    } else if (registrationStatus.toLowerCase().contains('ditolak')) {
+      statusColor = Colors.red;
+    } else {
+      statusColor = Colors.orange;
+    }
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -363,45 +382,49 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
         );
       },
       child: ExpandableSectionCard(
-        title: penerimaan.name,
+        title: penerimaan['name'] ?? '',
         statusChip: StatusChip(
-          label: penerimaan.registrationStatus,
-          color: penerimaan.statusColor,
-          icon: _getStatusIcon(penerimaan.registrationStatus),
+          label: registrationStatus,
+          color: statusColor,
+          icon: _getStatusIcon(registrationStatus),
         ),
-        isExpanded: _expandedList[index],
+        isExpanded: isExpanded,
         onToggleExpand: () {
           setState(() {
-            _expandedList[index] = !_expandedList[index];
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
+            }
           });
         },
         expandedContent: [
           _buildInfoRow(
             Icons.credit_card,
             "NIK",
-            penerimaan.nik,
+            penerimaan['nik'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.email,
             "Email",
-            penerimaan.email,
+            penerimaan['email'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
-            penerimaan.gender == "Laki-laki" ? Icons.male : Icons.female,
+            (penerimaan['gender'] ?? '') == "Laki-laki"
+                ? Icons.male
+                : Icons.female,
             "Jenis Kelamin",
-            penerimaan.gender,
+            penerimaan['gender'] ?? '',
           ),
           const SizedBox(height: 12),
-          
+
           // Photo preview button
           _buildPhotoButton(),
-          
+
           const SizedBox(height: 16),
           SectionActionButtons(
             showEditButton: false,
-            onDetailPressed: () => _navigateToDetail(originalIndex, penerimaan),
+            onDetailPressed: () => _navigateToDetail(penerimaan),
           ),
         ],
       ),
@@ -500,11 +523,11 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   IconData _getStatusIcon(String status) {
     if (status.toLowerCase().contains('pending')) {
       return Icons.pending;
-    } else if (status.toLowerCase().contains('approved') || 
-               status.toLowerCase().contains('diterima')) {
+    } else if (status.toLowerCase().contains('approved') ||
+        status.toLowerCase().contains('diterima')) {
       return Icons.check_circle;
-    } else if (status.toLowerCase().contains('rejected') || 
-               status.toLowerCase().contains('ditolak')) {
+    } else if (status.toLowerCase().contains('rejected') ||
+        status.toLowerCase().contains('ditolak')) {
       return Icons.cancel;
     }
     return Icons.info;

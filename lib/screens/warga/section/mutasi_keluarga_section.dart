@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/mutasi_keluarga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -23,39 +23,30 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<MutasiKeluargaModel> _filteredData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      MutasiKeluargaDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
-
-  void _initSearchAndFilter() {
-    _filteredData = List.from(MutasiKeluargaDummy.dummyData);
-    _searchController.addListener(_filterData);
+  void _loadData() {
+    // TODO: Load data from Firebase
+    setState(() {
+      _filteredData = [];
+      _expandedList = [];
+      _isLoading = false;
+    });
   }
 
   void _filterData() {
+    // TODO: Implement filter with Firebase data
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = MutasiKeluargaDummy.dummyData.where((mutasi) {
-        bool matchesSearch = mutasi.familyName.toLowerCase().contains(query) ||
-                             mutasi.mutationType.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             mutasi.mutationType == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -63,7 +54,7 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
     FilterBottomSheet.show(
       context: context,
       title: 'Filter Jenis Mutasi',
-      options: ['Semua', ...MutasiKeluargaDummy.mutationTypeOptions],
+      options: ['Semua', 'Pindah Masuk', 'Keluar Wilayah'],
       selectedValue: _selectedFilter,
       onSelected: (value) {
         setState(() => _selectedFilter = value);
@@ -143,23 +134,42 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
               },
             ),
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await Future.delayed(const Duration(milliseconds: 500));
-                  setState(() => _initExpandedList());
-                  _filterData();
-                },
-                child: ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16.0),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _filteredData.length,
-                  itemBuilder: (context, index) {
-                    return _buildAnimatedCard(index);
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.swap_horiz,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada data mutasi keluarga',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            _loadData();
+                          },
+                          child: ListView.separated(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16.0),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _filteredData.length,
+                            itemBuilder: (context, index) {
+                              return _buildAnimatedCard(index);
+                            },
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                          ),
+                        ),
             ),
           ],
         ),
@@ -169,9 +179,9 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
         foregroundColor: Colors.white,
         onPressed: () async {
           final result = await context.pushNamed('mutasi_keluarga_tambah');
-          
+
           if (result == true) {
-            setState(() => _initExpandedList());
+            _loadData();
           }
         },
         icon: const Icon(Icons.add),
@@ -182,7 +192,12 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
 
   Widget _buildAnimatedCard(int index) {
     final mutasi = _filteredData[index];
-    final originalIndex = MutasiKeluargaDummy.dummyData.indexOf(mutasi);
+    bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String mutationType = mutasi['mutationType'] ?? '';
+    MaterialColor statusColor = mutationType.toLowerCase().contains('masuk')
+        ? Colors.green
+        : Colors.orange;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -198,36 +213,38 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
         );
       },
       child: ExpandableSectionCard(
-        title: mutasi.familyName,
-        subtitle: "tanggal: ${mutasi.date}",
+        title: mutasi['familyName'] ?? '',
+        subtitle: "tanggal: ${mutasi['date'] ?? ''}",
         statusChip: StatusChip(
-          label: mutasi.mutationType,
-          color: mutasi.statusColor,
-          icon: _getMutationIcon(mutasi.mutationType),
+          label: mutationType,
+          color: statusColor,
+          icon: _getMutationIcon(mutationType),
         ),
-        isExpanded: _expandedList[index],
+        isExpanded: isExpanded,
         onToggleExpand: () {
           setState(() {
-            _expandedList[index] = !_expandedList[index];
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
+            }
           });
         },
         expandedContent: [
           _buildInfoRow(
             Icons.family_restroom,
             "Nama Keluarga",
-            mutasi.familyName,
+            mutasi['familyName'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.calendar_today,
             "Tanggal Mutasi",
-            mutasi.date,
+            mutasi['date'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.swap_horiz,
             "Jenis Mutasi",
-            mutasi.mutationType,
+            mutationType,
           ),
           const SizedBox(height: 16),
           SectionActionButtons(
@@ -235,7 +252,7 @@ class _MutasiKeluargaSectionState extends State<MutasiKeluargaSection> {
             onDetailPressed: () {
               context.pushNamed(
                 'mutasi_keluarga_detail',
-                queryParameters: {'index': originalIndex.toString()},
+                queryParameters: {'id': mutasi['id']?.toString() ?? ''},
               );
             },
           ),

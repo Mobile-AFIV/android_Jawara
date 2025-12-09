@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -25,38 +25,30 @@ class _RumahSectionState extends State<RumahSection> {
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<RumahModel> _filteredData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      RumahDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
-
-  void _initSearchAndFilter() {
-    _filteredData = List.from(RumahDummy.dummyData);
-    _searchController.addListener(_filterData);
+  void _loadData() {
+    // TODO: Load data from Firebase using RumahService
+    setState(() {
+      _filteredData = [];
+      _expandedList = [];
+      _isLoading = false;
+    });
   }
 
   void _filterData() {
+    // TODO: Implement filter with Firebase data
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = RumahDummy.dummyData.where((rumah) {
-        bool matchesSearch = rumah.address.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             rumah.status == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -64,7 +56,7 @@ class _RumahSectionState extends State<RumahSection> {
     FilterBottomSheet.show(
       context: context,
       title: 'Filter Status Rumah',
-      options: ['Semua', ...RumahDummy.statusOptions],
+      options: ['Semua', 'Tersedia', 'Ditempati'],
       selectedValue: _selectedFilter,
       onSelected: (value) {
         setState(() => _selectedFilter = value);
@@ -88,9 +80,7 @@ class _RumahSectionState extends State<RumahSection> {
     );
 
     if (result == true) {
-      setState(() {
-        _initExpandedList();
-      });
+      _loadData();
     }
   }
 
@@ -159,25 +149,42 @@ class _RumahSectionState extends State<RumahSection> {
               },
             ),
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await Future.delayed(const Duration(milliseconds: 500));
-                  setState(() {
-                    _initExpandedList();
-                    _filterData();
-                  });
-                },
-                child: ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16.0),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _filteredData.length,
-                  itemBuilder: (context, index) {
-                    return _buildAnimatedCard(index);
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.home_outlined,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada data rumah',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            _loadData();
+                          },
+                          child: ListView.separated(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16.0),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _filteredData.length,
+                            itemBuilder: (context, index) {
+                              return _buildAnimatedCard(index);
+                            },
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                          ),
+                        ),
             ),
           ],
         ),
@@ -194,9 +201,12 @@ class _RumahSectionState extends State<RumahSection> {
 
   Widget _buildAnimatedCard(int index) {
     final rumah = _filteredData[index];
-    final originalIndex = RumahDummy.dummyData.indexOf(rumah);
-    final bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
-    bool isAvailable = rumah.status.toLowerCase() == 'tersedia';
+    final bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String status = rumah['status'] ?? 'Tersedia';
+    String address = rumah['address'] ?? '';
+    bool isAvailable = status.toLowerCase() == 'tersedia';
+    MaterialColor statusColor = isAvailable ? Colors.green : Colors.blue;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -212,13 +222,11 @@ class _RumahSectionState extends State<RumahSection> {
         );
       },
       child: ExpandableSectionCard(
-        title: rumah.address.length > 30
-            ? "${rumah.address.substring(0, 30)}..."
-            : rumah.address,
+        title: address.length > 30 ? "${address.substring(0, 30)}..." : address,
         statusChip: StatusChip(
-          label: rumah.status,
-          color: rumah.statusColor,
-          icon: _getStatusIcon(rumah.status),
+          label: status,
+          color: statusColor,
+          icon: _getStatusIcon(status),
         ),
         isExpanded: isExpanded,
         onToggleExpand: () {
@@ -229,7 +237,7 @@ class _RumahSectionState extends State<RumahSection> {
           });
         },
         expandedContent: [
-          _buildAddressCard(rumah.address),
+          _buildAddressCard(address),
           const SizedBox(height: 16),
           SectionActionButtons(
             showEditButton: true,
@@ -238,16 +246,12 @@ class _RumahSectionState extends State<RumahSection> {
                     final result = await context.pushNamed(
                       'rumah_edit',
                       queryParameters: {
-                        'index': originalIndex.toString(),
-                        'address': rumah.address,
+                        'id': rumah['id']?.toString() ?? '',
+                        'address': address,
                       },
                     );
                     if (result == true) {
-                      setState(() {
-                        if (_expandedList.length != RumahDummy.dummyData.length) {
-                          _initExpandedList();
-                        }
-                      });
+                      _loadData();
                     }
                   }
                 : () {
@@ -257,8 +261,8 @@ class _RumahSectionState extends State<RumahSection> {
               context.pushNamed(
                 'rumah_detail',
                 queryParameters: {
-                  'index': originalIndex.toString(),
-                  'address': rumah.address,
+                  'id': rumah['id']?.toString() ?? '',
+                  'address': address,
                 },
               );
             },
