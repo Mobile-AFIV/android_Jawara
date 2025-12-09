@@ -27,6 +27,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
+  List<Map<String, dynamic>> _allData = [];
   List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
   bool _isLoading = true;
@@ -102,7 +103,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
       }
 
       setState(() {
-        _filteredData = familyMap.values.toList();
+        _allData = familyMap.values.toList();
         _filterData();
         _isLoading = false;
       });
@@ -144,7 +145,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
 
   void _filterData() {
     setState(() {
-      List<Map<String, dynamic>> tempData = _filteredData;
+      List<Map<String, dynamic>> tempData = _allData;
 
       // Filter by status
       if (_selectedFilter != 'Semua') {
