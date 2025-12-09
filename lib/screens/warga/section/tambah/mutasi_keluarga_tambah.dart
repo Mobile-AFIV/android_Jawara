@@ -31,12 +31,9 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
   // Selected date
   DateTime _selectedDate = DateTime.now();
 
-  // Dropdown options (moved from MutasiKeluargaDummy)
-  final List<String> _familyOptions = [
-    'Keluarga A',
-    'Keluarga B',
-    'Keluarga C'
-  ];
+  // Dropdown options
+  List<String> _familyOptions = [];
+  bool _isLoadingFamilies = true;
   final List<String> _mutationTypeOptions = [
     'Pindah Rumah',
     'Pindah Masuk',
@@ -60,6 +57,39 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
     super.initState();
     // Initialize date with current date
     _dateController.text = DateFormat('d MMMM yyyy').format(_selectedDate);
+    // Load families from Firebase
+    _loadFamilies();
+  }
+
+  // Load unique families from warga collection
+  Future<void> _loadFamilies() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('warga').get();
+
+      // Extract unique family names
+      final families = <String>{};
+      for (var doc in snapshot.docs) {
+        final family = doc.data()['family'];
+        if (family != null && family.toString().isNotEmpty) {
+          families.add(family.toString());
+        }
+      }
+
+      setState(() {
+        _familyOptions = families.toList()..sort();
+        _isLoadingFamilies = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingFamilies = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data keluarga: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -167,17 +197,35 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                     label: "Keluarga",
                     isRequired: true,
                     value: _selectedFamily,
-                    items: _familyOptions.map((String family) {
-                      return DropdownMenuItem<String>(
-                        value: family,
-                        child: Text(family),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedFamily = newValue;
-                      });
-                    },
+                    items: _isLoadingFamilies
+                        ? [
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              enabled: false,
+                              child: Text('Memuat data keluarga...'),
+                            )
+                          ]
+                        : _familyOptions.isEmpty
+                            ? [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  enabled: false,
+                                  child: Text('Belum ada data keluarga'),
+                                )
+                              ]
+                            : _familyOptions.map((String family) {
+                                return DropdownMenuItem<String>(
+                                  value: family,
+                                  child: Text(family),
+                                );
+                              }).toList(),
+                    onChanged: _isLoadingFamilies || _familyOptions.isEmpty
+                        ? null
+                        : (String? newValue) {
+                            setState(() {
+                              _selectedFamily = newValue;
+                            });
+                          },
                   ),
                   const SizedBox(height: 16),
 
