@@ -77,6 +77,21 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
             familyData['memberCount'] = (familyData['members'] as List).length;
           }
 
+          // Get address from rumah_warga collection
+          final rumahSnapshot = await FirebaseFirestore.instance
+              .collection('rumah_warga')
+              .where('family', isEqualTo: widget.keluargaId)
+              .limit(1)
+              .get();
+
+          if (rumahSnapshot.docs.isNotEmpty) {
+            final rumahData = rumahSnapshot.docs.first.data();
+            familyData['address'] = rumahData['address'] ?? '';
+            familyData['ownershipStatus'] = rumahData['status'] == 'Ditempati'
+                ? 'Ditempati'
+                : 'Milik Sendiri';
+          }
+
           setState(() {
             keluarga = familyData;
             _isLoading = false;

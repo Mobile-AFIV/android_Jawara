@@ -98,8 +98,15 @@ class _KeluargaSectionState extends State<KeluargaSection>
 
       for (var rumahDoc in rumahSnapshot.docs) {
         final rumahData = rumahDoc.data();
-        // You can implement logic to link rumah to keluarga here
-        // For now, we'll use the first available address
+        final rumahFamily = rumahData['family']?.toString();
+
+        if (rumahFamily != null && familyMap.containsKey(rumahFamily)) {
+          familyMap[rumahFamily]!['address'] = rumahData['address'] ?? '';
+          familyMap[rumahFamily]!['ownershipStatus'] =
+              rumahData['status'] == 'Ditempati'
+                  ? 'Ditempati'
+                  : 'Milik Sendiri';
+        }
       }
 
       setState(() {
