@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class RumahEdit extends StatefulWidget {
-  final int rumahIndex;
-  final String? address;
+  final String? rumahId;
+  final Map<String, dynamic>? rumahData;
 
   const RumahEdit({
     super.key,
-    required this.rumahIndex,
-    this.address,
+    this.rumahId,
+    this.rumahData,
   });
 
   @override
@@ -43,7 +42,8 @@ class _RumahEditState extends State<RumahEdit> {
     rumahIndex = widget.rumahIndex;
 
     if (widget.address != null && widget.address!.isNotEmpty) {
-      final index = RumahDummy.dummyData.indexWhere((r) => r.address == widget.address);
+      final index =
+          RumahDummy.dummyData.indexWhere((r) => r.address == widget.address);
       if (index != -1) {
         rumahIndex = index;
       }
@@ -67,7 +67,8 @@ class _RumahEditState extends State<RumahEdit> {
   void _saveData() {
     if (_formKey.currentState!.validate()) {
       // Create updated RumahModel with appropriate status color
-      final MaterialColor statusColor = _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
+      final MaterialColor statusColor =
+          _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
 
       final updatedRumah = RumahModel(
         address: _addressController.text,
@@ -117,7 +118,8 @@ class _RumahEditState extends State<RumahEdit> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppStyles.primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: const Text('Kembali'),
               ),

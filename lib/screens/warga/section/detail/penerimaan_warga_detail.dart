@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_application_actions.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class PenerimaanWargaDetail extends StatefulWidget {
-  final int penerimaanIndex;
-  final String? name; // Add name parameter for better lookup
+  final String? penerimaanId;
+  final Map<String, dynamic>? penerimaanData;
 
   const PenerimaanWargaDetail({
     super.key,
-    required this.penerimaanIndex,
-    this.name,
+    this.penerimaanId,
+    this.penerimaanData,
   });
 
   @override
@@ -20,40 +19,43 @@ class PenerimaanWargaDetail extends StatefulWidget {
 }
 
 class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
-  late PenerimaanWargaModel penerimaan;
+  Map<String, dynamic> penerimaan = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
 
-    // First try to find by name if provided
-    if (widget.name != null && widget.name!.isNotEmpty) {
-      final matchByName = PenerimaanWargaDummy.dummyData.where(
-              (p) => p.name == widget.name
-      ).toList();
-
-      if (matchByName.isNotEmpty) {
-        penerimaan = matchByName.first;
-        return;
-      }
+  Future<void> _loadData() async {
+    // TODO: Load data from Firebase using penerimaanId
+    if (widget.penerimaanData != null) {
+      setState(() {
+        penerimaan = widget.penerimaanData!;
+        _isLoading = false;
+      });
+    } else {
+      // TODO: Fetch from Firebase using widget.penerimaanId
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    // Fall back to index-based lookup
-    penerimaan = widget.penerimaanIndex >= 0 && widget.penerimaanIndex < PenerimaanWargaDummy.dummyData.length
-        ? PenerimaanWargaDummy.dummyData[widget.penerimaanIndex]
-        : PenerimaanWargaDummy.dummyData.last; // Use the example data
   }
 
   // Method to accept an application
   void _acceptResident() {
     setState(() {
-      penerimaan.registrationStatus = 'Diterima';
-      penerimaan.statusColor = Colors.green;
-      penerimaan.rejectionReason = null; // Clear the rejection reason
+      penerimaan['registrationStatus'] = 'Diterima';
+      penerimaan['rejectionReason'] = null;
     });
 
+    // TODO: Update Firebase with new status
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${penerimaan.name} telah diterima sebagai warga')),
+      SnackBar(
+          content: Text(
+              '${penerimaan['name'] ?? 'Warga'} telah diterima sebagai warga')),
     );
   }
 
@@ -90,19 +92,23 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
               onPressed: () {
                 if (reasonController.text.isNotEmpty) {
                   setState(() {
-                    penerimaan.registrationStatus = 'Ditolak';
-                    penerimaan.statusColor = Colors.red;
-                    penerimaan.rejectionReason = reasonController.text;
+                    penerimaan['registrationStatus'] = 'Ditolak';
+                    penerimaan['rejectionReason'] = reasonController.text;
                   });
+
+                  // TODO: Update Firebase with new status
 
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Pendaftaran ${penerimaan.name} telah ditolak')),
+                    SnackBar(
+                        content: Text(
+                            'Pendaftaran ${penerimaan['name'] ?? 'warga'} telah ditolak')),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Alasan penolakan harus diisi')),
+                    const SnackBar(
+                        content: Text('Alasan penolakan harus diisi')),
                   );
                 }
               },
@@ -126,101 +132,121 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
       appBar: AppBar(
         title: const Text("Detail Penerimaan"),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Detail Pendaftaran Warga",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Detail Pendaftaran Warga",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Profile section with image, name and email
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Profile image
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: const BoxDecoration(
+                            color: Colors.blue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Name and email
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              penerimaan['name'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            Text(
+                              penerimaan['email'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // NIK
+                    DetailField(label: "NIK:", value: penerimaan['nik'] ?? ''),
+
+                    // Gender
+                    DetailField(
+                        label: "Jenis Kelamin:",
+                        value: penerimaan['gender'] ?? ''),
+
+                    // Registration Status
+                    StatusField(
+                      label: "Status Pendaftaran:",
+                      value: penerimaan['registrationStatus'] ?? 'Menunggu',
+                      color: _getStatusColor(
+                          penerimaan['registrationStatus'] ?? 'Menunggu'),
+                    ),
+
+                    // Show rejection reason if status is Ditolak
+                    if (penerimaan['registrationStatus'] == 'Ditolak' &&
+                        penerimaan['rejectionReason'] != null)
+                      DetailField(
+                          label: "Alasan Ditolak:",
+                          value: penerimaan['rejectionReason'] ?? ''),
+
+                    const SizedBox(height: 24),
+
+                    // Actions based on status
+                    ResidentApplicationActions(
+                      penerimaan: penerimaan,
+                      onAccept: _acceptResident,
+                      onShowRejectionDialog: _showRejectionDialog,
+                    ),
+
+                    const SizedBox(height: 16),
+                    // Back button
+                    DetailBackButton(
+                      onPressed: () => Navigator.pop(
+                          context, true), // Return with refresh flag
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Profile section with image, name and email
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Profile image
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 36,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Name and email
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        penerimaan.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      Text(
-                        penerimaan.email,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // NIK
-              DetailField(label: "NIK:", value: penerimaan.nik),
-
-              // Gender
-              DetailField(label: "Jenis Kelamin:", value: penerimaan.gender),
-
-              // Registration Status
-              StatusField(
-                  label: "Status Pendaftaran:",
-                  value: penerimaan.registrationStatus,
-                  color: penerimaan.statusColor
-              ),
-
-              // Show rejection reason if status is Ditolak
-              if (penerimaan.registrationStatus == 'Ditolak' && penerimaan.rejectionReason != null)
-                DetailField(label: "Alasan Ditolak:", value: penerimaan.rejectionReason!),
-
-              const SizedBox(height: 24),
-
-              // Actions based on status
-              ResidentApplicationActions(
-                penerimaan: penerimaan,
-                onAccept: _acceptResident,
-                onShowRejectionDialog: _showRejectionDialog,
-              ),
-
-              const SizedBox(height: 16),
-              // Back button
-              DetailBackButton(
-                onPressed: () => Navigator.pop(context, true), // Return with refresh flag
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
+  }
+
+  MaterialColor _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'diterima':
+        return Colors.green;
+      case 'ditolak':
+        return Colors.red;
+      default:
+        return Colors.orange;
+    }
   }
 }
