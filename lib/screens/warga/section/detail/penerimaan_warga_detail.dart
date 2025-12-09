@@ -271,7 +271,149 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
                         label: "Jenis Kelamin:",
                         value: penerimaan['gender'] ?? ''),
 
+                    // KTP Image
+                    if (penerimaan['ktpImageUrl'] != null &&
+                        penerimaan['ktpImageUrl'].toString().isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Foto KTP:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => Dialog(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Stack(
+                                        children: [
+                                          Image.network(
+                                            penerimaan['ktpImageUrl'],
+                                            fit: BoxFit.contain,
+                                            loadingBuilder: (context, child,
+                                                loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.all(50),
+                                                child: Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    value: loadingProgress
+                                                                .expectedTotalBytes !=
+                                                            null
+                                                        ? loadingProgress
+                                                                .cumulativeBytesLoaded /
+                                                            loadingProgress
+                                                                .expectedTotalBytes!
+                                                        : null,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: IconButton(
+                                              icon: const Icon(Icons.close,
+                                                  color: Colors.white),
+                                              style: IconButton.styleFrom(
+                                                backgroundColor: Colors.black54,
+                                              ),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                penerimaan['ktpImageUrl'],
+                                width: double.infinity,
+                                height: 200,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.broken_image,
+                                              size: 50, color: Colors.grey),
+                                          SizedBox(height: 8),
+                                          Text('Gagal memuat gambar',
+                                              style: TextStyle(
+                                                  color: Colors.grey)),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tap untuk memperbesar',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+
                     // Registration Status
+                    const SizedBox(height: 16),
                     StatusField(
                       label: "Status Pendaftaran:",
                       value: penerimaan['registrationStatus'] ?? 'Menunggu',

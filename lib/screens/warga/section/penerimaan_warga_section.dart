@@ -304,7 +304,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     );
   }
 
-  void _showIdentityPhoto(BuildContext context) {
+  void _showIdentityPhoto(BuildContext context, String? imageUrl) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -356,30 +356,68 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                         padding: const EdgeInsets.all(16.0),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/placeholder.png',
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                padding: const EdgeInsets.all(32.0),
-                                child: const Column(
-                                  children: [
-                                    Icon(
-                                      Icons.broken_image,
-                                      size: 80,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(height: 16),
-                                    Text(
-                                      "Gambar tidak ditemukan",
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  ],
+                          child: imageUrl != null && imageUrl.isNotEmpty
+                              ? Image.network(
+                                  imageUrl,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: const Column(
+                                        children: [
+                                          Icon(
+                                            Icons.broken_image,
+                                            size: 80,
+                                            color: Colors.grey,
+                                          ),
+                                          SizedBox(height: 16),
+                                          Text(
+                                            "Gagal memuat gambar",
+                                            style:
+                                                TextStyle(color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: const Column(
+                                    children: [
+                                      Icon(
+                                        Icons.image_not_supported,
+                                        size: 80,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        "Gambar tidak tersedia",
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
                         ),
                       ),
                       const Padding(
@@ -483,7 +521,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
           const SizedBox(height: 12),
 
           // Photo preview button
-          _buildPhotoButton(),
+          _buildPhotoButton(penerimaan['ktpImageUrl']),
 
           const SizedBox(height: 16),
           SectionActionButtons(
@@ -495,9 +533,9 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     );
   }
 
-  Widget _buildPhotoButton() {
+  Widget _buildPhotoButton(String? imageUrl) {
     return InkWell(
-      onTap: () => _showIdentityPhoto(context),
+      onTap: () => _showIdentityPhoto(context, imageUrl),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
