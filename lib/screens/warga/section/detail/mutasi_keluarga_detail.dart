@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
@@ -27,14 +28,47 @@ class _MutasiKeluargaDetailState extends State<MutasiKeluargaDetail> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using mutasiId
     if (widget.mutasiData != null) {
       setState(() {
         mutasi = widget.mutasiData!;
         _isLoading = false;
       });
+    } else if (widget.mutasiId != null && widget.mutasiId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('mutasi_keluarga')
+            .doc(widget.mutasiId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            mutasi = doc.data()!;
+            mutasi['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data mutasi tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.mutasiId
       setState(() {
         _isLoading = false;
       });

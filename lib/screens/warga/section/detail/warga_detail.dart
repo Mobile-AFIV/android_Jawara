@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
@@ -27,14 +28,47 @@ class _WargaDetailState extends State<WargaDetail> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using wargaId
     if (widget.wargaData != null) {
       setState(() {
         warga = widget.wargaData!;
         _isLoading = false;
       });
+    } else if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('warga')
+            .doc(widget.wargaId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            warga = doc.data()!;
+            warga['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data warga tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.wargaId
       setState(() {
         _isLoading = false;
       });

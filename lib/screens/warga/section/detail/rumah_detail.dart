@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_history_item.dart';
@@ -29,14 +30,47 @@ class _RumahDetailState extends State<RumahDetail> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using RumahService and rumahId
     if (widget.rumahData != null) {
       setState(() {
         rumah = widget.rumahData!;
         _isLoading = false;
       });
+    } else if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('rumah_warga')
+            .doc(widget.rumahId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            rumah = doc.data()!;
+            rumah['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data rumah tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.rumahId
       setState(() {
         _isLoading = false;
       });

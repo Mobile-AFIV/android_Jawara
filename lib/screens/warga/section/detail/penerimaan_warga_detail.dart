@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_application_actions.dart';
@@ -29,14 +30,47 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using penerimaanId
     if (widget.penerimaanData != null) {
       setState(() {
         penerimaan = widget.penerimaanData!;
         _isLoading = false;
       });
+    } else if (widget.penerimaanId != null && widget.penerimaanId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('penerimaan_warga')
+            .doc(widget.penerimaanId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            penerimaan = doc.data()!;
+            penerimaan['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data penerimaan tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.penerimaanId
       setState(() {
         _isLoading = false;
       });
@@ -44,19 +78,36 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
   }
 
   // Method to accept an application
-  void _acceptResident() {
-    setState(() {
-      penerimaan['registrationStatus'] = 'Diterima';
-      penerimaan['rejectionReason'] = null;
-    });
+  Future<void> _acceptResident() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('penerimaan_warga')
+          .doc(widget.penerimaanId ?? penerimaan['id'])
+          .update({
+        'registrationStatus': 'Diterima',
+        'rejectionReason': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
-    // TODO: Update Firebase with new status
+      setState(() {
+        penerimaan['registrationStatus'] = 'Diterima';
+        penerimaan['rejectionReason'] = null;
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(
-              '${penerimaan['name'] ?? 'Warga'} telah diterima sebagai warga')),
-    );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  '${penerimaan['name'] ?? 'Warga'} telah diterima sebagai warga')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menerima pendaftaran: $e')),
+        );
+      }
+    }
   }
 
   // Method to show rejection dialog and handle rejection
@@ -89,22 +140,41 @@ class _PenerimaanWargaDetailState extends State<PenerimaanWargaDetail> {
               child: const Text('Batal'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (reasonController.text.isNotEmpty) {
-                  setState(() {
-                    penerimaan['registrationStatus'] = 'Ditolak';
-                    penerimaan['rejectionReason'] = reasonController.text;
-                  });
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('penerimaan_warga')
+                        .doc(widget.penerimaanId ?? penerimaan['id'])
+                        .update({
+                      'registrationStatus': 'Ditolak',
+                      'rejectionReason': reasonController.text,
+                      'updatedAt': FieldValue.serverTimestamp(),
+                    });
 
-                  // TODO: Update Firebase with new status
+                    setState(() {
+                      penerimaan['registrationStatus'] = 'Ditolak';
+                      penerimaan['rejectionReason'] = reasonController.text;
+                    });
 
-                  Navigator.of(context).pop();
+                    Navigator.of(context).pop();
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Pendaftaran ${penerimaan['name'] ?? 'warga'} telah ditolak')),
-                  );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Pendaftaran ${penerimaan['name'] ?? 'warga'} telah ditolak')),
+                      );
+                    }
+                  } catch (e) {
+                    Navigator.of(context).pop();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Gagal menolak pendaftaran: $e')),
+                      );
+                    }
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

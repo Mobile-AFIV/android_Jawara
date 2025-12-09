@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/family_member_card.dart';
@@ -29,14 +30,47 @@ class _KeluargaDetailState extends State<KeluargaDetail> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using keluargaId
     if (widget.keluargaData != null) {
       setState(() {
         keluarga = widget.keluargaData!;
         _isLoading = false;
       });
+    } else if (widget.keluargaId != null && widget.keluargaId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('keluarga')
+            .doc(widget.keluargaId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            keluarga = doc.data()!;
+            keluarga['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data keluarga tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.keluargaId
       setState(() {
         _isLoading = false;
       });
