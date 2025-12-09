@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
@@ -30,6 +31,30 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
   // Selected date
   DateTime _selectedDate = DateTime.now();
 
+  // Dropdown options (moved from MutasiKeluargaDummy)
+  final List<String> _familyOptions = [
+    'Keluarga A',
+    'Keluarga B',
+    'Keluarga C'
+  ];
+  final List<String> _mutationTypeOptions = [
+    'Pindah Rumah',
+    'Pindah Masuk',
+    'Keluar Wilayah'
+  ];
+
+  // Helper method to get status color based on mutation type
+  Color _getStatusColor(String mutationType) {
+    switch (mutationType) {
+      case 'Pindah Masuk':
+        return Colors.green;
+      case 'Keluar Wilayah':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -60,34 +85,62 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
   }
 
   // Save the data
-  void _saveData() {
+  Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
-      // Get status color based on mutation type
-      final statusColor =
-          MutasiKeluargaDummy.getStatusColor(_selectedMutationType!);
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      // Create new MutasiKeluargaModel
-      final newMutasi = MutasiKeluargaModel(
-        familyName: _selectedFamily!,
-        date: _dateController.text,
-        mutationType: _selectedMutationType!,
-        statusColor: statusColor,
-        oldAddress: _oldAddressController.text,
-        newAddress: _newAddressController.text,
-        reason: _reasonController.text,
-      );
+        // Get status color based on mutation type
+        final statusColor = _getStatusColor(_selectedMutationType!);
 
-      // Add to dummy data
-      MutasiKeluargaDummy.addMutasi(newMutasi);
+        // Create data map for Firestore
+        final newMutasi = {
+          'familyName': _selectedFamily!,
+          'date': _dateController.text,
+          'mutationType': _selectedMutationType!,
+          'statusColor': statusColor.value,
+          'oldAddress': _oldAddressController.text,
+          'newAddress': _newAddressController.text,
+          'reason': _reasonController.text,
+          'createdAt': FieldValue.serverTimestamp(),
+        };
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Data mutasi keluarga berhasil ditambahkan')),
-      );
+        // Save to Firestore
+        await FirebaseFirestore.instance
+            .collection('mutasi_keluarga')
+            .add(newMutasi);
 
-      // Return to previous screen
-      Navigator.pop(context, true);
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Data mutasi keluarga berhasil ditambahkan')),
+          );
+        }
+
+        // Return to previous screen
+        if (mounted) Navigator.pop(context, true);
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menambahkan data: $e')),
+          );
+        }
+      }
     }
   }
 
@@ -114,8 +167,7 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                     label: "Keluarga",
                     isRequired: true,
                     value: _selectedFamily,
-                    items:
-                        MutasiKeluargaDummy.familyOptions.map((String family) {
+                    items: _familyOptions.map((String family) {
                       return DropdownMenuItem<String>(
                         value: family,
                         child: Text(family),
@@ -134,8 +186,7 @@ class _MutasiKeluargaTambahState extends State<MutasiKeluargaTambah> {
                     label: "Jenis Mutasi",
                     isRequired: true,
                     value: _selectedMutationType,
-                    items: MutasiKeluargaDummy.mutationTypeOptions
-                        .map((String type) {
+                    items: _mutationTypeOptions.map((String type) {
                       return DropdownMenuItem<String>(
                         value: type,
                         child: Text(type),
