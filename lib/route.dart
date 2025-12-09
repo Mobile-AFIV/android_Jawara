@@ -39,6 +39,7 @@ import 'package:jawara_pintar/screens/warga/section/mutasi_keluarga_section.dart
 import 'package:jawara_pintar/screens/warga/section/penerimaan_warga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/rumah_section.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/mutasi_keluarga_tambah.dart';
+import 'package:jawara_pintar/screens/warga/section/tambah/penerimaan_warga_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/warga_tambah.dart';
 import 'package:jawara_pintar/screens/warga/section/warga_section.dart';
 import 'package:jawara_pintar/screens/warga/section/detail/keluarga_detail.dart';
@@ -208,6 +209,11 @@ final GoRouter mainRouter = GoRouter(
       path: '/penerimaan_warga',
       builder: (context, state) => const PenerimaanWargaSection(),
       routes: [
+        GoRoute(
+          name: 'penerimaan_warga_tambah',
+          path: 'penerimaan_warga_tambah',
+          builder: (context, state) => const PenerimaanWargaTambah(),
+        ),
         GoRoute(
           path: 'penerimaan_warga_detail',
           name: 'penerimaan_warga_detail',

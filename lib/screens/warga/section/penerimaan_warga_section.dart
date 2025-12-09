@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
@@ -26,6 +28,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
+  List<Map<String, dynamic>> _allData = [];
   List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
   bool _isLoading = true;
@@ -38,13 +41,37 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     _loadData();
   }
 
-  void _loadData() {
-    // TODO: Load data from Firebase
+  Future<void> _loadData() async {
     setState(() {
-      _filteredData = [];
-      _expandedList = [];
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('penerimaan_warga')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      _allData = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+
+      _filterData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+      setState(() {
+        _allData = [];
+        _filteredData = [];
+        _expandedList = [];
+        _isLoading = false;
+      });
+    }
   }
 
   void _initScrollButton() {
@@ -72,10 +99,31 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   }
 
   void _filterData() {
-    // TODO: Implement filter with Firebase data
     setState(() {
+      _filteredData = _allData.where((penerimaan) {
+        // Filter by status
+        bool matchesStatus = _selectedFilter == 'Semua' ||
+            (penerimaan['registrationStatus'] ?? 'Menunggu') == _selectedFilter;
+
+        // Filter by search query
+        bool matchesSearch = true;
+        if (_searchController.text.isNotEmpty) {
+          final searchQuery = _searchController.text.toLowerCase();
+          final name = (penerimaan['name'] ?? '').toLowerCase();
+          final nik = (penerimaan['nik'] ?? '').toLowerCase();
+          final email = (penerimaan['email'] ?? '').toLowerCase();
+
+          matchesSearch = name.contains(searchQuery) ||
+              nik.contains(searchQuery) ||
+              email.contains(searchQuery);
+        }
+
+        return matchesStatus && matchesSearch;
+      }).toList();
+
       _expandedList =
           List.generate(_filteredData.length, (index) => index == 0);
+      _isLoading = false;
     });
   }
 
@@ -128,6 +176,14 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     super.dispose();
   }
 
+  void _navigateToTambah() async {
+    final result = await context.pushNamed('penerimaan_warga_tambah');
+
+    if (result == true) {
+      _loadData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +197,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                   setState(() {
                     _isSearching = false;
                     _searchController.clear();
+                    _filterData();
                   });
                 },
               )
@@ -236,6 +293,13 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _navigateToTambah,
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Penerimaan'),
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
       ),
     );
   }
