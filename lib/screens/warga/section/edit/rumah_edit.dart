@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_action_buttons.dart';
@@ -19,8 +20,8 @@ class RumahEdit extends StatefulWidget {
 }
 
 class _RumahEditState extends State<RumahEdit> {
-  late RumahModel rumah;
-  late int rumahIndex;
+  Map<String, dynamic> rumah = {};
+  bool _isLoading = true;
 
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
@@ -37,23 +38,63 @@ class _RumahEditState extends State<RumahEdit> {
   @override
   void initState() {
     super.initState();
+    _addressController = TextEditingController();
+    _loadData();
+  }
 
-    // Find the rumah data based on address or index
-    rumahIndex = widget.rumahIndex;
+  Future<void> _loadData() async {
+    if (widget.rumahData != null) {
+      setState(() {
+        rumah = widget.rumahData!;
+        _initializeControllers();
+        _isLoading = false;
+      });
+    } else if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('rumah')
+            .doc(widget.rumahId)
+            .get();
 
-    if (widget.address != null && widget.address!.isNotEmpty) {
-      final index =
-          RumahDummy.dummyData.indexWhere((r) => r.address == widget.address);
-      if (index != -1) {
-        rumahIndex = index;
+        if (doc.exists) {
+          setState(() {
+            rumah = doc.data()!;
+            rumah['id'] = doc.id;
+            _initializeControllers();
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data rumah tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
       }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
 
-    rumah = RumahDummy.dummyData[rumahIndex];
-
-    // Initialize controllers with current data
-    _addressController = TextEditingController(text: rumah.address);
-    _selectedStatus = rumah.status;
+  void _initializeControllers() {
+    _addressController.text = rumah['address'] ?? '';
+    _selectedStatus = rumah['status'] ?? 'Tersedia';
   }
 
   @override
@@ -64,35 +105,74 @@ class _RumahEditState extends State<RumahEdit> {
   }
 
   // Save the edited data
-  void _saveData() {
+  Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
-      // Create updated RumahModel with appropriate status color
-      final MaterialColor statusColor =
-          _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      final updatedRumah = RumahModel(
-        address: _addressController.text,
-        status: _selectedStatus,
-        statusColor: statusColor,
-        residentHistory: rumah.residentHistory, // Keep the existing history
-      );
+        // Create updated data with appropriate status color
+        final MaterialColor statusColor =
+            _selectedStatus == 'Tersedia' ? Colors.green : Colors.blue;
 
-      // Update the dummy data
-      RumahDummy.dummyData[rumahIndex] = updatedRumah;
+        final updatedRumah = {
+          'address': _addressController.text,
+          'status': _selectedStatus,
+          'statusColor': statusColor.value,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
 
-      // Show success message and return
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data rumah berhasil disimpan')),
-      );
+        // Update to Firebase
+        if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('rumah')
+              .doc(widget.rumahId)
+              .update(updatedRumah);
+        }
 
-      Navigator.pop(context, true); // Return with success result
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show success message and return
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data rumah berhasil disimpan')),
+          );
+          Navigator.pop(context, true); // Return with success result
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menyimpan data: $e')),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Edit Data Rumah"),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     // Check if the house can be edited (status must be "Tersedia")
-    if (rumah.status != 'Tersedia') {
+    if (rumah['status'] != null && rumah['status'] != 'Tersedia') {
       return Scaffold(
         appBar: AppBar(
           title: const Text("Edit Data Rumah"),

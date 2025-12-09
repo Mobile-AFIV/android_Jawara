@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
@@ -98,15 +99,49 @@ class _WargaEditState extends State<WargaEdit> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Load data from Firebase using wargaId
     if (widget.wargaData != null) {
       setState(() {
         warga = widget.wargaData!;
         _initializeControllers();
         _isLoading = false;
       });
+    } else if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('warga')
+            .doc(widget.wargaId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            warga = doc.data()!;
+            warga['id'] = doc.id;
+            _initializeControllers();
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data warga tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
     } else {
-      // TODO: Fetch from Firebase using widget.wargaId
       setState(() {
         _isLoading = false;
       });
@@ -153,36 +188,67 @@ class _WargaEditState extends State<WargaEdit> {
   }
 
   // Save the edited data
-  void _saveData() {
+  Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Update to Firebase
-      final updatedWarga = {
-        'name': _nameController.text,
-        'nik': _nikController.text,
-        'family': _familyController.text,
-        'gender': _selectedGender ?? '',
-        'domicileStatus': _selectedDomicileStatus,
-        'lifeStatus': _selectedLifeStatus,
-        'birthPlace': _birthPlaceController.text,
-        'birthDate': _birthDateController.text,
-        'phoneNumber': _phoneController.text,
-        'religion': _selectedReligion ?? '',
-        'bloodType': _selectedBloodType ?? '',
-        'education': _selectedEducation ?? '',
-        'job': _selectedJob == 'Lainnya'
-            ? _jobController.text
-            : (_selectedJob ?? ''),
-        'familyRole': _selectedFamilyRole ?? '',
-      };
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      // TODO: Save to Firebase using widget.wargaId
+        final updatedWarga = {
+          'name': _nameController.text,
+          'nik': _nikController.text,
+          'family': _familyController.text,
+          'gender': _selectedGender ?? '',
+          'domicileStatus': _selectedDomicileStatus,
+          'lifeStatus': _selectedLifeStatus,
+          'birthPlace': _birthPlaceController.text,
+          'birthDate': _birthDateController.text,
+          'phoneNumber': _phoneController.text,
+          'religion': _selectedReligion ?? '',
+          'bloodType': _selectedBloodType ?? '',
+          'education': _selectedEducation ?? '',
+          'job': _selectedJob == 'Lainnya'
+              ? _jobController.text
+              : (_selectedJob ?? ''),
+          'familyRole': _selectedFamilyRole ?? '',
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
 
-      // Show success message and return
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data warga berhasil disimpan')),
-      );
+        // Update to Firebase
+        if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('warga')
+              .doc(widget.wargaId)
+              .update(updatedWarga);
+        }
 
-      Navigator.pop(context, true); // Return with success result
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show success message and return
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data warga berhasil disimpan')),
+          );
+          Navigator.pop(context, true); // Return with success result
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menyimpan data: $e')),
+          );
+        }
+      }
     } else {
       // If not all fields are validated, show error
       ScaffoldMessenger.of(context).showSnackBar(
