@@ -6,6 +6,9 @@ class UserProfile {
   final String jenisKelamin;
   final String nik;
   final String noTelepon;
+  final String role;
+  // final String email;
+  // final String password;
   final DocumentReference rumah;
 
   UserProfile({
@@ -15,6 +18,9 @@ class UserProfile {
     required this.nik,
     required this.noTelepon,
     required this.rumah,
+    required this.role,
+    // required this.password,
+    // required this.email,  
   });
 
   factory UserProfile.fromFirestore(DocumentSnapshot doc) {
@@ -24,9 +30,12 @@ class UserProfile {
       uid: data['uid'],
       namaLengkap: data['namaLengkap'],
       jenisKelamin: data['jenisKelamin'],
+      // email: data['email'],
+      // password: data['password'],
       nik: data['nik'],
       noTelepon: data['noTelepon'],
       rumah: data['rumah'],
+      role: data['role'],
     );
   }
 }

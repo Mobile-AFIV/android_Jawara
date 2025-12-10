@@ -31,8 +31,6 @@ import 'package:jawara_pintar/screens/lainnya/lainnya_menu.dart';
 import 'package:jawara_pintar/screens/lainnya/section/channel_transfer_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/log_aktivitas_section.dart';
 import 'package:jawara_pintar/screens/lainnya/section/manajemen_pengguna_section.dart';
-import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
-import 'package:jawara_pintar/screens/lainnya/section/tambah_pengguna_section.dart';
 import 'package:jawara_pintar/screens/login_screen.dart';
 import 'package:jawara_pintar/screens/profile_screen.dart';
 import 'package:jawara_pintar/screens/register_screen.dart';
@@ -409,18 +407,7 @@ final GoRouter mainRouter = GoRouter(
         name: 'channel_transfer',
         path: '/channel_transfer',
         builder: (context, state) => const ChannelTransferSection(),
-        routes: [
-          GoRoute(
-            name: 'tambah_channel_transfer',
-            path: 'tambah_channel_transfer',
-            builder: (context, state) => const TambahChannelSection(),
-          ),
-          // GoRoute(
-          //   name: 'transfer_edit',
-          //   path: 'transfer_edit',
-          //   builder: (context, state) => const TransferChannel(),
-          // )
-        ]),
+    ), 
     GoRoute(
       name: 'log_aktivitas',
       path: '/log_aktivitas',
@@ -430,11 +417,6 @@ final GoRouter mainRouter = GoRouter(
       name: 'manajemen_pengguna',
       path: '/manajemen_pengguna',
       builder: (context, state) => const ManajemenPenggunaSection(),
-    ),
-    GoRoute(
-      name: 'tambah_pengguna',
-      path: '/tambah_pengguna',
-      builder: (context, state) => const TambahPenggunaSection(),
     ),
   ],
 );
