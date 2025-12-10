@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class SectionActionButtons extends StatefulWidget {
   final VoidCallback? onEditPressed;
-  final Function onDetailPressed;
+  final Function? onDetailPressed;
   final bool showEditButton;
 
   const SectionActionButtons({
     Key? key,
     this.onEditPressed,
-    required this.onDetailPressed,
+    this.onDetailPressed,
     this.showEditButton = true,
   }) : super(key: key);
 
@@ -84,12 +84,12 @@ class _SectionActionButtonsState extends State<SectionActionButtons>
           ),
           const SizedBox(height: 8),
         ],
-        SlideTransition(
+        widget.onDetailPressed == null ? SizedBox() : SlideTransition(
           position: _detailSlideAnimation,
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: _AnimatedButton(
-              onPressed: () => widget.onDetailPressed(),
+              onPressed: () => widget.onDetailPressed!(),
               label: 'Detail',
               icon: Icons.info_outline,
               backgroundColor: Colors.blue[100]!,

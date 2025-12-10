@@ -240,58 +240,54 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
   // -------------------------------------------------------
   Widget _buildAnimatedCard(int index) {
     final item = _filteredData[index];
-    bool isExpanded = _expandedList[index];
 
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 300 + (index * 50)),
-      tween: Tween(begin: 0, end: 1),
-      builder: (ctx, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(opacity: value, child: child),
-        );
-      },
-      child: ExpandableSectionCard(
-        title: item.nama,
-        subtitle: "Publikasi: ${item.tanggal}",
-        statusChip: StatusChip(
-          label: "Broadcast",
-          color: Colors.deepPurple,
-          icon: Icons.campaign,
-        ),
-        isExpanded: isExpanded,
-        onToggleExpand: () {
-          setState(() => _expandedList[index] = !isExpanded);
+    return StatefulBuilder(builder: (context, setState) {
+      bool isExpanded = _expandedList[index];
+
+      return TweenAnimationBuilder<double>(
+        duration: Duration(milliseconds: 300 + (index * 50)),
+        tween: Tween(begin: 0, end: 1),
+        builder: (ctx, value, child) {
+          return Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: Opacity(opacity: value, child: child),
+          );
         },
-        expandedContent: [
-          // Menggunakan _buildInfoRow sebagai pengganti _buildDetail
-          _buildInfoRow(Icons.subject, "Isi Broadcast", item.isi),
-          const SizedBox(height: 8),
-          _buildInfoRow(Icons.calendar_month, "Tanggal", item.tanggal),
-          const SizedBox(height: 8),
-          _buildInfoRow(Icons.account_circle, "Dibuat Oleh", item.dibuatOleh),
-
-          const SizedBox(height: 12),
-          SectionActionButtons(
-            onDetailPressed: () {
-              context.pushNamed(
-                "kegiatan_detail", // Asumsi nama rute detail broadcast Anda adalah "kegiatan_detail" atau ganti sesuai rute Anda. Jika nama rutenya "broadcast_detail", gunakan itu.
-                // Menggunakan pathParameters, bukan extra, untuk ID
-                pathParameters: {'broadcastId': item.id},
-              );
-            },
-            onEditPressed: () {
-              context.pushNamed(
-                "broadcast_edit",
-                // Menggunakan pathParameters, bukan extra
-                pathParameters: {'broadcastId': item.id},
-                queryParameters: {'title': item.nama},
-              );
-            },
+        child: ExpandableSectionCard(
+          title: item.nama,
+          subtitle: "Publikasi: ${item.tanggal}",
+          statusChip: StatusChip(
+            label: "Broadcast",
+            color: Colors.deepPurple,
+            icon: Icons.campaign,
           ),
-        ],
-      ),
-    );
+          isExpanded: isExpanded,
+          onToggleExpand: () {
+            setState(() => _expandedList[index] = !isExpanded);
+          },
+          expandedContent: [
+            // Menggunakan _buildInfoRow sebagai pengganti _buildDetail
+            _buildInfoRow(Icons.subject, "Isi Broadcast", item.isi),
+            const SizedBox(height: 8),
+            _buildInfoRow(Icons.calendar_month, "Tanggal", item.tanggal),
+            const SizedBox(height: 8),
+            _buildInfoRow(Icons.account_circle, "Dibuat Oleh", item.dibuatOleh),
+
+            const SizedBox(height: 12),
+            SectionActionButtons(
+              onEditPressed: () {
+                context.pushNamed(
+                  "broadcast_edit",
+                  // Menggunakan pathParameters, bukan extra
+                  pathParameters: {'broadcastId': item.id},
+                  queryParameters: {'title': item.nama},
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // -------------------------------------------------------

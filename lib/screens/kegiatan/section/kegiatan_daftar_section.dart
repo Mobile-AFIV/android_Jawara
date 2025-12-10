@@ -299,15 +299,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
                 setState(() {});
               }
             },
-            onDetailPressed: () {
-              context.pushNamed(
-                'kegiatan_detail',
-                queryParameters: {
-                  'index': originalIndex.toString(),
-                  'title': kegiatan.namaKegiatan,
-                },
-              );
-            },
+            
           ),
         ],
       ),
