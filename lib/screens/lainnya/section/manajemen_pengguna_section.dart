@@ -27,7 +27,7 @@ class _ManajemenPenggunaSectionState extends State<ManajemenPenggunaSection> {
     // emailCtrl.text = pengguna.email;
     telpCtrl.text = pengguna.noTelepon ?? '';
     // passwordCtrl.text = pengguna.password ?? '';
-    roleCtrl.text = pengguna.role;
+    // roleCtrl.text = pengguna.role;
 
     showDialog(
       context: context,
