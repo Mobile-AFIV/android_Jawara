@@ -7,7 +7,7 @@ import 'package:jawara_pintar/screens/keuangan/widget/appbar_action_button.dart'
 import 'package:jawara_pintar/screens/keuangan/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
-import 'package:jawara_pintar/services/kegiatan_iuran_service.dart';
+import 'package:jawara_pintar/services/kategori_iuran_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class KategoriIuranSection extends StatefulWidget {
@@ -143,7 +143,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
                         data['nominal'] = double.parse(nominalIuran.text);
                       }
                       if (jenisIuran.text != kategori.jenis) {
-                        data['jenis_iuran'] = jenisIuran;
+                        data['jenis_iuran'] = jenisIuran.text;
                       }
 
                       KategoriIuranService.instance.updateKategori(
@@ -415,7 +415,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                // return kategoriItem(PemasukanSectionData.kategoriIuranData[index]);
                 return kategoriItem(snapshot.data![index]);
               },
               separatorBuilder: (context, index) {

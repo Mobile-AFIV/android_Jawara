@@ -4,7 +4,7 @@ class KategoriIuran {
   final String id;
   final String nama;
   final String jenis;
-  final double nominal;
+  final int nominal;
 
   KategoriIuran({
     required this.id,
