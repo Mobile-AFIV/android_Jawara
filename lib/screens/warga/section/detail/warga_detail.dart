@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class WargaDetail extends StatefulWidget {
-  final int wargaIndex;
-  final String? name; // Add name parameter for better lookup
-  final Map<String, dynamic>? wargaData; // Support for direct data passing
+  final String? wargaId;
+  final Map<String, dynamic>? wargaData;
 
   const WargaDetail({
     super.key,
-    required this.wargaIndex,
-    this.name,
+    this.wargaId,
     this.wargaData,
   });
 
@@ -20,54 +18,61 @@ class WargaDetail extends StatefulWidget {
 }
 
 class _WargaDetailState extends State<WargaDetail> {
-  late WargaModel warga;
+  Map<String, dynamic> warga = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-
-    // If direct data is provided, create a WargaModel from it
-    if (widget.wargaData != null) {
-      warga = _createWargaFromMap(widget.wargaData!);
-      return;
-    }
-
-    // Try to find by name if provided
-    if (widget.name != null && widget.name!.isNotEmpty) {
-      final matchByName = WargaDummy.dummyData.where(
-              (w) => w.name == widget.name
-      ).toList();
-
-      if (matchByName.isNotEmpty) {
-        warga = matchByName.first;
-        return;
-      }
-    }
-
-    // Fall back to index-based lookup
-    warga = widget.wargaIndex >= 0 && widget.wargaIndex < WargaDummy.dummyData.length
-        ? WargaDummy.dummyData[widget.wargaIndex]
-        : WargaDummy.dummyData.last; // Use the example data
+    _loadData();
   }
 
-  // Helper method to create a WargaModel from a Map
-  WargaModel _createWargaFromMap(Map<String, dynamic> data) {
-    return WargaModel(
-      name: data['name'] ?? '',
-      nik: data['nik'] ?? '',
-      family: data['family'] ?? '',
-      gender: data['gender'] ?? '',
-      domicileStatus: data['domicileStatus'] ?? 'Aktif',
-      lifeStatus: data['lifeStatus'] ?? 'Hidup',
-      birthPlace: data['birthPlace'] ?? '',
-      birthDate: data['birthDate'] ?? '',
-      phoneNumber: data['phoneNumber'] ?? '',
-      religion: data['religion'] ?? '',
-      bloodType: data['bloodType'] ?? '',
-      education: data['education'] ?? '',
-      job: data['job'] ?? '',
-      familyRole: data['familyRole'] ?? '',
-    );
+  Future<void> _loadData() async {
+    if (widget.wargaData != null) {
+      setState(() {
+        warga = widget.wargaData!;
+        _isLoading = false;
+      });
+    } else if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('warga')
+            .doc(widget.wargaId)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            warga = doc.data()!;
+            warga['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data warga tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -76,64 +81,83 @@ class _WargaDetailState extends State<WargaDetail> {
       appBar: AppBar(
         title: const Text("Detail Warga"),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Detail Warga",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Detail Warga",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Full name
+                    DetailField(
+                        label: "Nama Lengkap:", value: warga['name'] ?? ''),
+
+                    // Birth place and date
+                    DetailField(
+                        label: "Tempat, Tanggal Lahir:",
+                        value:
+                            "${warga['birthPlace'] ?? ''}, ${warga['birthDate'] ?? ''}"),
+
+                    // Phone number
+                    DetailField(
+                        label: "Nomor telepon:",
+                        value: warga['phoneNumber'] ?? ''),
+
+                    // Gender
+                    DetailField(
+                        label: "Jenis Kelamin:", value: warga['gender'] ?? ''),
+
+                    // Religion
+                    DetailField(
+                        label: "Agama:", value: warga['religion'] ?? ''),
+
+                    // Blood type
+                    DetailField(
+                        label: "Golongan Darah:",
+                        value: warga['bloodType'] ?? ''),
+
+                    // Education
+                    DetailField(
+                        label: "Pendidikan Terakhir:",
+                        value: warga['education'] ?? ''),
+
+                    // Job
+                    DetailField(label: "Pekerjaan:", value: warga['job'] ?? ''),
+
+                    // Family role
+                    DetailField(
+                        label: "Peran dalam Keluarga:",
+                        value: warga['familyRole'] ?? ''),
+
+                    // Domicile status
+                    DetailField(
+                        label: "Status Penduduk:",
+                        value: warga['domicileStatus'] ?? ''),
+
+                    // Family name
+                    DetailField(
+                        label: "Keluarga:", value: warga['family'] ?? ''),
+
+                    const SizedBox(height: 24),
+                    // Back button
+                    DetailBackButton(
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Full name
-              DetailField(label: "Nama Lengkap:", value: warga.name),
-
-              // Birth place and date
-              DetailField(label: "Tempat, Tanggal Lahir:", value: "${warga.birthPlace}, ${warga.birthDate}"),
-
-              // Phone number
-              DetailField(label: "Nomor telepon:", value: warga.phoneNumber),
-
-              // Gender
-              DetailField(label: "Jenis Kelamin:", value: warga.gender),
-
-              // Religion
-              DetailField(label: "Agama:", value: warga.religion),
-
-              // Blood type
-              DetailField(label: "Golongan Darah:", value: warga.bloodType),
-
-              // Education
-              DetailField(label: "Pendidikan Terakhir:", value: warga.education),
-
-              // Job
-              DetailField(label: "Pekerjaan:", value: warga.job),
-
-              // Family role
-              DetailField(label: "Peran dalam Keluarga:", value: warga.familyRole),
-
-              // Domicile status
-              DetailField(label: "Status Penduduk:", value: warga.domicileStatus),
-
-              // Family name
-              DetailField(label: "Keluarga:", value: warga.family),
-
-              const SizedBox(height: 24),
-              // Back button
-              DetailBackButton(
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

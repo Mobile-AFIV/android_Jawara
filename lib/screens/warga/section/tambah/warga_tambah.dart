@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
@@ -43,6 +43,44 @@ class _WargaTambahState extends State<WargaTambah> {
   // Current step for stepper
   int _currentStep = 0;
 
+  // Dropdown options (moved from WargaDummy)
+  final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
+  final List<String> _religionOptions = [
+    'Islam',
+    'Kristen',
+    'Katolik',
+    'Hindu',
+    'Buddha',
+    'Konghucu'
+  ];
+  final List<String> _bloodTypeOptions = ['A', 'B', 'AB', 'O'];
+  final List<String> _educationOptions = [
+    'SD',
+    'SMP',
+    'SMA',
+    'D3',
+    'S1',
+    'S2',
+    'S3'
+  ];
+  final List<String> _jobOptions = [
+    'PNS',
+    'Swasta',
+    'Wiraswasta',
+    'Pelajar',
+    'Mahasiswa',
+    'Lainnya'
+  ];
+  final List<String> _familyRoleOptions = [
+    'Kepala Keluarga',
+    'Istri',
+    'Anak',
+    'Orangtua',
+    'Lainnya'
+  ];
+  final List<String> _statusOptions = ['Aktif', 'Nonaktif'];
+  final List<String> _lifeStatusOptions = ['Hidup', 'Meninggal'];
+
   @override
   void dispose() {
     // Dispose controllers
@@ -57,36 +95,65 @@ class _WargaTambahState extends State<WargaTambah> {
   }
 
   // Save the data
-  void _saveData() {
+  Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
-      // Create new WargaModel
-      final newWarga = WargaModel(
-        name: _nameController.text,
-        nik: _nikController.text,
-        family: _familyController.text,
-        gender: _selectedGender ?? '',
-        domicileStatus: _selectedDomicileStatus,
-        lifeStatus: _selectedLifeStatus,
-        birthPlace: _birthPlaceController.text,
-        birthDate: _birthDateController.text,
-        phoneNumber: _phoneController.text,
-        religion: _selectedReligion ?? '',
-        bloodType: _selectedBloodType ?? '',
-        education: _selectedEducation ?? '',
-        job: _selectedJob == 'Lainnya' ? _jobController.text : (_selectedJob ?? ''),
-        familyRole: _selectedFamilyRole ?? '',
-      );
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      // Add to dummy data
-      WargaDummy.addWarga(newWarga);
+        // Create data map for Firestore
+        final newWarga = {
+          'name': _nameController.text,
+          'nik': _nikController.text,
+          'family': _familyController.text,
+          'gender': _selectedGender ?? '',
+          'domicileStatus': _selectedDomicileStatus,
+          'lifeStatus': _selectedLifeStatus,
+          'birthPlace': _birthPlaceController.text,
+          'birthDate': _birthDateController.text,
+          'phoneNumber': _phoneController.text,
+          'religion': _selectedReligion ?? '',
+          'bloodType': _selectedBloodType ?? '',
+          'education': _selectedEducation ?? '',
+          'job': _selectedJob == 'Lainnya'
+              ? _jobController.text
+              : (_selectedJob ?? ''),
+          'familyRole': _selectedFamilyRole ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+        };
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data warga berhasil ditambahkan')),
-      );
+        // Save to Firestore
+        await FirebaseFirestore.instance.collection('warga').add(newWarga);
 
-      // Return to previous screen
-      Navigator.pop(context, true);
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data warga berhasil ditambahkan')),
+          );
+        }
+
+        // Return to previous screen
+        if (mounted) Navigator.pop(context, true);
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menambahkan data: $e')),
+          );
+        }
+      }
     } else {
       // If not all fields are validated, show error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -197,7 +264,7 @@ class _WargaTambahState extends State<WargaTambah> {
               label: "Jenis Kelamin",
               isRequired: true,
               value: _selectedGender,
-              items: WargaDummy.genderOptions.map((String gender) {
+              items: _genderOptions.map((String gender) {
                 return DropdownMenuItem<String>(
                   value: gender,
                   child: Text(gender),
@@ -252,7 +319,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Agama",
               value: _selectedReligion,
-              items: WargaDummy.religionOptions.map((String religion) {
+              items: _religionOptions.map((String religion) {
                 return DropdownMenuItem<String>(
                   value: religion,
                   child: Text(religion),
@@ -270,7 +337,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Golongan Darah",
               value: _selectedBloodType,
-              items: WargaDummy.bloodTypeOptions.map((String bloodType) {
+              items: _bloodTypeOptions.map((String bloodType) {
                 return DropdownMenuItem<String>(
                   value: bloodType,
                   child: Text(bloodType),
@@ -295,7 +362,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Pendidikan Terakhir",
               value: _selectedEducation,
-              items: WargaDummy.educationOptions.map((String education) {
+              items: _educationOptions.map((String education) {
                 return DropdownMenuItem<String>(
                   value: education,
                   child: Text(education),
@@ -313,7 +380,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions].map((String job) {
+              items: [..._jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),
@@ -336,7 +403,8 @@ class _WargaTambahState extends State<WargaTambah> {
                     label: "Pekerjaan Lainnya",
                     isRequired: _selectedJob == 'Lainnya',
                     validator: (value) {
-                      if (_selectedJob == 'Lainnya' && (value == null || value.isEmpty)) {
+                      if (_selectedJob == 'Lainnya' &&
+                          (value == null || value.isEmpty)) {
                         return 'Mohon isi jenis pekerjaan';
                       }
                       return null;
@@ -365,7 +433,7 @@ class _WargaTambahState extends State<WargaTambah> {
               label: "Peran dalam Keluarga",
               isRequired: true,
               value: _selectedFamilyRole,
-              items: WargaDummy.familyRoleOptions.map((String role) {
+              items: _familyRoleOptions.map((String role) {
                 return DropdownMenuItem<String>(
                   value: role,
                   child: Text(role),
@@ -389,7 +457,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Status Penduduk",
               value: _selectedDomicileStatus,
-              items: WargaDummy.statusOptions.map((String status) {
+              items: _statusOptions.map((String status) {
                 return DropdownMenuItem<String>(
                   value: status,
                   child: Text(status),
@@ -409,7 +477,7 @@ class _WargaTambahState extends State<WargaTambah> {
             FormDropdownField<String>(
               label: "Status Kehidupan",
               value: _selectedLifeStatus,
-              items: WargaDummy.lifeStatusOptions.map((String status) {
+              items: _lifeStatusOptions.map((String status) {
                 return DropdownMenuItem<String>(
                   value: status,
                   child: Text(status),

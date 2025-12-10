@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -26,28 +28,50 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<PenerimaanWargaModel> _filteredData = [];
+  List<Map<String, dynamic>> _allData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
     _initScrollButton();
     _setupScrollListener();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      PenerimaanWargaDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  void _initSearchAndFilter() {
-    _filteredData = List.from(PenerimaanWargaDummy.dummyData);
-    _searchController.addListener(_filterData);
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('penerimaan_warga')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      _allData = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+
+      _filterData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+      setState(() {
+        _allData = [];
+        _filteredData = [];
+        _expandedList = [];
+        _isLoading = false;
+      });
+    }
   }
 
   void _initScrollButton() {
@@ -76,16 +100,30 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
 
   void _filterData() {
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = PenerimaanWargaDummy.dummyData.where((penerimaan) {
-        bool matchesSearch = penerimaan.name.toLowerCase().contains(query) ||
-                             penerimaan.nik.contains(query) ||
-                             penerimaan.email.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             penerimaan.registrationStatus == _selectedFilter;
-        return matchesSearch && matchesFilter;
+      _filteredData = _allData.where((penerimaan) {
+        // Filter by status
+        bool matchesStatus = _selectedFilter == 'Semua' ||
+            (penerimaan['registrationStatus'] ?? 'Menunggu') == _selectedFilter;
+
+        // Filter by search query
+        bool matchesSearch = true;
+        if (_searchController.text.isNotEmpty) {
+          final searchQuery = _searchController.text.toLowerCase();
+          final name = (penerimaan['name'] ?? '').toLowerCase();
+          final nik = (penerimaan['nik'] ?? '').toLowerCase();
+          final email = (penerimaan['email'] ?? '').toLowerCase();
+
+          matchesSearch = name.contains(searchQuery) ||
+              nik.contains(searchQuery) ||
+              email.contains(searchQuery);
+        }
+
+        return matchesStatus && matchesSearch;
       }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
+      _isLoading = false;
     });
   }
 
@@ -138,6 +176,14 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     super.dispose();
   }
 
+  void _navigateToTambah() async {
+    final result = await context.pushNamed('penerimaan_warga_tambah');
+
+    if (result == true) {
+      _loadData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,6 +197,7 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                   setState(() {
                     _isSearching = false;
                     _searchController.clear();
+                    _filterData();
                   });
                 },
               )
@@ -185,55 +232,79 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
               },
             ),
             Expanded(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(milliseconds: 500));
-                      setState(() {
-                        _initExpandedList();
-                        _filterData();
-                      });
-                    },
-                    child: ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16.0),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _filteredData.length,
-                      itemBuilder: (context, index) {
-                        return _buildAnimatedCard(index);
-                      },
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    ),
-                  ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_add_outlined,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada permohonan warga baru',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Stack(
+                          children: [
+                            RefreshIndicator(
+                              onRefresh: () async {
+                                _loadData();
+                              },
+                              child: ListView.separated(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16.0),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: _filteredData.length,
+                                itemBuilder: (context, index) {
+                                  return _buildAnimatedCard(index);
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 12),
+                              ),
+                            ),
 
-                  // Scroll to top button
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: ScaleTransition(
-                      scale: _scrollButtonAnimation,
-                      child: FloatingActionButton.small(
-                        heroTag: 'scrollToTop',
-                        onPressed: _scrollToTop,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          color: Theme.of(context).primaryColor,
+                            // Scroll to top button
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: ScaleTransition(
+                                scale: _scrollButtonAnimation,
+                                child: FloatingActionButton.small(
+                                  heroTag: 'scrollToTop',
+                                  onPressed: _scrollToTop,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.keyboard_arrow_up,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _navigateToTambah,
+        icon: const Icon(Icons.add),
+        label: const Text('Tambah Penerimaan'),
+        backgroundColor: AppStyles.primaryColor.withValues(alpha: 1),
+        foregroundColor: Colors.white,
+      ),
     );
   }
 
-  void _showIdentityPhoto(BuildContext context) {
+  void _showIdentityPhoto(BuildContext context, String? imageUrl) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -274,7 +345,8 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white),
+                              icon:
+                                  const Icon(Icons.close, color: Colors.white),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -284,30 +356,68 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
                         padding: const EdgeInsets.all(16.0),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            'assets/images/placeholder.png',
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                padding: const EdgeInsets.all(32.0),
-                                child: const Column(
-                                  children: [
-                                    Icon(
-                                      Icons.broken_image,
-                                      size: 80,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(height: 16),
-                                    Text(
-                                      "Gambar tidak ditemukan",
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  ],
+                          child: imageUrl != null && imageUrl.isNotEmpty
+                              ? Image.network(
+                                  imageUrl,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: const Column(
+                                        children: [
+                                          Icon(
+                                            Icons.broken_image,
+                                            size: 80,
+                                            color: Colors.grey,
+                                          ),
+                                          SizedBox(height: 16),
+                                          Text(
+                                            "Gagal memuat gambar",
+                                            style:
+                                                TextStyle(color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: const Column(
+                                    children: [
+                                      Icon(
+                                        Icons.image_not_supported,
+                                        size: 80,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        "Gambar tidak tersedia",
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
                         ),
                       ),
                       const Padding(
@@ -331,23 +441,34 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
     );
   }
 
-  void _navigateToDetail(int index, PenerimaanWargaModel penerimaan) async {
+  void _navigateToDetail(Map<String, dynamic> penerimaan) async {
     final result = await context.pushNamed(
       'penerimaan_warga_detail',
       queryParameters: {
-        'index': index.toString(),
-        'name': penerimaan.name,
+        'id': penerimaan['id']?.toString() ?? '',
+        'name': penerimaan['name'] ?? '',
       },
     );
 
     if (result == true) {
-      setState(() {});
+      _loadData();
     }
   }
 
   Widget _buildAnimatedCard(int index) {
     final penerimaan = _filteredData[index];
-    final originalIndex = PenerimaanWargaDummy.dummyData.indexOf(penerimaan);
+    bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String registrationStatus = penerimaan['registrationStatus'] ?? 'Menunggu';
+    MaterialColor statusColor;
+
+    if (registrationStatus.toLowerCase().contains('diterima')) {
+      statusColor = Colors.green;
+    } else if (registrationStatus.toLowerCase().contains('ditolak')) {
+      statusColor = Colors.red;
+    } else {
+      statusColor = Colors.orange;
+    }
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -363,54 +484,58 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
         );
       },
       child: ExpandableSectionCard(
-        title: penerimaan.name,
+        title: penerimaan['name'] ?? '',
         statusChip: StatusChip(
-          label: penerimaan.registrationStatus,
-          color: penerimaan.statusColor,
-          icon: _getStatusIcon(penerimaan.registrationStatus),
+          label: registrationStatus,
+          color: statusColor,
+          icon: _getStatusIcon(registrationStatus),
         ),
-        isExpanded: _expandedList[index],
+        isExpanded: isExpanded,
         onToggleExpand: () {
           setState(() {
-            _expandedList[index] = !_expandedList[index];
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
+            }
           });
         },
         expandedContent: [
           _buildInfoRow(
             Icons.credit_card,
             "NIK",
-            penerimaan.nik,
+            penerimaan['nik'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.email,
             "Email",
-            penerimaan.email,
+            penerimaan['email'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
-            penerimaan.gender == "Laki-laki" ? Icons.male : Icons.female,
+            (penerimaan['gender'] ?? '') == "Laki-laki"
+                ? Icons.male
+                : Icons.female,
             "Jenis Kelamin",
-            penerimaan.gender,
+            penerimaan['gender'] ?? '',
           ),
           const SizedBox(height: 12),
-          
+
           // Photo preview button
-          _buildPhotoButton(),
-          
+          _buildPhotoButton(penerimaan['ktpImageUrl']),
+
           const SizedBox(height: 16),
           SectionActionButtons(
             showEditButton: false,
-            onDetailPressed: () => _navigateToDetail(originalIndex, penerimaan),
+            onDetailPressed: () => _navigateToDetail(penerimaan),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPhotoButton() {
+  Widget _buildPhotoButton(String? imageUrl) {
     return InkWell(
-      onTap: () => _showIdentityPhoto(context),
+      onTap: () => _showIdentityPhoto(context, imageUrl),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -500,11 +625,11 @@ class _PenerimaanWargaSectionState extends State<PenerimaanWargaSection>
   IconData _getStatusIcon(String status) {
     if (status.toLowerCase().contains('pending')) {
       return Icons.pending;
-    } else if (status.toLowerCase().contains('approved') || 
-               status.toLowerCase().contains('diterima')) {
+    } else if (status.toLowerCase().contains('approved') ||
+        status.toLowerCase().contains('diterima')) {
       return Icons.check_circle;
-    } else if (status.toLowerCase().contains('rejected') || 
-               status.toLowerCase().contains('ditolak')) {
+    } else if (status.toLowerCase().contains('rejected') ||
+        status.toLowerCase().contains('ditolak')) {
       return Icons.cancel;
     }
     return Icons.info;

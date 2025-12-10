@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
@@ -9,13 +9,13 @@ import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls
 import 'package:intl/intl.dart';
 
 class WargaEdit extends StatefulWidget {
-  final int wargaIndex;
-  final String? name;
+  final String? wargaId;
+  final Map<String, dynamic>? wargaData;
 
   const WargaEdit({
     super.key,
-    required this.wargaIndex,
-    this.name,
+    this.wargaId,
+    this.wargaData,
   });
 
   @override
@@ -23,20 +23,20 @@ class WargaEdit extends StatefulWidget {
 }
 
 class _WargaEditState extends State<WargaEdit> {
-  late WargaModel warga;
-  late int wargaIndex;
+  Map<String, dynamic> warga = {};
+  bool _isLoading = true;
 
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
   // Text controllers for form fields
-  late TextEditingController _nameController;
-  late TextEditingController _nikController;
-  late TextEditingController _familyController;
-  late TextEditingController _birthPlaceController;
-  late TextEditingController _birthDateController;
-  late TextEditingController _phoneController;
-  late TextEditingController _jobController;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nikController = TextEditingController();
+  final TextEditingController _familyController = TextEditingController();
+  final TextEditingController _birthPlaceController = TextEditingController();
+  final TextEditingController _birthDateController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _jobController = TextEditingController();
 
   // Dropdown selections
   String? _selectedGender;
@@ -45,8 +45,8 @@ class _WargaEditState extends State<WargaEdit> {
   String? _selectedEducation;
   String? _selectedJob;
   String? _selectedFamilyRole;
-  late String _selectedDomicileStatus;
-  late String _selectedLifeStatus;
+  String _selectedDomicileStatus = 'Aktif';
+  String _selectedLifeStatus = 'Hidup';
 
   // Date picker
   DateTime? _selectedDate;
@@ -54,72 +54,124 @@ class _WargaEditState extends State<WargaEdit> {
   // Current step for stepper
   int _currentStep = 0;
 
+  // Options for dropdowns (moved from WargaDummy)
+  final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
+  final List<String> _religionOptions = [
+    'Islam',
+    'Kristen',
+    'Katolik',
+    'Hindu',
+    'Buddha',
+    'Konghucu'
+  ];
+  final List<String> _bloodTypeOptions = ['A', 'B', 'AB', 'O'];
+  final List<String> _educationOptions = [
+    'SD',
+    'SMP',
+    'SMA',
+    'D3',
+    'S1',
+    'S2',
+    'S3'
+  ];
+  final List<String> _jobOptions = [
+    'PNS',
+    'Swasta',
+    'Wiraswasta',
+    'Pelajar',
+    'Mahasiswa',
+    'Lainnya'
+  ];
+  final List<String> _familyRoleOptions = [
+    'Kepala Keluarga',
+    'Istri',
+    'Anak',
+    'Orangtua',
+    'Lainnya'
+  ];
+  final List<String> _statusOptions = ['Aktif', 'Nonaktif'];
+  final List<String> _lifeStatusOptions = ['Hidup', 'Meninggal'];
+
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
 
-    // Find the warga data based on name or index
-    wargaIndex = widget.wargaIndex;
-
-    if (widget.name != null && widget.name!.isNotEmpty) {
-      final index = WargaDummy.dummyData.indexWhere((w) => w.name == widget.name);
-      if (index != -1) {
-        wargaIndex = index;
-      }
-    }
-
-    warga = WargaDummy.dummyData[wargaIndex];
-
-    // Initialize controllers with current data
-    _nameController = TextEditingController(text: warga.name);
-    _nikController = TextEditingController(text: warga.nik);
-    _familyController = TextEditingController(text: warga.family);
-    _birthPlaceController = TextEditingController(text: warga.birthPlace);
-    _birthDateController = TextEditingController(text: warga.birthDate);
-    _phoneController = TextEditingController(text: warga.phoneNumber);
-    _jobController = TextEditingController(text: warga.job);
-
-    // Set dropdown selections
-    _selectedGender = warga.gender;
-    _selectedReligion = warga.religion;
-    _selectedBloodType = warga.bloodType;
-    _selectedEducation = warga.education;
-
-    // Handle job selection, check if it's in the standard options or custom
-    if (WargaDummy.jobOptions.contains(warga.job)) {
-      _selectedJob = warga.job;
-    } else {
-      _selectedJob = 'Lainnya';
-      _jobController.text = warga.job;
-    }
-
-    _selectedFamilyRole = warga.familyRole;
-    _selectedDomicileStatus = warga.domicileStatus;
-    _selectedLifeStatus = warga.lifeStatus;
-
-    // Try to parse birth date
-    if (warga.birthDate.isNotEmpty) {
+  Future<void> _loadData() async {
+    if (widget.wargaData != null) {
+      setState(() {
+        warga = widget.wargaData!;
+        _initializeControllers();
+        _isLoading = false;
+      });
+    } else if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
       try {
-        // Try common date formats
-        List<String> formats = [
-          'dd MMMM yyyy', 'd MMMM yyyy',
-          'dd MMM yyyy', 'd MMM yyyy',
-          'yyyy-MM-dd', 'dd-MM-yyyy'
-        ];
+        final doc = await FirebaseFirestore.instance
+            .collection('warga')
+            .doc(widget.wargaId)
+            .get();
 
-        for (var format in formats) {
-          try {
-            _selectedDate = DateFormat(format, 'id_ID').parse(warga.birthDate);
-            break;
-          } catch (e) {
-            // Continue to next format
+        if (doc.exists) {
+          setState(() {
+            warga = doc.data()!;
+            warga['id'] = doc.id;
+            _initializeControllers();
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data warga tidak ditemukan')),
+            );
+            Navigator.pop(context);
           }
         }
       } catch (e) {
-        // If all parsing fails, don't set a date
-        print("Failed to parse birth date: ${warga.birthDate}");
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
       }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  void _initializeControllers() {
+    _nameController.text = warga['name'] ?? '';
+    _nikController.text = warga['nik'] ?? '';
+    _familyController.text = warga['family'] ?? '';
+    _birthPlaceController.text = warga['birthPlace'] ?? '';
+    _birthDateController.text = warga['birthDate'] ?? '';
+    _phoneController.text = warga['phoneNumber'] ?? '';
+
+    _selectedGender = warga['gender'];
+    _selectedReligion = warga['religion'];
+    _selectedBloodType = warga['bloodType'];
+    _selectedEducation = warga['education'];
+
+    String job = warga['job'] ?? '';
+    if (_jobOptions.contains(job)) {
+      _selectedJob = job;
+    } else {
+      _selectedJob = 'Lainnya';
+      _jobController.text = job;
+    }
+
+    _selectedFamilyRole = warga['familyRole'];
+    _selectedDomicileStatus = warga['domicileStatus'] ?? 'Aktif';
+    _selectedLifeStatus = warga['lifeStatus'] ?? 'Hidup';
   }
 
   @override
@@ -136,35 +188,67 @@ class _WargaEditState extends State<WargaEdit> {
   }
 
   // Save the edited data
-  void _saveData() {
+  Future<void> _saveData() async {
     if (_formKey.currentState!.validate()) {
-      // Create updated WargaModel
-      final updatedWarga = WargaModel(
-        name: _nameController.text,
-        nik: _nikController.text,
-        family: _familyController.text,
-        gender: _selectedGender ?? '',
-        domicileStatus: _selectedDomicileStatus,
-        lifeStatus: _selectedLifeStatus,
-        birthPlace: _birthPlaceController.text,
-        birthDate: _birthDateController.text,
-        phoneNumber: _phoneController.text,
-        religion: _selectedReligion ?? '',
-        bloodType: _selectedBloodType ?? '',
-        education: _selectedEducation ?? '',
-        job: _selectedJob == 'Lainnya' ? _jobController.text : (_selectedJob ?? ''),
-        familyRole: _selectedFamilyRole ?? '',
-      );
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
 
-      // Update the dummy data
-      WargaDummy.dummyData[wargaIndex] = updatedWarga;
+        final updatedWarga = {
+          'name': _nameController.text,
+          'nik': _nikController.text,
+          'family': _familyController.text,
+          'gender': _selectedGender ?? '',
+          'domicileStatus': _selectedDomicileStatus,
+          'lifeStatus': _selectedLifeStatus,
+          'birthPlace': _birthPlaceController.text,
+          'birthDate': _birthDateController.text,
+          'phoneNumber': _phoneController.text,
+          'religion': _selectedReligion ?? '',
+          'bloodType': _selectedBloodType ?? '',
+          'education': _selectedEducation ?? '',
+          'job': _selectedJob == 'Lainnya'
+              ? _jobController.text
+              : (_selectedJob ?? ''),
+          'familyRole': _selectedFamilyRole ?? '',
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
 
-      // Show success message and return
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data warga berhasil disimpan')),
-      );
+        // Update to Firebase
+        if (widget.wargaId != null && widget.wargaId!.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('warga')
+              .doc(widget.wargaId)
+              .update(updatedWarga);
+        }
 
-      Navigator.pop(context, true); // Return with success result
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show success message and return
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data warga berhasil disimpan')),
+          );
+          Navigator.pop(context, true); // Return with success result
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.pop(context);
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menyimpan data: $e')),
+          );
+        }
+      }
     } else {
       // If not all fields are validated, show error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -182,6 +266,15 @@ class _WargaEditState extends State<WargaEdit> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Edit Data Warga"),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Data Warga"),
@@ -265,7 +358,8 @@ class _WargaEditState extends State<WargaEdit> {
                 if (value == null || value.isEmpty) {
                   return 'NIK tidak boleh kosong';
                 }
-                if (value.length != 16 && value != "2222222222222222") { // Special case for test data
+                if (value.length != 16 && value != "2222222222222222") {
+                  // Special case for test data
                   return 'NIK harus 16 digit';
                 }
                 return null;
@@ -278,7 +372,7 @@ class _WargaEditState extends State<WargaEdit> {
               label: "Jenis Kelamin",
               isRequired: true,
               value: _selectedGender,
-              items: WargaDummy.genderOptions.map((String gender) {
+              items: _genderOptions.map((String gender) {
                 return DropdownMenuItem<String>(
                   value: gender,
                   child: Text(gender),
@@ -333,7 +427,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Agama",
               value: _selectedReligion,
-              items: WargaDummy.religionOptions.map((String religion) {
+              items: _religionOptions.map((String religion) {
                 return DropdownMenuItem<String>(
                   value: religion,
                   child: Text(religion),
@@ -351,7 +445,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Golongan Darah",
               value: _selectedBloodType,
-              items: WargaDummy.bloodTypeOptions.map((String bloodType) {
+              items: _bloodTypeOptions.map((String bloodType) {
                 return DropdownMenuItem<String>(
                   value: bloodType,
                   child: Text(bloodType),
@@ -377,7 +471,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Pendidikan Terakhir",
               value: _selectedEducation,
-              items: WargaDummy.educationOptions.map((String education) {
+              items: _educationOptions.map((String education) {
                 return DropdownMenuItem<String>(
                   value: education,
                   child: Text(education),
@@ -395,7 +489,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Pekerjaan",
               value: _selectedJob,
-              items: [...WargaDummy.jobOptions].map((String job) {
+              items: [..._jobOptions].map((String job) {
                 return DropdownMenuItem<String>(
                   value: job,
                   child: Text(job),
@@ -418,7 +512,8 @@ class _WargaEditState extends State<WargaEdit> {
                     label: "Pekerjaan Lainnya",
                     isRequired: _selectedJob == 'Lainnya',
                     validator: (value) {
-                      if (_selectedJob == 'Lainnya' && (value == null || value.isEmpty)) {
+                      if (_selectedJob == 'Lainnya' &&
+                          (value == null || value.isEmpty)) {
                         return 'Mohon isi jenis pekerjaan';
                       }
                       return null;
@@ -447,7 +542,7 @@ class _WargaEditState extends State<WargaEdit> {
               label: "Peran dalam Keluarga",
               isRequired: true,
               value: _selectedFamilyRole,
-              items: WargaDummy.familyRoleOptions.map((String role) {
+              items: _familyRoleOptions.map((String role) {
                 return DropdownMenuItem<String>(
                   value: role,
                   child: Text(role),
@@ -471,7 +566,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Status Penduduk",
               value: _selectedDomicileStatus,
-              items: WargaDummy.statusOptions.map((String status) {
+              items: _statusOptions.map((String status) {
                 return DropdownMenuItem<String>(
                   value: status,
                   child: Text(status),
@@ -491,7 +586,7 @@ class _WargaEditState extends State<WargaEdit> {
             FormDropdownField<String>(
               label: "Status Kehidupan",
               value: _selectedLifeStatus,
-              items: WargaDummy.lifeStatusOptions.map((String status) {
+              items: _lifeStatusOptions.map((String status) {
                 return DropdownMenuItem<String>(
                   value: status,
                   child: Text(status),

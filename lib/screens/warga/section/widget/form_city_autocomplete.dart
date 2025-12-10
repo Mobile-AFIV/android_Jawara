@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/warga_dummy.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_input_decoration.dart';
 
 class FormCityAutocomplete extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final bool isRequired;
+
+  // Indonesian cities list
+  static const List<String> cityOptions = [
+    'Jakarta',
+    'Surabaya',
+    'Bandung',
+    'Medan',
+    'Semarang',
+    'Makassar',
+    'Palembang',
+    'Tangerang',
+    'Depok',
+    'Bekasi',
+    'Bogor',
+    'Yogyakarta',
+    'Malang',
+    'Solo',
+    'Denpasar',
+  ];
 
   const FormCityAutocomplete({
     Key? key,
@@ -21,24 +39,31 @@ class FormCityAutocomplete extends StatelessWidget {
         if (textEditingValue.text.isEmpty) {
           return const Iterable<String>.empty();
         }
-        return WargaDummy.cityOptions.where((String city) {
-          return city.toLowerCase().contains(textEditingValue.text.toLowerCase());
+        return cityOptions.where((String city) {
+          return city
+              .toLowerCase()
+              .contains(textEditingValue.text.toLowerCase());
         });
       },
       initialValue: TextEditingValue(text: controller.text),
       onSelected: (String selection) {
         controller.text = selection;
       },
-      fieldViewBuilder: (
-          BuildContext context,
+      fieldViewBuilder: (BuildContext context,
           TextEditingController fieldController,
           FocusNode fieldFocusNode,
-          VoidCallback onFieldSubmitted
-          ) {
-        // Update the controller without losing existing text
+          VoidCallback onFieldSubmitted) {
+        // Sync with main controller on init
         if (fieldController.text.isEmpty && controller.text.isNotEmpty) {
           fieldController.text = controller.text;
         }
+
+        // Listen to changes and sync to main controller
+        fieldController.addListener(() {
+          if (fieldController.text != controller.text) {
+            controller.text = fieldController.text;
+          }
+        });
 
         return TextFormField(
           controller: fieldController,
@@ -46,16 +71,22 @@ class FormCityAutocomplete extends StatelessWidget {
           decoration: FormInputDecoration.inputDecoration(
             isRequired ? "$label *" : label,
           ),
+          onChanged: (value) {
+            // Sync to main controller on every change
+            controller.text = value;
+          },
           onFieldSubmitted: (String value) {
             onFieldSubmitted();
             controller.text = fieldController.text;
           },
-          validator: isRequired ? (value) {
-            if (value == null || value.isEmpty) {
-              return '$label tidak boleh kosong';
-            }
-            return null;
-          } : null,
+          validator: isRequired
+              ? (value) {
+                  if (value == null || value.isEmpty) {
+                    return '$label tidak boleh kosong';
+                  }
+                  return null;
+                }
+              : null,
         );
       },
     );
