@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:jawara_pintar/models/channel_transfer.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:jawara_pintar/screens/lainnya/section/tambah_channel_transfer.dart';
+import 'package:flutter/services.dart';
+import 'package:jawara_pintar/services/channel_transfer_service.dart';
 
 class ChannelTransferSection extends StatefulWidget {
   const ChannelTransferSection({super.key});
@@ -10,93 +12,154 @@ class ChannelTransferSection extends StatefulWidget {
 }
 
 class _ChannelTransferSectionState extends State<ChannelTransferSection> {
-  List<Map<String, String>> users = [
-    {
-      'nama': 'Bank Mega',
-      'tipe': 'E-wallet',
-      'A/N': 'Fandi Rahmad',
-      'no_rek': '123-456-7890', // contoh field tambahan
-    },
-    {
-      'nama': 'Bank BCA',
-      'tipe': 'Rekening',
-      'A/N': 'Ika Suryani',
-      'no_rek': '098-765-4321',
-    },
-    {
-      'nama': 'Bank Mandiri',
-      'tipe': 'QRIS',
-      'A/N': 'Joko Susilo',
-      'no_rek': '564-738-2910',
-    },
-  ];
+  final TextEditingController namaCtrl = TextEditingController();
+  final TextEditingController tipeCtrl = TextEditingController();
+  final TextEditingController pemilikCtrl = TextEditingController();
+  final TextEditingController norekCtrl = TextEditingController();
 
-  Future<void> _editChannelDialog(int index) async {
-    final user = users[index];
-    final namaCtrl = TextEditingController(text: user['nama']);
-    final tipeCtrl = TextEditingController(text: user['tipe']);
-    final pemilikCtrl = TextEditingController(text: user['A/N']);
-    final noRekCtrl = TextEditingController(text: user['no_rek']);
+  final List<String> tipeOptions = ['Bank', 'E-Wallet', 'Mobile Banking', 'Transfer Manual'];
+  String selectedTipe = "Rekening";
 
-    await showDialog(
+  String selectedFilter = "Semua";
+  List<String> filterOptions = ["Semua", "Bank", "E-Wallet", "Mobile Banking", "Transfer Manual"];
+
+  Future<void> _showEditChannel(ChannelTransfer channel) async {
+    showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Channel Transfer'),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: namaCtrl,
-                  decoration: const InputDecoration(labelText: 'Nama Channel'),
-                ),
-                TextField(
-                  controller: tipeCtrl,
-                  decoration: const InputDecoration(labelText: 'Tipe (Bank, E-wallet, QRIS)'),
-                ),
-                TextField(
-                  controller: noRekCtrl,
-                  decoration: const InputDecoration(labelText: 'Nomor Rekening / Akun'),
-                ),
-                TextField(
-                  controller: pemilikCtrl,
-                  decoration: const InputDecoration(labelText: 'Nama Pemilik Akun'),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppStyles.primaryColor,
-                foregroundColor: Colors.white,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Channel Transfer"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: namaCtrl,
+                decoration: const InputDecoration(labelText: "Nama Channel"),
               ),
-              onPressed: () {
-                setState(() {
-                  users[index] = {
-                    'nama': namaCtrl.text,
-                    'tipe': tipeCtrl.text,
-                    'A/N': pemilikCtrl.text,
-                    'no_rek': noRekCtrl.text,
-                    'pemilik': pemilikCtrl.text,
-                  };
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Data berhasil diperbarui!')),
-                );
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: tipeCtrl.text.isNotEmpty ? tipeCtrl.text : null,
+                decoration: const InputDecoration(labelText: "Tipe"),
+                items: tipeOptions.map((tipe) {
+                  return DropdownMenuItem(value: tipe, child: Text(tipe));
+                }).toList(),
+                onChanged: (value) {
+                  tipeCtrl.text = value ?? '';
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: pemilikCtrl,
+                decoration: const InputDecoration(labelText: "Pemilik"),
+              ),
+              TextField(
+                controller: norekCtrl,
+                decoration: const InputDecoration(labelText: "Nomor Rekening"),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final updatedChannel = {
+                "nama": namaCtrl.text,
+                "tipe": tipeCtrl.text,
+                "pemilik": pemilikCtrl.text,
+                "no_rek": norekCtrl.text,
+              };
+
+              await ChannelTransferService.instance.updateChannelTransfer(
+                id: channel.id,
+                channelBaru: updatedChannel,
+              );
+
+              Navigator.pop(context); 
+              setState(() {});
+            },
+            child: const Text("Simpan"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showTambahChannel() async {
+    namaCtrl.clear();
+    tipeCtrl.clear();
+    pemilikCtrl.clear();
+    norekCtrl.clear();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Tambah Channel Transfer"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: namaCtrl,
+                decoration: const InputDecoration(labelText: "Nama Channel"),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: "Tipe"),
+                items: tipeOptions.map((tipe) {
+                  return DropdownMenuItem(value: tipe, child: Text(tipe));
+                }).toList(),
+                onChanged: (value) {
+                  tipeCtrl.text = value ?? '';
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: pemilikCtrl,
+                decoration: const InputDecoration(labelText: "Pemilik"),
+              ),
+              TextField(
+                controller: norekCtrl,
+                decoration: const InputDecoration(labelText: "Nomor Rekening"),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final newChannel = {
+                "nama": namaCtrl.text,
+                "tipe": tipeCtrl.text,
+                "pemilik": pemilikCtrl.text,
+                "no_rek": norekCtrl.text,
+              };
+
+              await ChannelTransferService.instance.createChannelTransfer(
+                nama: newChannel["nama"]!,
+                tipe: newChannel["tipe"]!,
+                pemilik: newChannel["pemilik"]!,
+                nomorRekening: newChannel["no_rek"]!,
+              );
+
+              Navigator.pop(context);
+              setState(() {});
+            },
+            child: const Text("Simpan"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -104,167 +167,188 @@ class _ChannelTransferSectionState extends State<ChannelTransferSection> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Channel Transfer",
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          final item = users[index];
-          return _buildUserTile(
-            context,
-            index: index,
-            nama: item['nama'] ?? '',
-            tipe: item['tipe'] ?? '',
-            pemilik: item['A/N'] ?? '',
-            extraFields: item,
-          );
-        },
-      ),
-       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
-        onPressed: () async {
-          final hasil = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const TambahChannelSection(), // ⬅️ Halaman tambah
-            ),
-          ); 
-
-          if (hasil != null && hasil is Map<String, String>) {
-            setState(() {
-              users.add(hasil);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Channel berhasil ditambahkan!')),
-            );
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _buildUserTile(
-    BuildContext context, {
-    required int index,
-    required String nama,
-    required String tipe,
-    required String pemilik,
-    required Map<String, String> extraFields,
-  }) {
-    return Card(
-      elevation: 3,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            color: AppStyles.primaryColor,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.account_balance,
-            color: Color.fromARGB(255, 18, 17, 23),
-            size: 20,
-          ),
-        ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                nama,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                pemilik,
-                style: TextStyle(
-                  color: Colors.grey.shade800,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        subtitle: Text(tipe, style: const TextStyle(color: Colors.black54, fontSize: 13)),
-        children: [
-          // Detail lengkap
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 4),
-              Text('Pemilik: $pemilik', style: const TextStyle(fontSize: 14)),
-              if (extraFields.containsKey('no_rek'))
-                Text('No. Rekening: ${extraFields['no_rek']}', style: const TextStyle(fontSize: 14)),
-              // Tambahkan field lain sesuai kebutuhan
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _editChannelDialog(index),
-                    icon: const Icon(Icons.edit, size: 18),
-                    label: const Text('Edit'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppStyles.primaryColor,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Konfirmasi Hapus'),
-                          content: const Text('Anda yakin ingin menghapus item ini?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Batal')),
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Hapus')),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        setState(() {
-                          users.removeAt(index);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item dihapus')));
-                      }
-                    },
-                    icon: const Icon(Icons.delete, size: 18),
-                    label: const Text('Hapus'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+        title: const Text("Channel Transfer"),
+        actions: [
+          PopupMenuButton<String>(
+            borderRadius: BorderRadius.circular(8),
+            icon: const Icon(Icons.filter_alt, color: AppStyles.primaryColor),
+            tooltip: 'Filter',
+            onSelected: (value) {
+              setState(() {
+                selectedFilter = value ?? "Semua";
+              });
+            },
+            itemBuilder: (context) {
+              return filterOptions.map((filter) {
+                return PopupMenuItem(
+                  value: filter,
+                  child: Text(filter),
+                );
+              }).toList();
+            },
           ),
         ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: FutureBuilder<List<ChannelTransfer>>(
+          future: ChannelTransferService.instance.getAllChannelTransfers(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("Tidak ada channel transfer."));
+            }
+
+            var channels = snapshot.data!;
+
+            // Apply filter
+            if (selectedFilter != "Semua") {
+              channels = channels
+                  .where((channel) => channel.tipe == selectedFilter)
+                  .toList();
+            }
+
+            if (channels.isEmpty) {
+              return Center(
+                child: Text("Tidak ada channel transfer dengan tipe '$selectedFilter'."),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: channels.length,
+              itemBuilder: (context, i) {
+                final channel = channels[i];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color.fromARGB(38, 10, 150, 150),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.account_balance_wallet,
+                            color: Colors.blue),
+                      ),
+                      title: Text(
+                        channel.nama,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "${channel.tipe} • ${channel.pemilik}",
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Nama: ${channel.nama}"),
+                            Text("Tipe: ${channel.tipe}"),
+                            Text("Pemilik: ${channel.pemilik}"),
+                            Text("Nomor Rekening: ${channel.nomorRekening}"),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    namaCtrl.text = channel.nama;
+                                    tipeCtrl.text = channel.tipe;
+                                    pemilikCtrl.text = channel.pemilik;
+                                    norekCtrl.text = channel.nomorRekening;
+                                    _showEditChannel(channel);
+                                  },
+                                  icon: const Icon(Icons.edit),
+                                  label: const Text("Edit"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final konfirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text("Konfirmasi Hapus"),
+                                        content: const Text(
+                                            "Apakah Anda yakin ingin menghapus channel transfer ini?"),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text("Batal"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text("Hapus"),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (konfirm == true) {
+                                      await ChannelTransferService.instance
+                                          .deleteChannelTransfer(channel.id);
+                                      setState(() {});
+                                    }
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                  label: const Text("Hapus"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showTambahChannel,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text("Tambah Channel",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            )),
+        backgroundColor: AppStyles.primaryColor,
       ),
     );
   }
