@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../models/pesanWarga.dart';
+import '../../../services/pesanWarga_service.dart';
 
-// ==== Status Chip mirip kode sebelumnya ====
+// ==== Status Chip ====
 class StatusChip extends StatelessWidget {
   final String label;
   final Color color;
@@ -27,16 +29,14 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-// ==== Expandable Card mirip kode sebelumnya ====
+// ==== Expandable Card ====
 class ExpandableKegiatanCard extends StatefulWidget {
-  final String namaKegiatan;
-  final String isiBroadcast;
+  final PesanWargaModel data;
   final Color statusColor;
 
   const ExpandableKegiatanCard({
     super.key,
-    required this.namaKegiatan,
-    required this.isiBroadcast,
+    required this.data,
     required this.statusColor,
   });
 
@@ -54,8 +54,10 @@ class _ExpandableKegiatanCardState extends State<ExpandableKegiatanCard>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
 
     _arrowAnimation = Tween<double>(begin: 0, end: 0.5).animate(_controller);
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
@@ -64,11 +66,7 @@ class _ExpandableKegiatanCardState extends State<ExpandableKegiatanCard>
   void toggleExpand() {
     setState(() {
       isExpanded = !isExpanded;
-      if (isExpanded) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
+      isExpanded ? _controller.forward() : _controller.reverse();
     });
   }
 
@@ -92,27 +90,30 @@ class _ExpandableKegiatanCardState extends State<ExpandableKegiatanCard>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
+                  // INFO UTAMA
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.namaKegiatan,
+                          widget.data.namaWarga,
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.isiBroadcast.length > 50
-                              ? widget.isiBroadcast.substring(0, 50) + "..."
-                              : widget.isiBroadcast,
+                          widget.data.isiPesan.length > 50
+                              ? widget.data.isiPesan.substring(0, 50) + "..."
+                              : widget.data.isiPesan,
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ],
                     ),
                   ),
+
                   StatusChip(label: "Pesan", color: widget.statusColor),
                   const SizedBox(width: 8),
+
                   RotationTransition(
                     turns: _arrowAnimation,
                     child: const Icon(Icons.keyboard_arrow_down),
@@ -121,12 +122,28 @@ class _ExpandableKegiatanCardState extends State<ExpandableKegiatanCard>
               ),
             ),
           ),
+
+          // ==== EXPANDED CONTENT ====
           SizeTransition(
             sizeFactor: _fadeAnimation,
             axisAlignment: 0.0,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(widget.isiBroadcast),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.data.namaWarga,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.data.isiPesan,
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -135,31 +152,41 @@ class _ExpandableKegiatanCardState extends State<ExpandableKegiatanCard>
   }
 }
 
-// ==== Halaman utama PesanWargaSection ====
+// ==== HALAMAN UTAMA ====
 class PesanWargaSection extends StatelessWidget {
   const PesanWargaSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final pesanService = PesanWargaService();
+
     return Scaffold(
       appBar: AppBar(title: const Text("Pesan Warga")),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: const [
-          ExpandableKegiatanCard(
-            namaKegiatan: 'Ibu Atiqa',
-            isiBroadcast:
-                'Halo warga, kegiatan gotong royong akan dilaksanakan pada Minggu pukul 07:00 WIB...',
-            statusColor: Colors.green,
-          ),
-          SizedBox(height: 12),
-          ExpandableKegiatanCard(
-            namaKegiatan: 'Pak JOKO',
-            isiBroadcast:
-                'Rapat warga wajib dihadiri seluruh kepala keluarga pada hari Sabtu...',
-            statusColor: Colors.blue,
-          ),
-        ],
+      body: StreamBuilder<List<PesanWargaModel>>(
+        stream: pesanService.getPesanWarga(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Belum ada pesan warga"));
+          }
+
+          final data = snapshot.data!;
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: data.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, i) {
+              return ExpandableKegiatanCard(
+                data: data[i],
+                statusColor: Colors.green,
+              );
+            },
+          );
+        },
       ),
     );
   }
