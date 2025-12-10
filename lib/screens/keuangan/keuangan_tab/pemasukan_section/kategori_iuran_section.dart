@@ -121,6 +121,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             CustomTextField(
               controller: nominalIuran,
               hintText: "Contoh: 150000",
+              maxLength: 9,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -301,6 +302,7 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
           CustomTextField(
             controller: nominalIuran,
             hintText: "Contoh: 150000",
+            maxLength: 9,
             keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
