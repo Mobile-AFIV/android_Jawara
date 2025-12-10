@@ -6,7 +6,7 @@ class UserProfile {
   final String jenisKelamin;
   final String nik;
   final String noTelepon;
-  final String role;
+  // final String role;
   // final String email;
   // final String password;
   final DocumentReference rumah;
@@ -18,7 +18,7 @@ class UserProfile {
     required this.nik,
     required this.noTelepon,
     required this.rumah,
-    required this.role,
+    // required this.role,
     // required this.password,
     // required this.email,  
   });
@@ -35,7 +35,7 @@ class UserProfile {
       nik: data['nik'],
       noTelepon: data['noTelepon'],
       rumah: data['rumah'],
-      role: data['role'],
+      // role: data['role'],
     );
   }
 }
