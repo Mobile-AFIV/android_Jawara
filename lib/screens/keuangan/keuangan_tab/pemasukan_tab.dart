@@ -8,7 +8,7 @@ import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pe
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/body_section_info.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/heading_section.dart';
-import 'package:jawara_pintar/services/kegiatan_iuran_service.dart';
+import 'package:jawara_pintar/services/kategori_iuran_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PemasukanTab extends StatefulWidget {
