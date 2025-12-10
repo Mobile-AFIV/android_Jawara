@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/tambah/rumah_tambah.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -25,38 +26,86 @@ class _RumahSectionState extends State<RumahSection> {
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<RumahModel> _filteredData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      RumahDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  void _initSearchAndFilter() {
-    _filteredData = List.from(RumahDummy.dummyData);
-    _searchController.addListener(_filterData);
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('rumah_warga')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      setState(() {
+        _filteredData = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        _filterData();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+    }
   }
 
   void _filterData() {
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = RumahDummy.dummyData.where((rumah) {
-        bool matchesSearch = rumah.address.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             rumah.status == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      List<Map<String, dynamic>> tempData = [];
+
+      // Load all data from collection
+      FirebaseFirestore.instance
+          .collection('rumah_warga')
+          .orderBy('createdAt', descending: true)
+          .get()
+          .then((snapshot) {
+        tempData = snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+
+        // Filter by status
+        if (_selectedFilter != 'Semua') {
+          tempData = tempData.where((rumah) {
+            return rumah['status'] == _selectedFilter;
+          }).toList();
+        }
+
+        // Filter by search
+        if (_searchController.text.isNotEmpty) {
+          final searchQuery = _searchController.text.toLowerCase();
+          tempData = tempData.where((rumah) {
+            final address = (rumah['address'] ?? '').toLowerCase();
+            return address.contains(searchQuery);
+          }).toList();
+        }
+
+        setState(() {
+          _filteredData = tempData;
+          _expandedList =
+              List.generate(_filteredData.length, (index) => index == 0);
+        });
+      });
     });
   }
 
@@ -64,7 +113,7 @@ class _RumahSectionState extends State<RumahSection> {
     FilterBottomSheet.show(
       context: context,
       title: 'Filter Status Rumah',
-      options: ['Semua', ...RumahDummy.statusOptions],
+      options: ['Semua', 'Tersedia', 'Ditempati'],
       selectedValue: _selectedFilter,
       onSelected: (value) {
         setState(() => _selectedFilter = value);
@@ -88,9 +137,73 @@ class _RumahSectionState extends State<RumahSection> {
     );
 
     if (result == true) {
-      setState(() {
-        _initExpandedList();
-      });
+      _loadData();
+    }
+  }
+
+  Future<void> _deleteRumah(String rumahId) async {
+    // Show confirmation dialog
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus data rumah ini? Tindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        // Show loading
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+
+        // Delete from Firebase
+        await FirebaseFirestore.instance
+            .collection('rumah_warga')
+            .doc(rumahId)
+            .delete();
+
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Reload data
+        _loadData();
+
+        // Show success
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data rumah berhasil dihapus')),
+          );
+        }
+      } catch (e) {
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Show error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menghapus data: $e')),
+          );
+        }
+      }
     }
   }
 
@@ -159,25 +272,42 @@ class _RumahSectionState extends State<RumahSection> {
               },
             ),
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await Future.delayed(const Duration(milliseconds: 500));
-                  setState(() {
-                    _initExpandedList();
-                    _filterData();
-                  });
-                },
-                child: ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16.0),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _filteredData.length,
-                  itemBuilder: (context, index) {
-                    return _buildAnimatedCard(index);
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.home_outlined,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada data rumah',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            _loadData();
+                          },
+                          child: ListView.separated(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16.0),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _filteredData.length,
+                            itemBuilder: (context, index) {
+                              return _buildAnimatedCard(index);
+                            },
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                          ),
+                        ),
             ),
           ],
         ),
@@ -194,9 +324,12 @@ class _RumahSectionState extends State<RumahSection> {
 
   Widget _buildAnimatedCard(int index) {
     final rumah = _filteredData[index];
-    final originalIndex = RumahDummy.dummyData.indexOf(rumah);
-    final bool isExpanded = index < _expandedList.length ? _expandedList[index] : false;
-    bool isAvailable = rumah.status.toLowerCase() == 'tersedia';
+    final bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String status = rumah['status'] ?? 'Tersedia';
+    String address = rumah['address'] ?? '';
+    MaterialColor statusColor =
+        status.toLowerCase() == 'tersedia' ? Colors.green : Colors.blue;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -212,13 +345,11 @@ class _RumahSectionState extends State<RumahSection> {
         );
       },
       child: ExpandableSectionCard(
-        title: rumah.address.length > 30
-            ? "${rumah.address.substring(0, 30)}..."
-            : rumah.address,
+        title: address.length > 30 ? "${address.substring(0, 30)}..." : address,
         statusChip: StatusChip(
-          label: rumah.status,
-          color: rumah.statusColor,
-          icon: _getStatusIcon(rumah.status),
+          label: status,
+          color: statusColor,
+          icon: _getStatusIcon(status),
         ),
         isExpanded: isExpanded,
         onToggleExpand: () {
@@ -229,39 +360,46 @@ class _RumahSectionState extends State<RumahSection> {
           });
         },
         expandedContent: [
-          _buildAddressCard(rumah.address),
+          _buildAddressCard(address),
           const SizedBox(height: 16),
           SectionActionButtons(
             showEditButton: true,
-            onEditPressed: isAvailable
-                ? () async {
-                    final result = await context.pushNamed(
-                      'rumah_edit',
-                      queryParameters: {
-                        'index': originalIndex.toString(),
-                        'address': rumah.address,
-                      },
-                    );
-                    if (result == true) {
-                      setState(() {
-                        if (_expandedList.length != RumahDummy.dummyData.length) {
-                          _initExpandedList();
-                        }
-                      });
-                    }
-                  }
-                : () {
-                    _showEditNotAvailableSnackbar();
-                  },
+            onEditPressed: () async {
+              final result = await context.pushNamed(
+                'rumah_edit',
+                queryParameters: {
+                  'id': rumah['id']?.toString() ?? '',
+                  'address': address,
+                },
+              );
+              if (result == true) {
+                _loadData();
+              }
+            },
             onDetailPressed: () {
               context.pushNamed(
                 'rumah_detail',
                 queryParameters: {
-                  'index': originalIndex.toString(),
-                  'address': rumah.address,
+                  'id': rumah['id']?.toString() ?? '',
+                  'address': address,
                 },
               );
             },
+          ),
+          const SizedBox(height: 12),
+          // Delete button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _deleteRumah(rumah['id']?.toString() ?? ''),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Hapus Rumah'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
           ),
         ],
       ),
@@ -317,32 +455,6 @@ class _RumahSectionState extends State<RumahSection> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showEditNotAvailableSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Hanya rumah dengan status "Tersedia" yang dapat diedit',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.orange[700],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
       ),
     );
   }

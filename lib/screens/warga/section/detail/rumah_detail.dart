@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/detail_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/resident_history_item.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/back_button.dart';
 
 class RumahDetail extends StatefulWidget {
-  final int rumahIndex;
-  final String? address; // Add address parameter for better lookup
+  final String? rumahId;
+  final Map<String, dynamic>? rumahData;
 
   const RumahDetail({
     super.key,
-    required this.rumahIndex,
-    this.address,
+    this.rumahId,
+    this.rumahData,
   });
 
   @override
@@ -20,28 +20,127 @@ class RumahDetail extends StatefulWidget {
 }
 
 class _RumahDetailState extends State<RumahDetail> {
-  late RumahModel rumah;
+  Map<String, dynamic> rumah = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
 
-    // First try to find by address if provided
-    if (widget.address != null && widget.address!.isNotEmpty) {
-      final matchByAddress = RumahDummy.dummyData.where(
-              (r) => r.address == widget.address
-      ).toList();
+  Future<void> _loadData() async {
+    if (widget.rumahData != null) {
+      setState(() {
+        rumah = widget.rumahData!;
+        _isLoading = false;
+      });
+    } else if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('rumah_warga')
+            .doc(widget.rumahId)
+            .get();
 
-      if (matchByAddress.isNotEmpty) {
-        rumah = matchByAddress.first;
-        return;
+        if (doc.exists) {
+          setState(() {
+            rumah = doc.data()!;
+            rumah['id'] = doc.id;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Data rumah tidak ditemukan')),
+            );
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat data: $e')),
+          );
+          Navigator.pop(context);
+        }
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteRumah() async {
+    // Show confirmation dialog
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus data rumah ini? Tindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        // Show loading
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+
+        // Delete from Firebase
+        if (widget.rumahId != null && widget.rumahId!.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('rumah_warga')
+              .doc(widget.rumahId)
+              .delete();
+        }
+
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Show success and return
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data rumah berhasil dihapus')),
+          );
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        // Close loading
+        if (mounted) Navigator.pop(context);
+
+        // Show error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menghapus data: $e')),
+          );
+        }
       }
     }
-
-    // Fall back to index-based lookup
-    rumah = widget.rumahIndex >= 0 && widget.rumahIndex < RumahDummy.dummyData.length
-        ? RumahDummy.dummyData[widget.rumahIndex]
-        : RumahDummy.dummyData.last; // Use the example data
   }
 
   @override
@@ -49,84 +148,106 @@ class _RumahDetailState extends State<RumahDetail> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detail Rumah"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _deleteRumah,
+            tooltip: 'Hapus Rumah',
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // House details section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Detail Rumah",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  // House details section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Detail Rumah",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Address
+                        DetailField(
+                            label: "Alamat:", value: rumah['address'] ?? ''),
+
+                        // Status
+                        StatusField(
+                          label: "Status:",
+                          value: rumah['status'] ?? 'Tersedia',
+                          color:
+                              (rumah['status'] ?? 'Tersedia').toLowerCase() ==
+                                      'tersedia'
+                                  ? Colors.green
+                                  : Colors.blue,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
 
-                  // Address
-                  DetailField(label: "Alamat:", value: rumah.address),
+                  // Divider between sections
+                  Container(
+                    height: 8,
+                    color: Colors.grey[200],
+                  ),
 
-                  // Status
-                  StatusField(label: "Status:", value: rumah.status, color: rumah.statusColor),
+                  // Resident history section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Riwayat Penghuni",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // List of residents
+                        if (rumah['residentHistory'] != null &&
+                            (rumah['residentHistory'] as List).isNotEmpty)
+                          ...(rumah['residentHistory'] as List)
+                              .map((resident) =>
+                                  ResidentHistoryItem(resident: resident))
+                              .toList()
+                        else
+                          const Text(
+                            "Belum ada riwayat penghuni",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  // Back button
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DetailBackButton(
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
-
-            // Divider between sections
-            Container(
-              height: 8,
-              color: Colors.grey[200],
-            ),
-
-            // Resident history section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Riwayat Penghuni",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // List of residents
-                  ...rumah.residentHistory.map((resident) => ResidentHistoryItem(resident: resident)).toList(),
-
-                  if (rumah.residentHistory.isEmpty)
-                    const Text(
-                      "Belum ada riwayat penghuni",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            // Back button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: DetailBackButton(
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
     );
   }
 }

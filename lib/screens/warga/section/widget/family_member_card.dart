@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
 
 class FamilyMemberCard extends StatelessWidget {
-  final FamilyMember member;
+  final Map<String, dynamic> member;
 
   const FamilyMemberCard({
     Key? key,
@@ -10,7 +9,8 @@ class FamilyMemberCard extends StatelessWidget {
   }) : super(key: key);
 
   MaterialColor _getStatusColor() {
-    switch (member.status.toLowerCase()) {
+    final status = member['status'] ?? '';
+    switch (status.toLowerCase()) {
       case 'hidup':
         return Colors.green;
       case 'meninggal':
@@ -21,9 +21,10 @@ class FamilyMemberCard extends StatelessWidget {
   }
 
   IconData _getRoleIcon() {
-    final role = member.role.toLowerCase();
+    final role = (member['role'] ?? '').toLowerCase();
     if (role.contains('kepala')) return Icons.star_rounded;
-    if (role.contains('istri') || role.contains('suami')) return Icons.favorite_rounded;
+    if (role.contains('istri') || role.contains('suami'))
+      return Icons.favorite_rounded;
     if (role.contains('anak')) return Icons.child_care_rounded;
     return Icons.person_rounded;
   }
@@ -31,7 +32,7 @@ class FamilyMemberCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -81,7 +82,7 @@ class FamilyMemberCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        member.name,
+                        member['name'] ?? '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -90,7 +91,7 @@ class FamilyMemberCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        member.role,
+                        member['role'] ?? '',
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey.shade600,
@@ -101,7 +102,8 @@ class FamilyMemberCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -114,15 +116,15 @@ class FamilyMemberCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        member.status.toLowerCase() == 'hidup' 
-                            ? Icons.check_circle_rounded 
+                        (member['status'] ?? '').toLowerCase() == 'hidup'
+                            ? Icons.check_circle_rounded
                             : Icons.cancel_rounded,
                         size: 16,
                         color: statusColor,
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        member.status,
+                        member['status'] ?? '',
                         style: TextStyle(
                           fontSize: 13,
                           color: statusColor.shade800,
@@ -136,7 +138,7 @@ class FamilyMemberCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Content with birth date
           Padding(
             padding: const EdgeInsets.all(16),
@@ -158,7 +160,7 @@ class FamilyMemberCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  member.birthDate,
+                  member['birthDate'] ?? '',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

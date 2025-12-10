@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jawara_pintar/screens/warga/section/data/keluarga_dummy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart' as custom_search;
+import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
+    as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/active_filter_chip.dart';
 
@@ -26,28 +27,103 @@ class _KeluargaSectionState extends State<KeluargaSection>
   // Search and filter states
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua';
-  List<KeluargaModel> _filteredData = [];
+  List<Map<String, dynamic>> _allData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   bool _isSearching = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initExpandedList();
     _initScrollButton();
     _setupScrollListener();
-    _initSearchAndFilter();
+    _loadData();
   }
 
-  void _initExpandedList() {
-    _expandedList = List.generate(
-      KeluargaDummy.dummyData.length,
-      (index) => index == 0,
-    );
-  }
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  void _initSearchAndFilter() {
-    _filteredData = List.from(KeluargaDummy.dummyData);
-    _searchController.addListener(_filterData);
+    try {
+      // Get all warga data from Firebase
+      final snapshot = await FirebaseFirestore.instance
+          .collection('warga')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      // Group warga by family name
+      Map<String, Map<String, dynamic>> familyMap = {};
+
+      for (var doc in snapshot.docs) {
+        final warga = doc.data();
+        final familyName = warga['family'] ?? 'Tidak Diketahui';
+
+        if (!familyMap.containsKey(familyName)) {
+          // Create new family entry
+          familyMap[familyName] = {
+            'id': familyName, // Use family name as ID
+            'familyName': familyName,
+            'headOfFamily': '',
+            'address': '',
+            'ownershipStatus': 'Milik Sendiri',
+            'status': 'Aktif',
+            'members': [],
+            'memberCount': 0,
+          };
+        }
+
+        // Add member to family
+        familyMap[familyName]!['members'].add({
+          'name': warga['name'] ?? '',
+          'role': warga['familyRole'] ?? '',
+          'status': warga['lifeStatus'] ?? 'Hidup',
+          'birthDate': warga['birthDate'] ?? '',
+          'gender': warga['gender'] ?? '',
+        });
+
+        // Set head of family
+        if (warga['familyRole'] == 'Kepala Keluarga') {
+          familyMap[familyName]!['headOfFamily'] = warga['name'] ?? '';
+        }
+
+        // Update member count
+        familyMap[familyName]!['memberCount'] =
+            (familyMap[familyName]!['members'] as List).length;
+      }
+
+      // Get address from rumah_warga collection if available
+      final rumahSnapshot =
+          await FirebaseFirestore.instance.collection('rumah_warga').get();
+
+      for (var rumahDoc in rumahSnapshot.docs) {
+        final rumahData = rumahDoc.data();
+        final rumahFamily = rumahData['family']?.toString();
+
+        if (rumahFamily != null && familyMap.containsKey(rumahFamily)) {
+          familyMap[rumahFamily]!['address'] = rumahData['address'] ?? '';
+          familyMap[rumahFamily]!['ownershipStatus'] =
+              rumahData['status'] == 'Ditempati'
+                  ? 'Ditempati'
+                  : 'Milik Sendiri';
+        }
+      }
+
+      setState(() {
+        _allData = familyMap.values.toList();
+        _filterData();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
+    }
   }
 
   void _initScrollButton() {
@@ -76,15 +152,29 @@ class _KeluargaSectionState extends State<KeluargaSection>
 
   void _filterData() {
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      _filteredData = KeluargaDummy.dummyData.where((keluarga) {
-        bool matchesSearch = keluarga.familyName.toLowerCase().contains(query) ||
-                             keluarga.headOfFamily.toLowerCase().contains(query);
-        bool matchesFilter = _selectedFilter == 'Semua' ||
-                             keluarga.status == _selectedFilter;
-        return matchesSearch && matchesFilter;
-      }).toList();
-      _expandedList = List.generate(_filteredData.length, (index) => index == 0);
+      List<Map<String, dynamic>> tempData = _allData;
+
+      // Filter by status
+      if (_selectedFilter != 'Semua') {
+        tempData = tempData.where((keluarga) {
+          return keluarga['status'] == _selectedFilter;
+        }).toList();
+      }
+
+      // Filter by search
+      if (_searchController.text.isNotEmpty) {
+        final searchQuery = _searchController.text.toLowerCase();
+        tempData = tempData.where((keluarga) {
+          final familyName = (keluarga['familyName'] ?? '').toLowerCase();
+          final headOfFamily = (keluarga['headOfFamily'] ?? '').toLowerCase();
+          return familyName.contains(searchQuery) ||
+              headOfFamily.contains(searchQuery);
+        }).toList();
+      }
+
+      _filteredData = tempData;
+      _expandedList =
+          List.generate(_filteredData.length, (index) => index == 0);
     });
   }
 
@@ -181,47 +271,64 @@ class _KeluargaSectionState extends State<KeluargaSection>
               },
             ),
             Expanded(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(milliseconds: 500));
-                      setState(() {
-                        _initExpandedList();
-                        _filterData();
-                      });
-                    },
-                    child: ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16.0),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _filteredData.length,
-                      itemBuilder: (context, index) {
-                        return _buildAnimatedCard(index);
-                      },
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                    ),
-                  ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.family_restroom,
+                                  size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada data keluarga',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Stack(
+                          children: [
+                            RefreshIndicator(
+                              onRefresh: () async {
+                                _loadData();
+                              },
+                              child: ListView.separated(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.all(16.0),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: _filteredData.length,
+                                itemBuilder: (context, index) {
+                                  return _buildAnimatedCard(index);
+                                },
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 12),
+                              ),
+                            ),
 
-                  // Scroll to top button
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: ScaleTransition(
-                      scale: _scrollButtonAnimation,
-                      child: FloatingActionButton.small(
-                        heroTag: 'scrollToTop',
-                        onPressed: _scrollToTop,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          color: Theme.of(context).primaryColor,
+                            // Scroll to top button
+                            Positioned(
+                              right: 16,
+                              bottom: 16,
+                              child: ScaleTransition(
+                                scale: _scrollButtonAnimation,
+                                child: FloatingActionButton.small(
+                                  heroTag: 'scrollToTop',
+                                  onPressed: _scrollToTop,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.keyboard_arrow_up,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -231,7 +338,10 @@ class _KeluargaSectionState extends State<KeluargaSection>
 
   Widget _buildAnimatedCard(int index) {
     final keluarga = _filteredData[index];
-    final originalIndex = KeluargaDummy.dummyData.indexOf(keluarga);
+    bool isExpanded =
+        index < _expandedList.length ? _expandedList[index] : false;
+    String status = keluarga['status'] ?? 'Aktif';
+    MaterialColor statusColor = status == 'Aktif' ? Colors.green : Colors.red;
 
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 300 + (index * 50)),
@@ -247,42 +357,50 @@ class _KeluargaSectionState extends State<KeluargaSection>
         );
       },
       child: ExpandableSectionCard(
-        title: keluarga.familyName,
-        subtitle: "kepala: ${keluarga.headOfFamily}",
+        title: keluarga['familyName'] ?? '',
+        subtitle: "kepala: ${keluarga['headOfFamily'] ?? ''}",
         statusChip: StatusChip(
-          label: keluarga.status,
-          color: keluarga.statusColor,
-          icon: _getStatusIcon(keluarga.status),
+          label: status,
+          color: statusColor,
+          icon: _getStatusIcon(status),
         ),
-        isExpanded: _expandedList[index],
+        isExpanded: isExpanded,
         onToggleExpand: () {
           setState(() {
-            _expandedList[index] = !_expandedList[index];
+            if (index < _expandedList.length) {
+              _expandedList[index] = !_expandedList[index];
+            }
           });
         },
         expandedContent: [
           _buildInfoRow(
             Icons.family_restroom,
             "Nama Keluarga",
-            keluarga.familyName,
+            keluarga['familyName'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.person,
             "Kepala Keluarga",
-            keluarga.headOfFamily,
+            keluarga['headOfFamily'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.location_on,
             "Alamat",
-            keluarga.address,
+            keluarga['address'] ?? '',
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             Icons.home,
             "Status Kepemilikan",
-            keluarga.ownershipStatus,
+            keluarga['ownershipStatus'] ?? '',
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+            Icons.group,
+            "Jumlah Anggota",
+            "${keluarga['memberCount'] ?? 0} orang",
           ),
           const SizedBox(height: 16),
           SectionActionButtons(
@@ -290,7 +408,7 @@ class _KeluargaSectionState extends State<KeluargaSection>
             onDetailPressed: () {
               context.pushNamed(
                 'keluarga_detail',
-                queryParameters: {'index': originalIndex.toString()},
+                queryParameters: {'id': keluarga['id']?.toString() ?? ''},
               );
             },
           ),

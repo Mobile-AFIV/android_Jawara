@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/rumah_dummy.dart';
 
 class ResidentHistoryItem extends StatelessWidget {
-  final ResidentHistory resident;
+  final Map<String, dynamic> resident;
 
   const ResidentHistoryItem({
     Key? key,
@@ -11,17 +10,24 @@ class ResidentHistoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrentResident = resident.moveOutDate == null;
-    
+    final isCurrentResident = resident['status'] == 'Menempati' ||
+        (resident['moveOutDate'] == null ||
+            (resident['moveOutDate'] is String &&
+                (resident['moveOutDate'] as String).isEmpty));
+
+    // Get the move in date with fallback
+    final moveInDate = resident['movedInDate']?.toString() ??
+        resident['moveInDate']?.toString() ??
+        '';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isCurrentResident 
-              ? Colors.green.shade200 
-              : Colors.grey.shade200,
+          color:
+              isCurrentResident ? Colors.green.shade200 : Colors.grey.shade200,
           width: isCurrentResident ? 1.5 : 1,
         ),
         boxShadow: [
@@ -40,8 +46,8 @@ class ResidentHistoryItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isCurrentResident 
-                  ? Colors.green.shade50 
+              color: isCurrentResident
+                  ? Colors.green.shade50
                   : Colors.grey.shade50,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
@@ -53,7 +59,7 @@ class ResidentHistoryItem extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isCurrentResident 
+                    color: isCurrentResident
                         ? Colors.green.withValues(alpha: 0.15)
                         : Colors.grey.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -61,7 +67,9 @@ class ResidentHistoryItem extends StatelessWidget {
                   child: Icon(
                     Icons.family_restroom_rounded,
                     size: 24,
-                    color: isCurrentResident ? Colors.green.shade700 : Colors.grey.shade700,
+                    color: isCurrentResident
+                        ? Colors.green.shade700
+                        : Colors.grey.shade700,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -70,7 +78,7 @@ class ResidentHistoryItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        resident.familyName,
+                        resident['family'] ?? resident['familyName'] ?? '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -88,7 +96,7 @@ class ResidentHistoryItem extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              resident.headOfFamily,
+                              resident['headOfFamily'] ?? '',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -103,7 +111,8 @@ class ResidentHistoryItem extends StatelessWidget {
                 ),
                 if (isCurrentResident)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(20),
@@ -132,7 +141,7 @@ class ResidentHistoryItem extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Content with dates
           Padding(
             padding: const EdgeInsets.all(16),
@@ -142,7 +151,7 @@ class ResidentHistoryItem extends StatelessWidget {
                   child: _buildDateInfo(
                     icon: Icons.login_rounded,
                     label: "Masuk",
-                    date: resident.moveInDate,
+                    date: moveInDate,
                     color: Colors.blue,
                   ),
                 ),
@@ -154,9 +163,15 @@ class ResidentHistoryItem extends StatelessWidget {
                 ),
                 Expanded(
                   child: _buildDateInfo(
-                    icon: isCurrentResident ? Icons.check_circle_rounded : Icons.logout_rounded,
+                    icon: isCurrentResident
+                        ? Icons.check_circle_rounded
+                        : Icons.logout_rounded,
                     label: "Keluar",
-                    date: resident.moveOutDate ?? "Masih Tinggal",
+                    date: (resident['moveOutDate'] == null ||
+                            (resident['moveOutDate'] is String &&
+                                (resident['moveOutDate'] as String).isEmpty))
+                        ? "Masih Tinggal"
+                        : resident['moveOutDate'].toString(),
                     color: isCurrentResident ? Colors.green : Colors.orange,
                   ),
                 ),

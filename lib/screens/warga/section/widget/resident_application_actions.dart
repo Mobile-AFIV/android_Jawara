@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jawara_pintar/screens/warga/section/data/penerimaan_warga_dummy.dart';
 
 class ResidentApplicationActions extends StatelessWidget {
-  final PenerimaanWargaModel penerimaan;
+  final Map<String, dynamic> penerimaan;
   final VoidCallback onAccept;
   final Function() onShowRejectionDialog;
 
@@ -15,8 +14,10 @@ class ResidentApplicationActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final registrationStatus = penerimaan['registrationStatus'] ?? '';
+
     // For applications with "Menunggu" status, show both accept and reject buttons
-    if (penerimaan.registrationStatus == 'Menunggu') {
+    if (registrationStatus == 'Menunggu') {
       return Row(
         children: [
           Expanded(
@@ -82,7 +83,7 @@ class ResidentApplicationActions extends StatelessWidget {
       );
     }
     // For rejected applications, show only the accept button
-    else if (penerimaan.registrationStatus == 'Ditolak') {
+    else if (registrationStatus == 'Ditolak') {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton(
