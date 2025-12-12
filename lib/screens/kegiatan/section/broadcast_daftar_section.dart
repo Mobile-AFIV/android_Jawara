@@ -94,27 +94,13 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
       onSelected: (value) {
         setState(() {
           _activeFilter = value;
-          _applyFilterLogic();
+
         });
       },
     );
   }
 
-  void _applyFilterLogic() {
-    setState(() {
-      _filteredData = _allData.where((b) {
-        bool hasAttachment =
-            b.lampiranGambar.isNotEmpty || b.lampiranPdf.isNotEmpty;
-
-        if (_activeFilter == "Dengan Lampiran" && !hasAttachment) return false;
-        if (_activeFilter == "Tanpa Lampiran" && hasAttachment) return false;
-
-        return true;
-      }).toList();
-
-      _initExpandedList();
-    });
-  }
+  
 
   // -------------------------------------------------------
   // EXPAND INIT

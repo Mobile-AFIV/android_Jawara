@@ -6,8 +6,7 @@ class BroadcastModel {
   final String isi;
   final String tanggal;
   final String dibuatOleh;
-  final List<String> lampiranGambar;
-  final List<String> lampiranPdf;
+
 
   BroadcastModel({
     this.id = "",
@@ -15,8 +14,7 @@ class BroadcastModel {
     required this.isi,
     required this.tanggal,
     required this.dibuatOleh,
-    this.lampiranGambar = const [],
-    this.lampiranPdf = const [],
+
   });
 
   factory BroadcastModel.fromFirestore(DocumentSnapshot doc) {
@@ -27,8 +25,7 @@ class BroadcastModel {
       isi: data['isi'] ?? '',
       tanggal: data['tanggal'] ?? '',
       dibuatOleh: data['dibuatOleh'] ?? '',
-      lampiranGambar: List<String>.from(data['lampiranGambar'] ?? []),
-      lampiranPdf: List<String>.from(data['lampiranPdf'] ?? []),
+
     );
   }
 
@@ -38,8 +35,7 @@ class BroadcastModel {
       "isi": isi,
       "tanggal": tanggal,
       "dibuatOleh": dibuatOleh,
-      "lampiranGambar": lampiranGambar,
-      "lampiranPdf": lampiranPdf,
+
     };
   }
 }
