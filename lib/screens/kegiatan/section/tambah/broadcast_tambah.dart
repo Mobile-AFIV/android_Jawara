@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -28,32 +29,14 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
   final ImagePicker _picker = ImagePicker();
   final BroadcastService _broadcastService = BroadcastService.instance;
 
-  XFile? _imageFile;
-  File? _pdfFile;
+
 
   int _currentStep = 0;
   bool _isLoading = false; // Dipertahankan untuk logika _saveBroadcast
 
-  // ---------------------------
-  // PICK IMAGE
-  // ---------------------------
-  Future<void> _pickImage() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) setState(() => _imageFile = picked);
-  }
 
-  // ---------------------------
-  // PICK PDF
-  // ---------------------------
-  Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      allowedExtensions: ['pdf'],
-      type: FileType.custom,
-    );
-    if (result != null && result.files.single.path != null) {
-      setState(() => _pdfFile = File(result.files.single.path!));
-    }
-  }
+
+
 
   // ---------------------------
   // SAVE BROADCAST
@@ -69,20 +52,25 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
     setState(() => _isLoading = true);
 
     try {
-      final lampiranGambar =
-          _imageFile != null ? <String>[_imageFile!.path] : <String>[];
-      final lampiranPdf =
-          _pdfFile != null ? <String>[_pdfFile!.path] : <String>[];
+      // Requires: import 'package:firebase_auth/firebase_auth.dart';
+      String dibuatOleh = "";
+      try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        dibuatOleh = user.displayName ?? user.email ?? user.uid;
+      }
+      } catch (e) {
+      // Jika FirebaseAuth belum di-setup, biarkan dibuatOleh tetap kosong
+      debugPrint("Could not get profile: $e");
+      }
 
       final newData = BroadcastModel(
-        nama: _judulController.text,
-        isi: _isiController.text,
-        tanggal: _tanggalController.text.isEmpty
-            ? DateTime.now().toIso8601String().split("T").first
-            : _tanggalController.text,
-        dibuatOleh: "Warga RT 01",
-        lampiranGambar: lampiranGambar,
-        lampiranPdf: lampiranPdf,
+      nama: _judulController.text,
+      isi: _isiController.text,
+      tanggal: _tanggalController.text.isEmpty
+        ? DateTime.now().toIso8601String().split("T").first
+        : _tanggalController.text,
+      dibuatOleh: dibuatOleh,
       );
 
       await _broadcastService.addBroadcast(newData);
@@ -186,37 +174,12 @@ class _BroadcastTambahState extends State<BroadcastTambah> {
           ],
         ),
       ),
-      Step(
-        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
-        isActive: _currentStep >= 1,
-        title: const Text("Lampiran (Opsional)"),
-        content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ElevatedButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.image),
-              label: const Text("Upload Gambar"),
-            ),
-            const SizedBox(height: 8),
-            if (_imageFile != null)
-              Text("Gambar terpilih: ${_imageFile!.path.split('/').last}"),
-            if (_imageFile == null)
-              const Text("Belum ada gambar terpilih"),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _pickPdf,
-              icon: const Icon(Icons.picture_as_pdf),
-              label: const Text("Upload PDF"),
-            ),
-            const SizedBox(height: 8),
-            if (_pdfFile != null)
-              Text("PDF terpilih: ${_pdfFile!.path.split('/').last}"),
-            if (_pdfFile == null)
-              const Text("Belum ada PDF terpilih"),
-          ],
-        ),
-      ),
+
+
+ 
+          
+        
+    
     ];
   }
 }

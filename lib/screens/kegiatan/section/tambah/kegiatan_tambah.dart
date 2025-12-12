@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -56,6 +57,20 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
     }
 
     if (_formKey.currentState!.validate()) {
+      // Ambil user saat ini dari Firebase Auth
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Silakan masuk terlebih dahulu")),
+        );
+        return;
+      }
+
+      // Gunakan displayName jika ada, fallback ke email atau uid
+      final pembuat = (user.displayName != null && user.displayName!.trim().isNotEmpty)
+          ? user.displayName!
+          : (user.email ?? user.uid);
+
       final newKegiatan = KegiatanModel(
         namaKegiatan: _namaController.text,
         kategori: _selectedKategori ?? '',
@@ -63,17 +78,23 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
         tanggal: _tanggalController.text,
         lokasi: _lokasiController.text,
         penanggungJawab: _penanggungController.text,
-        dibuatOleh: "Admin RT",
-        dokumentasi: [], id: '',
+        dibuatOleh: pembuat,
+        dokumentasi: [],
+        id: '',
       );
 
-      // ⬇ GANTI DUMMY → FIRESTORE
-      await KegiatanService.instance.create(newKegiatan);
+      try {
+        await KegiatanService.instance.create(newKegiatan);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
-      );
-      Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
+        );
+        Navigator.pop(context, true);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal menambahkan kegiatan: $e")),
+        );
+      }
     }
   }
 
