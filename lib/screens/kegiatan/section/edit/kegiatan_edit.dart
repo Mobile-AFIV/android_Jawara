@@ -15,7 +15,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/form_city_autocomplet
 import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
 
 class KegiatanEdit extends StatefulWidget {
-  // Properti untuk menerima ID dokumen Firebase
+ 
   final String kegiatanId;
   final String? title;
 
@@ -44,9 +44,9 @@ class _KegiatanEditState extends State<KegiatanEdit> {
   late TextEditingController _lokasiController;
   late TextEditingController _penanggungJawabController;
   late TextEditingController _dibuatOlehController;
+  late TextEditingController _anggaranController;
 
-  // Custom: To handle documentation editing (simplified with URL text fields)
-  late List<TextEditingController> _dokumentasiControllers;
+ 
 
   // Dropdown selection
   String? _selectedKategori;
@@ -59,15 +59,12 @@ class _KegiatanEditState extends State<KegiatanEdit> {
 
   // Opsi Kategori (Ganti dengan data real jika ada service khusus)
   final List<String> _kategoriOptions = const [
-    'Sosial',
-    'Pendidikan',
+    'Komunitas dan Sosial',
+    'Kebersihan & Keamanan',
     'Keagamaan',
-    'Lingkungan',
-    'Kesehatan',
-    'Olahraga',
-    'Pelatihan',
-    'Rapat',
-    'Lainnya',
+    'Pendidikan',
+    'Kesehatan & Olahraga',
+    'Lainnya'
   ];
 
   @override
@@ -79,7 +76,7 @@ class _KegiatanEditState extends State<KegiatanEdit> {
   // Fungsi untuk mengambil data dari Firebase
   Future<void> _fetchKegiatan() async {
     try {
-      // 1. Ambil dokumen dari Firebase
+      
       final docSnapshot = await FirebaseFirestore.instance
           .collection('kegiatan')
           .doc(widget.kegiatanId)
@@ -99,6 +96,8 @@ class _KegiatanEditState extends State<KegiatanEdit> {
             TextEditingController(text: _kegiatan!.penanggungJawab);
         _dibuatOlehController =
             TextEditingController(text: _kegiatan!.dibuatOleh);
+        _anggaranController =
+            TextEditingController(text: _kegiatan!.anggaran.toString());
 
         // Set Kategori
         _selectedKategori = _kategoriOptions.contains(_kegiatan!.kategori)
@@ -115,12 +114,9 @@ class _KegiatanEditState extends State<KegiatanEdit> {
           }
         }
 
-        // Inisialisasi Dokumentasi Controllers
-        _dokumentasiControllers = _kegiatan!.dokumentasi
-            .map((url) => TextEditingController(text: url))
-            .toList();
+       
       } else {
-        // Dokumen tidak ditemukan
+        
         _kegiatan = null;
       }
     } catch (e) {
@@ -147,9 +143,8 @@ class _KegiatanEditState extends State<KegiatanEdit> {
       _lokasiController.dispose();
       _penanggungJawabController.dispose();
       _dibuatOlehController.dispose();
-      for (var controller in _dokumentasiControllers) {
-        controller.dispose();
-      }
+
+      _anggaranController.dispose();
     }
     super.dispose();
   }
@@ -158,11 +153,7 @@ class _KegiatanEditState extends State<KegiatanEdit> {
   void _saveData() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // 1. Kumpulkan URL dokumentasi yang telah diubah
-        final updatedDokumentasi = _dokumentasiControllers
-            .map((c) => c.text.trim())
-            .where((url) => url.isNotEmpty)
-            .toList();
+       
 
         // 2. Buat Map data yang akan diupdate
         final updatedData = {
@@ -172,7 +163,7 @@ class _KegiatanEditState extends State<KegiatanEdit> {
           "tanggal": _tanggalController.text,
           "lokasi": _lokasiController.text,
           "penanggungJawab": _penanggungJawabController.text,
-          "dokumentasi": updatedDokumentasi,
+          "anggaran": int.tryParse(_anggaranController.text) ?? 0,
           // "dibuatOleh" biasanya tidak diupdate di halaman edit
         };
 
@@ -205,18 +196,9 @@ class _KegiatanEditState extends State<KegiatanEdit> {
     }
   }
 
-  void _addDocumentationField() {
-    setState(() {
-      _dokumentasiControllers.add(TextEditingController());
-    });
-  }
 
-  void _removeDocumentationField(int index) {
-    setState(() {
-      _dokumentasiControllers[index].dispose();
-      _dokumentasiControllers.removeAt(index);
-    });
-  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +349,7 @@ class _KegiatanEditState extends State<KegiatanEdit> {
       Step(
         state: _currentStep > 1 ? StepState.complete : StepState.indexed,
         isActive: _currentStep >= 1,
-        title: const Text("Penanggung Jawab & Dokumentasi"),
+        title: const Text("Penanggung Jawab"),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -396,48 +378,24 @@ class _KegiatanEditState extends State<KegiatanEdit> {
             ),
             const SizedBox(height: 24),
 
-            // Dokumentasi Section
-            Text(
-              "Dokumentasi (URL Gambar)",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
+            // Anggaran
+            FormTextField(
+              label: "Anggaran (Rp)",
+              controller: _anggaranController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Anggaran tidak boleh kosong';
+                }
+                if (int.tryParse(value) == null) {
+                  return 'Masukkan angka yang valid';
+                }
+                return null;
+              },
             ),
-            const SizedBox(height: 12),
 
-            // List Kontroler Dokumentasi
-            ..._dokumentasiControllers.asMap().entries.map((entry) {
-              int index = entry.key;
-              TextEditingController controller = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FormTextField(
-                        controller: controller,
-                        label: "URL Gambar ${index + 1}",
-                        keyboardType: TextInputType.url,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => _removeDocumentationField(index),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-
-            // Tombol Tambah Dokumentasi
-            ElevatedButton.icon(
-              onPressed: _addDocumentationField,
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah URL Gambar'),
-            ),
-            const SizedBox(height: 16),
+            
           ],
         ),
       ),

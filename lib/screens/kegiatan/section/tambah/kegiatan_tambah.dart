@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 // Widget lokal
@@ -28,6 +30,7 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
   final TextEditingController _penanggungController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
   final TextEditingController _tanggalController = TextEditingController();
+  final TextEditingController _anggaranController = TextEditingController();
 
   // Dropdown
   String? _selectedKategori;
@@ -56,6 +59,20 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
     }
 
     if (_formKey.currentState!.validate()) {
+      // Ambil user saat ini dari Firebase Auth
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Silakan masuk terlebih dahulu")),
+        );
+        return;
+      }
+
+      // Gunakan displayName jika ada, fallback ke email atau uid
+      final pembuat = (user.displayName != null && user.displayName!.trim().isNotEmpty)
+          ? user.displayName!
+          : (user.email ?? user.uid);
+
       final newKegiatan = KegiatanModel(
         namaKegiatan: _namaController.text,
         kategori: _selectedKategori ?? '',
@@ -63,17 +80,23 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
         tanggal: _tanggalController.text,
         lokasi: _lokasiController.text,
         penanggungJawab: _penanggungController.text,
-        dibuatOleh: "Admin RT",
-        dokumentasi: [], id: '',
+        dibuatOleh: pembuat,
+        anggaran: int.tryParse(_anggaranController.text) ?? 0,
+        id: '',
       );
 
-      // ⬇ GANTI DUMMY → FIRESTORE
-      await KegiatanService.instance.create(newKegiatan);
+      try {
+        await KegiatanService.instance.create(newKegiatan);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
-      );
-      Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Kegiatan berhasil ditambahkan")),
+        );
+        Navigator.pop(context, true);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal menambahkan kegiatan: $e")),
+        );
+      }
     }
   }
 
@@ -179,6 +202,22 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
               label: "Deskripsi",
               controller: _deskripsiController,
               maxLines: 4,
+            ),
+             const SizedBox(height: 16),
+            FormTextField(
+              label: "Anggaran (Rp)",
+              controller: _anggaranController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Anggaran tidak boleh kosong';
+                }
+                if (int.tryParse(value) == null) {
+                  return 'Masukkan angka yang valid';
+                }
+                return null;
+              },
             ),
           ],
         ),

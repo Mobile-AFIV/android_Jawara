@@ -11,10 +11,9 @@ import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart'
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
 
-
 class BroadcastEdit extends StatefulWidget {
   // Properti untuk menerima ID dokumen Firebase
-  final String broadcastId; 
+  final String broadcastId;
   final String? title;
 
   const BroadcastEdit({
@@ -29,7 +28,7 @@ class BroadcastEdit extends StatefulWidget {
 
 class _BroadcastEditState extends State<BroadcastEdit> {
   // Gunakan nullable karena data diambil secara asinkron
-  BroadcastModel? _broadcast; 
+  BroadcastModel? _broadcast;
   bool _isLoading = true;
 
   // Form key for validation
@@ -40,17 +39,13 @@ class _BroadcastEditState extends State<BroadcastEdit> {
   late TextEditingController _isiController;
   late TextEditingController _tanggalController;
   late TextEditingController _dibuatOlehController;
-  
-  // Controllers untuk lampiran yang sudah ada (URL)
-  late List<TextEditingController> _gambarControllers;
-  late List<TextEditingController> _pdfControllers;
 
   // Date picker
   DateTime? _selectedDate;
 
   // Current step for stepper
   int _currentStep = 0;
-  
+
   // Service instance
   final BroadcastService _broadcastService = BroadcastService.instance;
 
@@ -59,7 +54,7 @@ class _BroadcastEditState extends State<BroadcastEdit> {
     super.initState();
     _fetchBroadcast();
   }
-  
+
   // Fungsi untuk mengambil data dari Firebase
   Future<void> _fetchBroadcast() async {
     try {
@@ -67,35 +62,26 @@ class _BroadcastEditState extends State<BroadcastEdit> {
       _broadcast = await _broadcastService.getBroadcastById(widget.broadcastId);
 
       if (_broadcast != null) {
-        
         // 1. Inisialisasi Controllers dan State
         _judulController = TextEditingController(text: _broadcast!.nama);
         _isiController = TextEditingController(text: _broadcast!.isi);
         _tanggalController = TextEditingController(text: _broadcast!.tanggal);
-        _dibuatOlehController = TextEditingController(text: _broadcast!.dibuatOleh);
+        _dibuatOlehController =
+            TextEditingController(text: _broadcast!.dibuatOleh);
 
         // Set Tanggal
         if (_broadcast!.tanggal.isNotEmpty) {
           try {
             // Asumsikan format tanggal disimpan sebagai 'yyyy-MM-dd'
             _selectedDate = DateFormat('yyyy-MM-dd').parse(_broadcast!.tanggal);
-            
+
             // Tampilkan tanggal yang sudah di-format di FormDateField
-            _tanggalController.text = DateFormat('d MMMM yyyy', 'id_ID').format(_selectedDate!);
+            _tanggalController.text =
+                DateFormat('d MMMM yyyy', 'id_ID').format(_selectedDate!);
           } catch (_) {
             // Jika parsing gagal
           }
         }
-        
-        // Inisialisasi Lampiran Controllers
-        _gambarControllers = _broadcast!.lampiranGambar
-            .map((url) => TextEditingController(text: url))
-            .toList();
-
-        _pdfControllers = _broadcast!.lampiranPdf
-            .map((url) => TextEditingController(text: url))
-            .toList();
-
       } else {
         // Dokumen tidak ditemukan
         _broadcast = null;
@@ -120,12 +106,6 @@ class _BroadcastEditState extends State<BroadcastEdit> {
       _isiController.dispose();
       _tanggalController.dispose();
       _dibuatOlehController.dispose();
-      for (var controller in _gambarControllers) {
-          controller.dispose();
-      }
-      for (var controller in _pdfControllers) {
-          controller.dispose();
-      }
     }
     super.dispose();
   }
@@ -134,32 +114,20 @@ class _BroadcastEditState extends State<BroadcastEdit> {
   void _saveData() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // 1. Kumpulkan URL gambar yang telah diubah
-        final updatedGambar = _gambarControllers
-            .map((c) => c.text.trim())
-            .where((url) => url.isNotEmpty)
-            .toList();
-            
-        // 2. Kumpulkan URL PDF yang telah diubah
-        final updatedPdf = _pdfControllers
-            .map((c) => c.text.trim())
-            .where((url) => url.isNotEmpty)
-            .toList();
-
-
-        // 3. Buat Map data yang akan diupdate
         final updatedData = {
           "nama": _judulController.text,
           "isi": _isiController.text,
           // Simpan kembali tanggal dalam format 'yyyy-MM-dd' yang konsisten
-          "tanggal": _selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : _tanggalController.text,
-          "lampiranGambar": updatedGambar,
-          "lampiranPdf": updatedPdf,
+          "tanggal": _selectedDate != null
+              ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+              : _tanggalController.text,
+
           // 'dibuatOleh' tidak diupdate di halaman edit
         };
 
         // 4. Panggil service Firebase UPDATE
-        await _broadcastService.updateBroadcast(widget.broadcastId, updatedData);
+        await _broadcastService.updateBroadcast(
+            widget.broadcastId, updatedData);
 
         // 5. Tampilkan pesan sukses dan kembali
         ScaffoldMessenger.of(context).showSnackBar(
@@ -185,28 +153,28 @@ class _BroadcastEditState extends State<BroadcastEdit> {
       }
     }
   }
-  
+
   void _addAttachmentField(List<TextEditingController> controllers) {
     setState(() {
       controllers.add(TextEditingController());
     });
   }
 
-  void _removeAttachmentField(List<TextEditingController> controllers, int index) {
+  void _removeAttachmentField(
+      List<TextEditingController> controllers, int index) {
     setState(() {
       controllers[index].dispose();
       controllers.removeAt(index);
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_broadcast == null 
-                      ? "Memuat Broadcast..." 
-                      : "Edit Broadcast: ${_broadcast!.nama}"),
+        title: Text(_broadcast == null
+            ? "Memuat Broadcast..."
+            : "Edit Broadcast: ${_broadcast!.nama}"),
         elevation: 0,
       ),
       body: _isLoading
@@ -273,7 +241,7 @@ class _BroadcastEditState extends State<BroadcastEdit> {
               isRequired: true,
             ),
             const SizedBox(height: 16),
-            
+
             // Isi Broadcast
             FormTextField(
               controller: _isiController,
@@ -301,11 +269,10 @@ class _BroadcastEditState extends State<BroadcastEdit> {
           ],
         ),
       ),
-      
       Step(
         state: _currentStep > 1 ? StepState.complete : StepState.indexed,
         isActive: _currentStep >= 1,
-        title: const Text("Informasi & Lampiran (URL)"),
+        title: const Text("Informasi Tambahan"),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -321,90 +288,12 @@ class _BroadcastEditState extends State<BroadcastEdit> {
             const SizedBox(height: 24),
 
             // Lampiran Gambar Section
-            Text(
-              "Lampiran Gambar (URL)",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // List Kontroler Lampiran Gambar
-            ..._gambarControllers.asMap().entries.map((entry) {
-              int index = entry.key;
-              TextEditingController controller = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FormTextField(
-                        controller: controller,
-                        label: "URL Gambar ${index + 1}",
-                        keyboardType: TextInputType.url,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => _removeAttachmentField(_gambarControllers, index),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            
-            // Tombol Tambah URL Gambar
-            ElevatedButton.icon(
-              onPressed: () => _addAttachmentField(_gambarControllers),
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah URL Gambar'),
-            ),
-            const SizedBox(height: 24),
-            
-            // Lampiran PDF Section
-            Text(
-              "Lampiran PDF (URL)",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // List Kontroler Lampiran PDF
-            ..._pdfControllers.asMap().entries.map((entry) {
-              int index = entry.key;
-              TextEditingController controller = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FormTextField(
-                        controller: controller,
-                        label: "URL PDF ${index + 1}",
-                        keyboardType: TextInputType.url,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => _removeAttachmentField(_pdfControllers, index),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
 
-            // Tombol Tambah URL PDF
-            ElevatedButton.icon(
-              onPressed: () => _addAttachmentField(_pdfControllers),
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah URL PDF'),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // List Kontroler Lampiran Gambar
+
+            // Tombol Tambah URL Gambar
           ],
         ),
       ),

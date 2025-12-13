@@ -9,9 +9,9 @@ class KegiatanModel {
   final String lokasi;
   final String penanggungJawab;
   final String dibuatOleh;
+  final int anggaran;
 
-  /// List URL gambar dokumentasi
-  final List<String> dokumentasi;
+
 
   KegiatanModel({
     required this.id,
@@ -22,7 +22,7 @@ class KegiatanModel {
     required this.lokasi,
     required this.penanggungJawab,
     required this.dibuatOleh,
-    this.dokumentasi = const [],
+    this.anggaran = 0,
   });
 
   factory KegiatanModel.fromFirestore(DocumentSnapshot doc) {
@@ -36,7 +36,7 @@ class KegiatanModel {
       lokasi: data['lokasi'],
       penanggungJawab: data['penanggungJawab'],
       dibuatOleh: data['dibuatOleh'],
-      dokumentasi: List<String>.from(data['dokumentasi'] ?? []),
+      anggaran: data['anggaran'] ?? 0,
     );
   }
 }
