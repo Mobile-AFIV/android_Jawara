@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final String? hintText;
   final TextEditingController? controller;
   final Widget? suffixIcon;
+  final int? maxLength;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
     this.hintText,
     this.controller,
     this.suffixIcon,
+    this.maxLength,
     this.keyboardType,
     this.inputFormatters,
     this.obscureText = false,
@@ -30,6 +32,7 @@ class CustomTextField extends StatelessWidget {
       keyboardType: keyboardType,
       controller: controller,
       obscureText: obscureText,
+      maxLength: maxLength,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: hintText,
