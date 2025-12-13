@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pengeluaran_section_data.dart';
-import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_section/pengeluaran_daftar_section.dart';
+import 'package:jawara_pintar/models/pengeluaran.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/heading_section.dart';
+import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
+import 'package:jawara_pintar/services/pengeluaran_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
 class PengeluaranTab extends StatefulWidget {
@@ -14,6 +15,33 @@ class PengeluaranTab extends StatefulWidget {
 }
 
 class _PengeluaranTabState extends State<PengeluaranTab> {
+  List<Pengeluaran> pengeluaranList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final data = await PengeluaranService.instance.getAllPengeluaran();
+      setState(() {
+        pengeluaranList = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -25,7 +53,11 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
             HeadingSection(
               headingText: "Kelola daftar pengeluaran anda",
               subHeadingText: "Pengeluaran Daftar",
-              lainnyaOnPressed: () => context.pushNamed('pengeluaran_daftar'),
+              lainnyaOnPressed: () =>
+                  context.pushNamed('pengeluaran_daftar').then((_) {
+                // Reload data setelah kembali
+                _loadData();
+              }),
             ),
             pengeluaranSection(),
           ],
@@ -37,34 +69,35 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
   // ----------------- SECTION PENGELUARAN -----------------
   Widget pengeluaranSection() {
     const int limitItemShowed = 3;
-    final pengeluaranList = PengeluaranSectionData.pengeluaranData;
-    final topPemasukanLain = pengeluaranList.take(limitItemShowed).toList();
+    final topPengeluaran = pengeluaranList.take(limitItemShowed).toList();
 
-    String dateParse(String input) {
-      final parser = DateFormat('d MMMM yyyy', 'id');
-      final date = parser.parse(input);
-
-      final String output = DateFormat('EEEE, d MMM yyyy', 'id').format(date);
-
-      return output;
+    String _formatDate(DateTime date) {
+      return DateFormat('EEEE, d MMM yyyy', 'id').format(date);
     }
 
-    Widget tagihanIuranItem(Map<String, dynamic> json) {
-      final PengeluaranData pengeluaran = PengeluaranData.fromJson(json);
+    String _formatCurrency(int amount) {
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp',
+        decimalDigits: 0,
+      );
+      return formatter.format(amount);
+    }
 
+    Widget pengeluaranItem(Pengeluaran pengeluaran) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: topPemasukanLain.length != 1 &&
-              !(topPemasukanLain.length < limitItemShowed)
+          border: topPengeluaran.length > 1 &&
+                  topPengeluaran.length >= limitItemShowed
               ? Border(
-            bottom: BorderSide(
-              width: 1,
-              color: Colors.grey.shade300,
-            ),
-          )
+                  bottom: BorderSide(
+                    width: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                )
               : null,
         ),
         child: Row(
@@ -91,7 +124,7 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
                         const SizedBox(height: 10),
                         Text(
                           overflow: TextOverflow.ellipsis,
-                          pengeluaran.jenisPengeluaran,
+                          pengeluaran.kategori,
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppStyles.primaryColor,
@@ -111,12 +144,11 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Rp${pengeluaran.nominal},00",
+                              _formatCurrency(pengeluaran.nominal),
                               style: const TextStyle(fontSize: 14),
                             ),
                             Text(
-                              dateParse(pengeluaran.tanggal),
-                              // pengeluaran.tanggal,
+                              _formatDate(pengeluaran.tanggal),
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -136,20 +168,49 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
       );
     }
 
+    if (isLoading) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        child: ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 3,
+          itemBuilder: (context, index) => const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: ListItemShimmer(),
+          ),
+        ),
+      );
+    }
+
+    if (pengeluaranList.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(40),
+        child: const Center(
+          child: Text(
+            'Belum ada data pengeluaran',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
     return Stack(
       children: [
         Column(
           children: List.generate(
-            topPemasukanLain.length,
-                (index) {
-              return tagihanIuranItem(
-                topPemasukanLain[index],
+            topPengeluaran.length,
+            (index) {
+              return pengeluaranItem(
+                topPengeluaran[index],
               );
             },
           ),
         ),
-        if (topPemasukanLain.length != 1 &&
-            !(topPemasukanLain.length < limitItemShowed))
+        if (topPengeluaran.length > 1 &&
+            topPengeluaran.length >= limitItemShowed)
           Positioned.fill(
             child: Container(
               width: double.maxFinite,
@@ -162,17 +223,18 @@ class _PengeluaranTabState extends State<PengeluaranTab> {
               ),
             ),
           ),
-        if (topPemasukanLain.length != 1 &&
-            !(topPemasukanLain.length < limitItemShowed))
+        if (pengeluaranList.length > limitItemShowed)
           Positioned(
             bottom: 0,
             child: InkWell(
-              onTap: () => context.pushNamed('pengeluaran_daftar'),
+              onTap: () => context.pushNamed('pengeluaran_daftar').then((_) {
+                _loadData();
+              }),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 width: MediaQuery.sizeOf(context).width,
                 child: Text(
-                  "+${pengeluaranList.length - limitItemShowed + 1} lainnya",
+                  "+${pengeluaranList.length - limitItemShowed} lainnya",
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),

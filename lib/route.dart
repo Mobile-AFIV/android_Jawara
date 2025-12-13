@@ -19,12 +19,14 @@ import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/ceta
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/laporan_pemasukan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_section/laporan_pengeluaran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/laporan_tab.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/detail_tagihan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/kategori_iuran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/pemasukan_tagihan_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_section/tambah_pemasukan_lain_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pemasukan_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_section/pengeluaran_daftar_section.dart';
+import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_section/tambah_pengeluaran_section.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/pengeluaran_tab.dart';
 import 'package:jawara_pintar/screens/keuangan/tab_bar_keuangan.dart';
 import 'package:jawara_pintar/screens/lainnya/lainnya_menu.dart';
@@ -303,6 +305,16 @@ final GoRouter mainRouter = GoRouter(
       name: 'pemasukan_tagihan',
       path: '/keuangan/pemasukan/pemasukan_tagihan',
       builder: (context, state) => const PemasukanTagihanSection(),
+      routes: [
+        GoRoute(
+          name: 'detail_tagihan',
+          path: 'detail/:tagihanId',
+          builder: (context, state) {
+            final tagihanId = state.pathParameters['tagihanId']!;
+            return DetailTagihanSection(tagihanId: tagihanId);
+          },
+        ),
+      ],
     ),
     GoRoute(
       name: 'pemasukan_lain',
@@ -324,6 +336,11 @@ final GoRouter mainRouter = GoRouter(
       path: '/keuangan/pengeluaran/pengeluaran_daftar',
       builder: (context, state) => const PengeluaranDaftarSection(),
     ),
+    GoRoute(
+      name: 'tambah_pengeluaran',
+      path: '/keuangan/pengeluaran/tambah_pengeluaran',
+      builder: (context, state) => const TambahPengeluaranSection(),
+    ),
 
     // Push dari Menu Kegiatan
     GoRoute(
@@ -342,20 +359,19 @@ final GoRouter mainRouter = GoRouter(
             builder: (context, state) => const BroadcastTambah(),
           ),
           GoRoute(
-            name: 'broadcast_edit',
-            // Path harus mendefinisikan parameter ID
-            path: 'broadcast_edit/:broadcastId', 
-            builder: (context, state) {
-              // Mengambil nilai 'broadcastId' dari pathParameters
-              final String broadcastId = state.pathParameters['broadcastId']!;
-              final String? title = state.uri.queryParameters['title'];
+              name: 'broadcast_edit',
+              // Path harus mendefinisikan parameter ID
+              path: 'broadcast_edit/:broadcastId',
+              builder: (context, state) {
+                // Mengambil nilai 'broadcastId' dari pathParameters
+                final String broadcastId = state.pathParameters['broadcastId']!;
+                final String? title = state.uri.queryParameters['title'];
 
-              return BroadcastEdit(
-                broadcastId: broadcastId,
-                title: title, 
-              );
-            })
-
+                return BroadcastEdit(
+                  broadcastId: broadcastId,
+                  title: title,
+                );
+              })
         ]),
     GoRoute(
         name: 'kegiatan_daftar',
@@ -397,10 +413,10 @@ final GoRouter mainRouter = GoRouter(
 
     // Push dari Menu Lainnya
     GoRoute(
-        name: 'channel_transfer',
-        path: '/channel_transfer',
-        builder: (context, state) => const ChannelTransferSection(),
-    ), 
+      name: 'channel_transfer',
+      path: '/channel_transfer',
+      builder: (context, state) => const ChannelTransferSection(),
+    ),
     GoRoute(
       name: 'log_aktivitas',
       path: '/log_aktivitas',

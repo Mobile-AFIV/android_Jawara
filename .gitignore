@@ -48,3 +48,4 @@ app.*.map.json
 /linux/
 /web/
 /keystore*
+SHIMMER_IMPLEMENTATION_GUIDE.md

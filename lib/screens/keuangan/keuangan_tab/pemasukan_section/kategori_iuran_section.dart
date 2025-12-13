@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jawara_pintar/models/kategori_iuran.dart';
 import 'package:jawara_pintar/screens/keuangan/keuangan_tab/data/pemasukan_section_data.dart';
-import 'package:jawara_pintar/screens/keuangan/widget/appbar_action_button.dart';
 import 'package:jawara_pintar/screens/keuangan/widget/modal_bottom_sheet.dart';
 import 'package:jawara_pintar/screens/widgets/custom_button.dart';
 import 'package:jawara_pintar/screens/widgets/custom_text_field.dart';
+import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
 import 'package:jawara_pintar/services/kategori_iuran_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
@@ -370,9 +370,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          AppBarActionButton.filter(onTap: () {}),
-        ],
         actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
       ),
       body: SafeArea(
@@ -382,9 +379,9 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: 10,
+                itemCount: 8,
                 itemBuilder: (context, index) {
-                  return kategoriItemShimmer();
+                  return const KategoriItemShimmer();
                 },
                 separatorBuilder: (context, index) {
                   return Container(
@@ -535,14 +532,6 @@ class _KategoriIuranSectionState extends State<KategoriIuranSection> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget kategoriItemShimmer() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      height: 80,
-      color: Colors.grey.withValues(alpha: 0.2),
     );
   }
 }
