@@ -17,7 +17,8 @@ class KegiatanService {
       "lokasi": model.lokasi,
       "penanggungJawab": model.penanggungJawab,
       "dibuatOleh": model.dibuatOleh,
-      "dokumentasi": model.dokumentasi,
+      "anggaran": model.anggaran,
+    
     });
   }
 
