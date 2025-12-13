@@ -275,7 +275,9 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           _buildInfoRow(
               Icons.account_circle, "Dibuat Oleh", kegiatan.dibuatOleh),
           const SizedBox(height: 12),
-          _buildGallery(kegiatan.dokumentasi),
+          _buildInfoRow(
+              Icons.money, "Dibuat Oleh", kegiatan.anggaran.toString()),
+          
           const SizedBox(height: 12),
           SectionActionButtons(
             showEditButton: true,
@@ -334,36 +336,6 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildGallery(List<String> images) {
-    if (images.isEmpty) {
-      return const Text("Tidak ada dokumentasi",
-          style: TextStyle(fontSize: 14, color: Colors.black54));
-    }
-
-    return SizedBox(
-      height: 96,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: images.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, index) {
-          final img = images[index];
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              img,
-              width: 140,
-              height: 96,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Container(width: 140, height: 96, color: Colors.grey[300]),
-            ),
-          );
-        },
-      ),
     );
   }
 }

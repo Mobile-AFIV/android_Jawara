@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 // Widget lokal
@@ -29,6 +30,7 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
   final TextEditingController _penanggungController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
   final TextEditingController _tanggalController = TextEditingController();
+  final TextEditingController _anggaranController = TextEditingController();
 
   // Dropdown
   String? _selectedKategori;
@@ -79,7 +81,7 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
         lokasi: _lokasiController.text,
         penanggungJawab: _penanggungController.text,
         dibuatOleh: pembuat,
-        dokumentasi: [],
+        anggaran: int.tryParse(_anggaranController.text) ?? 0,
         id: '',
       );
 
@@ -200,6 +202,22 @@ class _KegiatanTambahState extends State<KegiatanTambah> {
               label: "Deskripsi",
               controller: _deskripsiController,
               maxLines: 4,
+            ),
+             const SizedBox(height: 16),
+            FormTextField(
+              label: "Anggaran (Rp)",
+              controller: _anggaranController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Anggaran tidak boleh kosong';
+                }
+                if (int.tryParse(value) == null) {
+                  return 'Masukkan angka yang valid';
+                }
+                return null;
+              },
             ),
           ],
         ),
