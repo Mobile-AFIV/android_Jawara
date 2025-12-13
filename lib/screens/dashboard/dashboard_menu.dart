@@ -41,6 +41,10 @@ class _DashboardMenuState extends State<DashboardMenu> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return SingleChildScrollView(
+                  // beri padding bawah agar konten tidak tertutup navbar bawah
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -201,29 +205,6 @@ class _DashboardMenuState extends State<DashboardMenu> {
                 }),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: kategoriCount.entries
-                .map(
-                  (e) => Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 10,
-                        color: Colors.primaries[
-                            kategoriCount.keys.toList().indexOf(e.key) %
-                                Colors.primaries.length],
-                      ),
-                      const SizedBox(width: 6),
-                      Text("${e.key} (${e.value})"),
-                    ],
-                  ),
-                )
-                .toList(),
           ),
         ],
       ),
