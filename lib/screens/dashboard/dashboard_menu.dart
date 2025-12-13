@@ -1,8 +1,17 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:jawara_pintar/models/kegiatan.dart';
+import 'package:jawara_pintar/services/kegiatan_service.dart';
 
-class DashboardMenu extends StatelessWidget {
+class DashboardMenu extends StatefulWidget {
   const DashboardMenu({super.key});
+
+  @override
+  State<DashboardMenu> createState() => _DashboardMenuState();
+}
+
+class _DashboardMenuState extends State<DashboardMenu> {
+  int _touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -14,279 +23,258 @@ class DashboardMenu extends StatelessWidget {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // === TOTAL KEGIATAN ===
-            _totalKegiatanCard(),
+      body: StreamBuilder<List<KegiatanModel>>(
+        stream: KegiatanService.instance.getAll(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            const SizedBox(height: 20),
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Belum ada data kegiatan"));
+          }
 
-            // === PIE CHART KATEGORI ===
-            _kegiatanPerKategori(),
+          final data = snapshot.data!;
 
-            const SizedBox(height: 20),
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// ================= KOLOM KIRI =================
+                      SizedBox(
+                        width: constraints.maxWidth * 0.45,
+                        child: Column(
+                          children: [
+                            _totalKegiatanCard(data),
+                            const SizedBox(height: 16),
+                            _kegiatanBerdasarkanWaktu(data),
+                          ],
+                        ),
+                      ),
 
-            // === KEGIATAN BERDASARKAN WAKTU ===
-            _kegiatanBerdasarkanWaktu(),
+                      const SizedBox(width: 16),
 
-            const SizedBox(height: 20),
-
-            // === PENANGGUNG JAWAB TERBANYAK ===
-            _pjTerbanyak(),
-
-            const SizedBox(height: 20),
-
-            // === BAR CHART PER BULAN ===
-            _kegiatanPerBulan(),
-          ],
-        ),
+                      /// ================= KOLOM KANAN =================
+                      SizedBox(
+                        width: constraints.maxWidth * 0.45,
+                        child: _kegiatanPerKategori(data),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
-}
 
-// ==================================================================
-// ========================== WIDGETS ===============================
-// ==================================================================
-
-Widget _totalKegiatanCard() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: _boxDecoration(Colors.lightBlue.shade100),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "🎉 Total Kegiatan",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          "3",
-          style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold),
-        ),
-        const Text("Jumlah seluruh event yang sudah ada"),
-      ],
-    ),
-  );
-}
-
-Widget _kegiatanPerKategori() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: _boxDecoration(Colors.green.shade100),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "📁 Kegiatan per Kategori",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          height: 200,
-          child: PieChart(
-            PieChartData(
-              sections: [
-                PieChartSectionData(
-                  value: 33,
-                  color: Colors.blue,
-                  title: "33%",
-                  radius: 45,
-                ),
-                PieChartSectionData(
-                  value: 33,
-                  color: Colors.green,
-                  title: "33%",
-                  radius: 45,
-                ),
-                PieChartSectionData(
-                  value: 33,
-                  color: Colors.purple,
-                  title: "33%",
-                  radius: 45,
-                ),
-              ],
-            ),
+  // ================= TOTAL KEGIATAN =================
+  Widget _totalKegiatanCard(List<KegiatanModel> data) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: _boxDecoration(Colors.lightBlue.shade100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "🎉 Total Kegiatan",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
-        const SizedBox(height: 10),
-        const Wrap(
-          spacing: 12,
-          children: [
-            _legend("Komunitas & Sosial", Colors.blue),
-            _legend("Kebersihan & Keamanan", Colors.green),
-            _legend("Keagamaan", Colors.purple),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 20),
+          Text(
+            data.length.toString(),
+            style: const TextStyle(fontSize: 38, fontWeight: FontWeight.bold),
+          ),
+          const Text("Jumlah seluruh kegiatan"),
+        ],
+      ),
+    );
+  }
 
-Widget _kegiatanBerdasarkanWaktu() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: _boxDecoration(Colors.yellow.shade100),
-    child: const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "⏰ Kegiatan berdasarkan Waktu",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 12),
-        Text("Sudah Lewat: 2"),
-        Text("Hari Ini: 1"),
-        Text("Akan Datang: 0"),
-      ],
-    ),
-  );
-}
+  // ================= WAKTU KEGIATAN =================
+  Widget _kegiatanBerdasarkanWaktu(List<KegiatanModel> data) {
+    final now = DateTime.now();
+    int lewat = 0, hariIni = 0, akanDatang = 0;
 
-Widget _pjTerbanyak() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: _boxDecoration(Colors.purple.shade100),
-    child: const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "👤 Penanggung Jawab Terbanyak",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        _pjListItem("Pak", 1),
-        _pjListItem("PAK RT", 1),
-        _pjListItem("Ketua Suku", 1),
-      ],
-    ),
-  );
-}
+    for (var k in data) {
+      final tgl = DateTime.parse(k.tanggal);
+      if (tgl.isBefore(DateTime(now.year, now.month, now.day))) {
+        lewat++;
+      } else if (tgl.year == now.year &&
+          tgl.month == now.month &&
+          tgl.day == now.day) {
+        hariIni++;
+      } else {
+        akanDatang++;
+      }
+    }
 
-Widget _kegiatanPerBulan() {
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: _boxDecoration(Colors.pink.shade100),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "📅 Kegiatan per Bulan (Tahun Ini)",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          height: 250,
-          child: BarChart(
-            BarChartData(
-              titlesData: FlTitlesData(
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      const months = [
-                        "", // dummy index 0
-                        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-                        "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
-                      ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: _boxDecoration(Colors.yellow.shade100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "⏰ Kegiatan Berdasarkan Waktu",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Text("Sudah Lewat : $lewat"),
+          Text("Hari Ini     : $hariIni"),
+          Text("Akan Datang  : $akanDatang"),
+        ],
+      ),
+    );
+  }
 
-                      return Text(
-                        value.toInt() >= 1 && value.toInt() <= 12
-                            ? months[value.toInt()]
-                            : "",
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
+  // ================= PIE CHART PER KATEGORI =================
+  Widget _kegiatanPerKategori(List<KegiatanModel> data) {
+    final Map<String, int> kategoriCount = {};
+
+    for (var k in data) {
+      kategoriCount[k.kategori] = (kategoriCount[k.kategori] ?? 0) + 1;
+    }
+
+    final total = data.length.toDouble();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _boxDecoration(Colors.green.shade100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "📁 Kegiatan per Kategori",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 300,
+            child: PieChart(
+              PieChartData(
+                pieTouchData: PieTouchData(
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions ||
+                          pieTouchResponse == null ||
+                          pieTouchResponse.touchedSection == null) {
+                        _touchedIndex = -1;
+                        return;
+                      }
+                      _touchedIndex =
+                          pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    });
+                  },
                 ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: true),
-                ),
-                rightTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
+                sections: List.generate(kategoriCount.length, (i) {
+                  final entry = kategoriCount.entries.elementAt(i);
+                  final isTouched = i == _touchedIndex;
+                  final percent = ((entry.value / total) * 100).round();
+
+                  return PieChartSectionData(
+                    value: entry.value.toDouble(),
+                    radius: isTouched ? 70 : 60,
+                    color: Colors.primaries[i % Colors.primaries.length],
+                    title: isTouched ? "" : "$percent%",
+                    titleStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    badgeWidget: isTouched
+                        ? _PieTooltip(
+                            title: entry.key,
+                            value: entry.value,
+                          )
+                        : null,
+                    badgePositionPercentageOffset: 1.3,
+                  );
+                }),
               ),
-              borderData: FlBorderData(show: false),
-              barGroups: [
-                BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 5)]),
-                BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 3)]),
-                BarChartGroupData(x: 5, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 6, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 7, barRods: [BarChartRodData(toY: 7)]),
-                BarChartGroupData(x: 8, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 9, barRods: [BarChartRodData(toY: 3)]),
-                BarChartGroupData(x: 10, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 11, barRods: [BarChartRodData(toY: 1)]),
-                BarChartGroupData(x: 12, barRods: [BarChartRodData(toY: 1)]),
-              ],
             ),
           ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: kategoriCount.entries
+                .map(
+                  (e) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 10,
+                        color: Colors.primaries[
+                            kategoriCount.keys.toList().indexOf(e.key) %
+                                Colors.primaries.length],
+                      ),
+                      const SizedBox(width: 6),
+                      Text("${e.key} (${e.value})"),
+                    ],
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= HELPER =================
+  BoxDecoration _boxDecoration(Color bgColor) {
+    return BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          offset: const Offset(0, 4),
+          blurRadius: 10,
         ),
-      ],
-    ),
-  );
-}
-
-// =================================================================
-// ======================== HELPER WIDGET ==========================
-// =================================================================
-
-BoxDecoration _boxDecoration(Color bgColor) {
-  return BoxDecoration(
-    color: bgColor,
-    borderRadius: BorderRadius.circular(16),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.05),
-        offset: const Offset(0, 4),
-        blurRadius: 10,
-      )
-    ],
-  );
-}
-
-class _legend extends StatelessWidget {
-  final String label;
-  final Color color;
-  const _legend(this.label, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: 12, height: 12, color: color),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 12)),
       ],
     );
   }
 }
 
-class _pjListItem extends StatelessWidget {
-  final String name;
-  final int jumlah;
-  const _pjListItem(this.name, this.jumlah);
+// ================= PIE TOOLTIP =================
+class _PieTooltip extends StatelessWidget {
+  final String title;
+  final int value;
+
+  const _PieTooltip({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(name)),
-        Text(jumlah.toString()),
-      ],
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          "$title\n$value kegiatan",
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
     );
   }
 }
