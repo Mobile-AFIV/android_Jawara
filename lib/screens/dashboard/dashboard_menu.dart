@@ -1,7 +1,14 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:jawara_pintar/models/kegiatan.dart';
+import 'package:jawara_pintar/models/pemasukan.dart';
+import 'package:jawara_pintar/models/pengeluaran.dart';
+import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
 import 'package:jawara_pintar/services/kegiatan_service.dart';
+import 'package:jawara_pintar/services/pemasukan_service.dart';
+import 'package:jawara_pintar/services/pengeluaran_service.dart';
 
 class DashboardMenu extends StatefulWidget {
   const DashboardMenu({super.key});
@@ -23,58 +30,139 @@ class _DashboardMenuState extends State<DashboardMenu> {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: StreamBuilder<List<KegiatanModel>>(
-        stream: KegiatanService.instance.getAll(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Belum ada data kegiatan"));
-          }
-
-          final data = snapshot.data!;
-
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  // beri padding bawah agar konten tidak tertutup navbar bawah
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).padding.bottom + 16,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// ================= KOLOM KIRI =================
-                      SizedBox(
-                        width: constraints.maxWidth * 0.45,
-                        child: Column(
-                          children: [
-                            _totalKegiatanCard(data),
-                            const SizedBox(height: 16),
-                            _kegiatanBerdasarkanWaktu(data),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      /// ================= KOLOM KANAN =================
-                      SizedBox(
-                        width: constraints.maxWidth * 0.45,
-                        child: _kegiatanPerKategori(data),
-                      ),
-                    ],
-                  ),
-                );
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ============= SECTION KEGIATAN =============
+            _buildSectionHeader(
+              icon: Icons.event,
+              title: "Dashboard Kegiatan",
+              color: Colors.blue,
+              onTap: () {
+                // Navigate to kegiatan detail dashboard if needed
               },
             ),
-          );
-        },
+            const SizedBox(height: 12),
+            _buildKegiatanSection(),
+
+            const SizedBox(height: 24),
+
+            // ============= SECTION KEUANGAN =============
+            _buildSectionHeader(
+              icon: Icons.account_balance_wallet,
+              title: "Dashboard Keuangan",
+              color: Colors.green,
+              onTap: () => context.pushNamed('dashboard_keuangan'),
+            ),
+            const SizedBox(height: 12),
+            _buildKeuanganSection(),
+
+            const SizedBox(height: 24),
+
+            // ============= SECTION WARGA =============
+            _buildSectionHeader(
+              icon: Icons.people,
+              title: "Dashboard Warga",
+              color: Colors.orange,
+              onTap: () {
+                // Navigate to warga dashboard when ready
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildWargaSection(),
+
+            const SizedBox(height: 80), // Bottom padding
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String title,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ),
+            if (onTap != null)
+              Icon(Icons.arrow_forward_ios, size: 16, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============= KEGIATAN SECTION =============
+  Widget _buildKegiatanSection() {
+    return StreamBuilder<List<KegiatanModel>>(
+      stream: KegiatanService.instance.getAll(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: StatsCardShimmer(),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return _buildEmptyCard("Belum ada data kegiatan");
+        }
+
+        final data = snapshot.data!;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// KOLOM KIRI
+                SizedBox(
+                  width: constraints.maxWidth * 0.48,
+                  child: Column(
+                    children: [
+                      _totalKegiatanCard(data),
+                      const SizedBox(height: 12),
+                      _kegiatanBerdasarkanWaktu(data),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                /// KOLOM KANAN
+                SizedBox(
+                  width: constraints.maxWidth * 0.48,
+                  child: _kegiatanPerKategori(data),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -207,6 +295,339 @@ class _DashboardMenuState extends State<DashboardMenu> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ============= KEUANGAN SECTION =============
+  Widget _buildKeuanganSection() {
+    return FutureBuilder<List<Pemasukan>>(
+      future: PemasukanService.instance.getAllPemasukan(),
+      builder: (context, pemasukanSnapshot) {
+        return FutureBuilder<List<Pengeluaran>>(
+          future: PengeluaranService.instance.getAllPengeluaran(),
+          builder: (context, pengeluaranSnapshot) {
+            return StreamBuilder<List<KegiatanModel>>(
+              stream: KegiatanService.instance.getAll(),
+              builder: (context, kegiatanSnapshot) {
+                if (pemasukanSnapshot.connectionState ==
+                        ConnectionState.waiting ||
+                    pengeluaranSnapshot.connectionState ==
+                        ConnectionState.waiting ||
+                    kegiatanSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: StatsCardShimmer(),
+                  );
+                }
+
+                final pemasukanList = pemasukanSnapshot.data ?? [];
+                final pengeluaranList = pengeluaranSnapshot.data ?? [];
+                final kegiatanList = kegiatanSnapshot.data ?? [];
+
+                // Total pemasukan
+                int totalPemasukan = 0;
+                for (var p in pemasukanList) {
+                  totalPemasukan += p.nominal;
+                }
+
+                // Total pengeluaran (dari pengeluaran + anggaran kegiatan)
+                int totalPengeluaran = 0;
+                for (var p in pengeluaranList) {
+                  totalPengeluaran += p.nominal;
+                }
+                for (var k in kegiatanList) {
+                  totalPengeluaran += k.anggaran;
+                }
+
+                // Saldo
+                int saldo = totalPemasukan - totalPengeluaran;
+
+                // Pemasukan terbaru (3 terakhir)
+                final pemasukanTerbaru = pemasukanList.take(3).toList();
+
+                // Pengeluaran terbaru (3 terakhir - gabungan pengeluaran + kegiatan)
+                final List<Map<String, dynamic>> allPengeluaran = [];
+                for (var p in pengeluaranList) {
+                  allPengeluaran.add({
+                    'nama': p.nama,
+                    'nominal': p.nominal,
+                    'tanggal': p.tanggal,
+                    'tipe': 'pengeluaran',
+                  });
+                }
+                for (var k in kegiatanList) {
+                  if (k.anggaran > 0) {
+                    allPengeluaran.add({
+                      'nama': 'Anggaran: ${k.namaKegiatan}',
+                      'nominal': k.anggaran,
+                      'tanggal': DateTime.parse(k.tanggal),
+                      'tipe': 'kegiatan',
+                    });
+                  }
+                }
+                // Sort berdasarkan tanggal terbaru
+                allPengeluaran.sort((a, b) => (b['tanggal'] as DateTime)
+                    .compareTo(a['tanggal'] as DateTime));
+                final pengeluaranTerbaru = allPengeluaran.take(3).toList();
+
+                return Column(
+                  children: [
+                    // Summary Cards
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildSummaryCard(
+                            title: "Pemasukan",
+                            value: totalPemasukan,
+                            icon: Icons.arrow_circle_up,
+                            color: Colors.green,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildSummaryCard(
+                            title: "Pengeluaran",
+                            value: totalPengeluaran,
+                            icon: Icons.arrow_circle_down,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSaldoCard(saldo),
+                    const SizedBox(height: 16),
+
+                    // Transaksi Terbaru
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildTransaksiTerbaru(
+                            title: "💰 Pemasukan Terbaru",
+                            color: Colors.green.shade100,
+                            items: pemasukanTerbaru
+                                .map((p) => {
+                                      'nama': p.nama,
+                                      'nominal': p.nominal,
+                                      'tanggal': p.tanggal,
+                                    })
+                                .toList(),
+                            isEmpty: pemasukanTerbaru.isEmpty,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildTransaksiTerbaru(
+                            title: "💸 Pengeluaran Terbaru",
+                            color: Colors.red.shade100,
+                            items: pengeluaranTerbaru,
+                            isEmpty: pengeluaranTerbaru.isEmpty,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryCard({
+    required String title,
+    required int value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _boxDecoration(color.withOpacity(0.1)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            NumberFormat.currency(
+              locale: 'id_ID',
+              symbol: 'Rp',
+              decimalDigits: 0,
+            ).format(value),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaldoCard(int saldo) {
+    final isPositive = saldo >= 0;
+    final color = isPositive ? Colors.blue : Colors.orange;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: _boxDecoration(color.withOpacity(0.1)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.account_balance, color: color, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                "Saldo",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            NumberFormat.currency(
+              locale: 'id_ID',
+              symbol: 'Rp',
+              decimalDigits: 0,
+            ).format(saldo),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          if (!isPositive)
+            const Text(
+              "⚠️ Saldo defisit",
+              style: TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransaksiTerbaru({
+    required String title,
+    required Color color,
+    required List<Map<String, dynamic>> items,
+    required bool isEmpty,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _boxDecoration(color),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (isEmpty)
+            const Text(
+              "Belum ada transaksi",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            )
+          else
+            ...items.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['nama'],
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            NumberFormat.currency(
+                              locale: 'id_ID',
+                              symbol: 'Rp',
+                              decimalDigits: 0,
+                            ).format(item['nominal']),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            item['tanggal'] is DateTime
+                                ? DateFormat('dd/MM/yy').format(item['tanggal'])
+                                : DateFormat('dd/MM/yy')
+                                    .format(item['tanggal']),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (items.indexOf(item) < items.length - 1)
+                        const Divider(height: 16),
+                    ],
+                  ),
+                )),
+        ],
+      ),
+    );
+  }
+
+  // ============= WARGA SECTION =============
+  Widget _buildWargaSection() {
+    return _buildEmptyCard("Dashboard warga sedang dalam pengembangan");
+  }
+
+  Widget _buildEmptyCard(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: _boxDecoration(Colors.grey.shade100),
+      child: Center(
+        child: Text(
+          message,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
