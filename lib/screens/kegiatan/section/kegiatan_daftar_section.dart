@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/widget/section_action_button.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/widget/section_action_button.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
     as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart'
@@ -277,10 +278,10 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           const SizedBox(height: 12),
           _buildInfoRow(
               Icons.money, "Dibuat Oleh", kegiatan.anggaran.toString()),
-          
           const SizedBox(height: 12),
-          SectionActionButtons(
+          SectionActionButton(
             showEditButton: true,
+            showDeleteButton: true,
             // Tombol Detail dihapus (tidak ada onDetailPressed)
             onEditPressed: () async {
               final result = await context.pushNamed(
@@ -301,7 +302,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
                 setState(() {});
               }
             },
-            
+            onDeletePressed: () => _confirmDelete(kegiatan),
           ),
         ],
       ),
@@ -336,6 +337,43 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
           ),
         ),
       ],
+    );
+  }
+
+  void _confirmDelete(KegiatanModel kegiatan) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Kegiatan'),
+        content: Text(
+          'Apakah kamu yakin ingin menghapus kegiatan "${kegiatan.namaKegiatan}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.pop(context);
+
+              await KegiatanService.instance.delete(kegiatan.id);
+
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Kegiatan berhasil dihapus'),
+                ),
+              );
+            },
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
     );
   }
 }

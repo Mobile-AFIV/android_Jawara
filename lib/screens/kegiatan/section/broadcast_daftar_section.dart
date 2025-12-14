@@ -3,12 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/expandable_section_card.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/status_chip.dart';
-import 'package:jawara_pintar/screens/warga/section/widget/section_action_buttons.dart';
+import 'package:jawara_pintar/screens/kegiatan/section/widget/section_action_button.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/search_bar.dart'
     as custom_search;
 import 'package:jawara_pintar/screens/warga/section/widget/filter_bottom_sheet.dart'
     as custom_filter;
 import 'package:jawara_pintar/models/broadcast.dart';
+import 'package:jawara_pintar/services/broadcast_service.dart';
 
 class BroadcastDaftarSection extends StatefulWidget {
   const BroadcastDaftarSection({super.key});
@@ -94,13 +95,10 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
       onSelected: (value) {
         setState(() {
           _activeFilter = value;
-
         });
       },
     );
   }
-
-  
 
   // -------------------------------------------------------
   // EXPAND INIT
@@ -260,7 +258,8 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
             _buildInfoRow(Icons.account_circle, "Dibuat Oleh", item.dibuatOleh),
 
             const SizedBox(height: 12),
-            SectionActionButtons(
+            SectionActionButton(
+              showDeleteButton: true,
               onEditPressed: () {
                 context.pushNamed(
                   "broadcast_edit",
@@ -269,6 +268,7 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
                   queryParameters: {'title': item.nama},
                 );
               },
+              onDeletePressed: () => _confirmDelete(item),
             ),
           ],
         ),
@@ -309,6 +309,43 @@ class _BroadcastDaftarSectionState extends State<BroadcastDaftarSection>
           ),
         ),
       ],
+    );
+  }
+
+  void _confirmDelete(BroadcastModel broadcast) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Broadcast'),
+        content: Text(
+          'Apakah kamu yakin ingin menghapus broadcast "${broadcast.nama}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () async {
+              Navigator.pop(context);
+
+              await BroadcastService.instance.deleteBroadcast(broadcast.id);
+
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Broadcast berhasil dihapus'),
+                ),
+              );
+            },
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
     );
   }
 }
