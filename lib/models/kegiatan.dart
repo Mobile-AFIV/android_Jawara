@@ -11,8 +11,6 @@ class KegiatanModel {
   final String dibuatOleh;
   final int anggaran;
 
-
-
   KegiatanModel({
     required this.id,
     required this.namaKegiatan,
