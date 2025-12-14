@@ -1,10 +1,11 @@
-import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:jawara_pintar/models/kegiatan.dart';
 import 'package:jawara_pintar/models/pemasukan.dart';
 import 'package:jawara_pintar/models/pengeluaran.dart';
+import 'package:jawara_pintar/screens/dashboard/widget/kegiatan_pie_chart.dart';
 import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
 import 'package:jawara_pintar/services/kegiatan_service.dart';
 import 'package:jawara_pintar/services/pemasukan_service.dart';
@@ -251,48 +252,7 @@ class _DashboardMenuState extends State<DashboardMenu> {
           const SizedBox(height: 20),
           SizedBox(
             height: 300,
-            child: PieChart(
-              PieChartData(
-                pieTouchData: PieTouchData(
-                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                    setState(() {
-                      if (!event.isInterestedForInteractions ||
-                          pieTouchResponse == null ||
-                          pieTouchResponse.touchedSection == null) {
-                        _touchedIndex = -1;
-                        return;
-                      }
-                      _touchedIndex =
-                          pieTouchResponse.touchedSection!.touchedSectionIndex;
-                    });
-                  },
-                ),
-                sections: List.generate(kategoriCount.length, (i) {
-                  final entry = kategoriCount.entries.elementAt(i);
-                  final isTouched = i == _touchedIndex;
-                  final percent = ((entry.value / total) * 100).round();
-
-                  return PieChartSectionData(
-                    value: entry.value.toDouble(),
-                    radius: isTouched ? 70 : 60,
-                    color: Colors.primaries[i % Colors.primaries.length],
-                    title: isTouched ? "" : "$percent%",
-                    titleStyle: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    badgeWidget: isTouched
-                        ? _PieTooltip(
-                            title: entry.key,
-                            value: entry.value,
-                          )
-                        : null,
-                    badgePositionPercentageOffset: 1.3,
-                  );
-                }),
-              ),
-            ),
+            child: KegiatanPieChart(data: data),
           ),
         ],
       ),
@@ -648,35 +608,4 @@ class _DashboardMenuState extends State<DashboardMenu> {
   }
 }
 
-// ================= PIE TOOLTIP =================
-class _PieTooltip extends StatelessWidget {
-  final String title;
-  final int value;
 
-  const _PieTooltip({
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.black87,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          "$title\n$value kegiatan",
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-}
