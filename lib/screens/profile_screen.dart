@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:jawara_pintar/models/rumah.dart';
 import 'package:jawara_pintar/models/user_profile.dart';
 import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
+import 'package:jawara_pintar/services/auth_service.dart';
 import 'package:jawara_pintar/services/user_profile_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
 
@@ -225,20 +226,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // _buildActionCard(
-                      //   icon: Icons.lock_outline,
-                      //   title: "Ubah Password",
-                      //   subtitle: "Perbarui password akun Anda",
-                      //   onTap: () {
-                      //     // TODO: Implement change password
-                      //     ScaffoldMessenger.of(context).showSnackBar(
-                      //       const SnackBar(
-                      //         content: Text('Fitur ubah password coming soon'),
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // const SizedBox(height: 8),
+                      _buildActionCard(
+                        icon: Icons.lock_outline,
+                        title: "Ubah Password",
+                        subtitle: "Ganti password akun Anda",
+                        onTap: () {
+                          _showChangePasswordDialog(context);
+                        },
+                      ),
+                      const SizedBox(height: 8),
                       _buildActionCard(
                         icon: Icons.logout,
                         title: "Keluar",
@@ -465,6 +461,342 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool obscureCurrentPassword = true;
+    bool obscureNewPassword = true;
+    bool obscureConfirmPassword = true;
+    bool isLoading = false;
+    String? errorMessage;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppStyles.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.lock_reset,
+                      color: AppStyles.primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Ubah Password',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Masukkan password lama dan password baru Anda:',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Error Message (ditampilkan jika ada error dari server)
+                    if (errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: AppStyles.errorColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppStyles.errorColor.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: AppStyles.errorColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                errorMessage!,
+                                style: TextStyle(
+                                  color: AppStyles.errorColor,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Password Lama
+                    TextField(
+                      controller: currentPasswordController,
+                      obscureText: obscureCurrentPassword,
+                      enabled: !isLoading,
+                      decoration: InputDecoration(
+                        labelText: 'Password Lama',
+                        hintText: 'Masukkan password lama',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureCurrentPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscureCurrentPassword = !obscureCurrentPassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        // Clear error saat user mulai mengetik
+                        if (errorMessage != null) {
+                          setState(() {
+                            errorMessage = null;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Password Baru
+                    TextField(
+                      controller: newPasswordController,
+                      obscureText: obscureNewPassword,
+                      enabled: !isLoading,
+                      decoration: InputDecoration(
+                        labelText: 'Password Baru',
+                        hintText: 'Masukkan password baru',
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureNewPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscureNewPassword = !obscureNewPassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Konfirmasi Password Baru
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: obscureConfirmPassword,
+                      enabled: !isLoading,
+                      decoration: InputDecoration(
+                        labelText: 'Konfirmasi Password Baru',
+                        hintText: 'Masukkan ulang password baru',
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              obscureConfirmPassword = !obscureConfirmPassword;
+                            });
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Password minimal 6 karakter.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    'Batal',
+                    style: TextStyle(
+                      color: isLoading ? Colors.grey : Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          final currentPassword =
+                              currentPasswordController.text.trim();
+                          final newPassword = newPasswordController.text.trim();
+                          final confirmPassword =
+                              confirmPasswordController.text.trim();
+
+                          // Clear error sebelumnya
+                          setState(() {
+                            errorMessage = null;
+                          });
+
+                          // Validasi client-side (pakai SnackBar)
+                          if (currentPassword.isEmpty ||
+                              newPassword.isEmpty ||
+                              confirmPassword.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Semua field harus diisi'),
+                                backgroundColor: AppStyles.errorColor,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (newPassword.length < 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Password baru minimal 6 karakter'),
+                                backgroundColor: AppStyles.errorColor,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (newPassword != confirmPassword) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Konfirmasi password tidak cocok'),
+                                backgroundColor: AppStyles.errorColor,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Set loading state
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          // Call change password service
+                          final result =
+                              await AuthService.instance.changePassword(
+                            currentPassword: currentPassword,
+                            newPassword: newPassword,
+                          );
+
+                          // Reset loading state
+                          setState(() {
+                            isLoading = false;
+                          });
+
+                          // Handle result
+                          if (result['success']) {
+                            // Success - close dialog dan tampilkan sukses
+                            Navigator.of(dialogContext).pop();
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result['message']),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              );
+                            }
+                          } else {
+                            // Error - tampilkan error di dialog (jangan close)
+                            setState(() {
+                              errorMessage = result['message'];
+                            });
+
+                            // Clear password lama jika error password salah
+                            if (result['message']
+                                    .toLowerCase()
+                                    .contains('password lama') ||
+                                result['message']
+                                    .toLowerCase()
+                                    .contains('salah')) {
+                              currentPasswordController.clear();
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isLoading ? Colors.grey : AppStyles.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Ubah Password',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.1.1
-  firebase_storage: 13.0.4
   cloudinary_public: ^0.21.0
   file_picker: ^8.0.0
   cupertino_icons: ^1.0.5
@@ -22,6 +21,7 @@ dependencies:
     sdk: flutter
   firebase_core: ^4.2.1
   firebase_auth: ^6.1.2
+  firebase_storage: ^13.0.4
   cloud_firestore: ^6.1.0
   fl_chart: ^0.69.0
   pdf: ^3.11.1

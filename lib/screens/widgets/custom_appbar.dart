@@ -6,7 +6,6 @@ import 'package:jawara_pintar/utils/app_styles.dart';
 import 'package:jawara_pintar/utils/util.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
-
   const CustomAppBar({super.key});
 
   @override
@@ -189,8 +188,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text(
-                            "admin1@gmail.com",
+                          Text(
+                            AuthService.instance.currentUser!.email!,
                             style: TextStyle(fontSize: 10),
                           ),
                         ],
