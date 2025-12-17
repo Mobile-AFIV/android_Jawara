@@ -37,6 +37,7 @@ class UserProfileService {
       "nik": nik,
       "noTelepon": noTelepon,
       "jenisKelamin": jenisKelamin,
+      "statusKepemilikanRumah": statusKepemilikanRumah,
       "rumah": rumahRef, // DocumentReference
     };
 

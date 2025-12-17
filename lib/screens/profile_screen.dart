@@ -7,6 +7,8 @@ import 'package:jawara_pintar/screens/widgets/shimmer_widget.dart';
 import 'package:jawara_pintar/services/auth_service.dart';
 import 'package:jawara_pintar/services/user_profile_service.dart';
 import 'package:jawara_pintar/utils/app_styles.dart';
+import 'package:jawara_pintar/screens/widgets/custom_dialog.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -212,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildInfoCard(
                         icon: Icons.key_outlined,
                         title: "Status Kepemilikan",
-                        value: rumah.statusKepemilikan,
+                        value: profile.statusKepemilikanRumah,
                       ),
                       const SizedBox(height: 24),
 
@@ -241,9 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         subtitle: "Keluar dari akun Anda",
                         iconColor: AppStyles.errorColor,
                         titleColor: AppStyles.errorColor,
-                        onTap: () {
-                          _showLogoutDialog(context);
-                        },
+                        onTap: () => onLogout(context),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -795,6 +795,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void onLogout(BuildContext context) {
+    CustomDialog.show(
+      context: context,
+      builder: (context) {
+        return CustomDialog.alertDialog(
+          title: const Text('Logout'),
+          content: const Text("Apakah anda yakin untuk logout?"),
+          actions: [
+            CustomDialog.actionTextButton(
+              onPressed: () => context.pop(),
+              textButton: "Cancel",
+            ),
+            CustomDialog.actionFilledButton(
+              onPressed: () async {
+                await AuthService.instance.logout();
+                if (!context.mounted) return;
+                context.goNamed('login');
+              },
+              textButton: 'OK',
+              customButtonColor: AppStyles.errorColor,
+            )
+          ],
         );
       },
     );

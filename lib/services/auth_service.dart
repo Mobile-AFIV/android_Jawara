@@ -109,12 +109,11 @@ class AuthService {
         // rumah baru
         rumahPath = (await RumahService.instance.createRumah(
           alamat: alamatManual!,
-          statusKepemilikan: statusRumah,
         ))
             .path;
       }
 
-      // Simpan profil user
+      // Simpan profil user (statusKepemilikanRumah sekarang ada di user_profile)
       await UserProfileService.instance.createUserProfile(
         uid: uid,
         namaLengkap: namaLengkap,

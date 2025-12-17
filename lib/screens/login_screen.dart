@@ -253,7 +253,6 @@ class _LoginPageState extends State<LoginPage> {
                         InkWell(
                           onTap: () {
                             context.goNamed('register');
-                            debugPrint("Hello World Register");
                           },
                           child: Text(
                             'Daftar',
