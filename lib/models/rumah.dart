@@ -2,11 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Rumah {
   final String alamat;
-  final String statusKepemilikan;
 
   Rumah({
     required this.alamat,
-    required this.statusKepemilikan,
   });
 
   factory Rumah.fromFirestore(DocumentSnapshot doc) {
@@ -14,7 +12,6 @@ class Rumah {
 
     return Rumah(
       alamat: data['alamat'],
-      statusKepemilikan: data['statusKepemilikan'],
     );
   }
 }

@@ -13,7 +13,6 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
 
   runApp(const MyApp());
 }
@@ -26,16 +25,18 @@ class MyApp extends StatelessWidget {
     return AnnotatedRegion(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent, //top status bar
-        systemNavigationBarColor: Colors.white, // navigation bar color, the one Im looking for
+        systemNavigationBarColor:
+            Colors.white, // navigation bar color, the one Im looking for
         statusBarIconBrightness: Brightness.dark, // status bar icons' color
-        systemNavigationBarIconBrightness: Brightness.dark, //navigation bar icons' color
+        systemNavigationBarIconBrightness:
+            Brightness.dark, //navigation bar icons' color
       ),
       child: MaterialApp.router(
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
-          ],
+        ],
         supportedLocales: const [
           Locale('id', 'ID'), // Indonesian
           Locale('en', 'US'), // English

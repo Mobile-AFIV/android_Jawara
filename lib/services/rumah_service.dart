@@ -18,11 +18,9 @@ class RumahService {
 
   Future<DocumentReference> createRumah({
     required String alamat,
-    required String statusKepemilikan,
   }) async {
     final Map<String, dynamic> data = {
       "alamat": alamat,
-      "statusKepemilikan": statusKepemilikan,
     };
     final DocumentReference newRumahRef = _db.collection('rumah').doc();
 
