@@ -41,9 +41,6 @@ class _DashboardMenuState extends State<DashboardMenu> {
               icon: Icons.event,
               title: "Dashboard Kegiatan",
               color: Colors.blue,
-              onTap: () {
-                // Navigate to kegiatan detail dashboard if needed
-              },
             ),
             const SizedBox(height: 12),
             _buildKegiatanSection(),
