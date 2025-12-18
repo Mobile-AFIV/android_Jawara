@@ -174,7 +174,7 @@ class _DashboardMenuState extends State<DashboardMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "🎉 Total Kegiatan",
+            "Total Kegiatan",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
@@ -214,7 +214,7 @@ class _DashboardMenuState extends State<DashboardMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "⏰ Kegiatan Berdasarkan Waktu",
+            "Kegiatan Berdasarkan Waktu",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
@@ -243,7 +243,7 @@ class _DashboardMenuState extends State<DashboardMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "📁 Kegiatan per Kategori",
+            "Kegiatan per Kategori",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
