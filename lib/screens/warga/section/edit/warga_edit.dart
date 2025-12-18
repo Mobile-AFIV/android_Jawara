@@ -5,6 +5,7 @@ import 'package:jawara_pintar/screens/warga/section/widget/form_text_field.dart'
 import 'package:jawara_pintar/screens/warga/section/widget/form_dropdown_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_date_field.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_city_autocomplete.dart';
+import 'package:jawara_pintar/screens/warga/section/widget/form_family_autocomplete.dart';
 import 'package:jawara_pintar/screens/warga/section/widget/form_stepper_controls.dart';
 import 'package:intl/intl.dart';
 
@@ -524,16 +525,10 @@ class _WargaEditState extends State<WargaEdit> {
               ),
 
             // Family Name
-            FormTextField(
+            FormFamilyAutocomplete(
               controller: _familyController,
               label: "Nama Keluarga",
               isRequired: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Nama keluarga tidak boleh kosong';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
 
