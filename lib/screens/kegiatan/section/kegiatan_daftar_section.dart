@@ -277,7 +277,7 @@ class _KegiatanDaftarSectionState extends State<KegiatanDaftarSection>
               Icons.account_circle, "Dibuat Oleh", kegiatan.dibuatOleh),
           const SizedBox(height: 12),
           _buildInfoRow(
-              Icons.money, "Dibuat Oleh", kegiatan.anggaran.toString()),
+              Icons.money, "Anggaran (Rp)", kegiatan.anggaran.toString()),
           const SizedBox(height: 12),
           SectionActionButton(
             showEditButton: true,
