@@ -313,43 +313,6 @@ class _ManajemenPenggunaSectionState extends State<ManajemenPenggunaSection> {
                               foregroundColor: Colors.white,
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              final bool? konfirm =
-                                  await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text("Konfirmasi Hapus"),
-                                  content: const Text(
-                                      "Apakah Anda yakin ingin menghapus pengguna ini?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text("Batal"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text("Hapus"),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (konfirm == true) {
-                                await ManajemenPenggunaService.instance
-                                    .deleteManajemenPengguna(user.uid);
-                                setState(() {});
-                              }
-                            },
-                            icon: const Icon(Icons.delete),
-                            label: const Text("Hapus"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
                         ],
                       ),
                     ],
