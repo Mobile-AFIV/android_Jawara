@@ -14,9 +14,6 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   int _pendingPenerimaanCount = 0;
-  int _totalWarga = 0;
-  int _totalKeluarga = 0;
-  int _totalRumahAktif = 0;
 
   @override
   void initState() {
@@ -31,7 +28,6 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
     );
     _fadeController.forward();
     _loadPendingPenerimaanCount();
-    _loadStatistics();
   }
 
   Future<void> _loadPendingPenerimaanCount() async {
@@ -48,40 +44,6 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
       // Silently fail, keep count at 0
       setState(() {
         _pendingPenerimaanCount = 0;
-      });
-    }
-  }
-
-  Future<void> _loadStatistics() async {
-    try {
-      // Load Total Warga
-      final wargaSnapshot =
-          await FirebaseFirestore.instance.collection('warga').get();
-
-      // Load Total Keluarga (unique families)
-      final wargaData = wargaSnapshot.docs.map((doc) => doc.data()).toList();
-      final uniqueFamilies = wargaData
-          .map((data) => data['family'] as String?)
-          .where((family) => family != null && family.isNotEmpty)
-          .toSet();
-
-      // Load Total Rumah Aktif (status "Ditempati")
-      final rumahSnapshot = await FirebaseFirestore.instance
-          .collection('rumah_warga')
-          .where('status', isEqualTo: 'Ditempati')
-          .get();
-
-      setState(() {
-        _totalWarga = wargaSnapshot.docs.length;
-        _totalKeluarga = uniqueFamilies.length;
-        _totalRumahAktif = rumahSnapshot.docs.length;
-      });
-    } catch (e) {
-      // Silently fail, keep counts at 0
-      setState(() {
-        _totalWarga = 0;
-        _totalKeluarga = 0;
-        _totalRumahAktif = 0;
       });
     }
   }
@@ -210,64 +172,6 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-
-              // Statistics Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.analytics_outlined,
-                                color: Color(0xFF4A90E2),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Statistik Singkat',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildStatItem(
-                            'Total Warga',
-                            _totalWarga.toString(),
-                            Icons.people,
-                            const Color(0xFF4A90E2),
-                          ),
-                          const Divider(height: 24),
-                          _buildStatItem(
-                            'Keluarga Terdaftar',
-                            _totalKeluarga.toString(),
-                            Icons.family_restroom,
-                            const Color(0xFF7B68EE),
-                          ),
-                          const Divider(height: 24),
-                          _buildStatItem(
-                            'Rumah Aktif',
-                            _totalRumahAktif.toString(),
-                            Icons.home,
-                            const Color(0xFF50C878),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -302,44 +206,6 @@ class _WargaMenuState extends State<WargaMenu> with TickerProviderStateMixin {
           }
         },
       ),
-    );
-  }
-
-  Widget _buildStatItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-      ],
     );
   }
 }
