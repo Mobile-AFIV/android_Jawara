@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jawara_pintar/models/rumah.dart';
+import 'log_aktivitas_service.dart';
 
 class RumahService {
   // Singleton
@@ -23,9 +24,12 @@ class RumahService {
       "alamat": alamat,
     };
     final DocumentReference newRumahRef = _db.collection('rumah').doc();
-
+    
     await newRumahRef.set(data);
-
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Menambahkan Rumah baru : $alamat',
+      aktor: 'System',
+    );
     return newRumahRef;
   }
 }

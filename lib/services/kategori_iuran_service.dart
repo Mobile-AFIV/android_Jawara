@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/kategori_iuran.dart';
+import 'log_aktivitas_service.dart';
 
 class KategoriIuranService {
   // Singleton
@@ -24,6 +25,10 @@ class KategoriIuranService {
       "updatedAt": FieldValue.serverTimestamp(),
     };
     await docRef.set(data);
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Menambahkan Kategori Iuran baru : $nama',
+      aktor: 'System',
+    );
     return docRef.id;
   }
 
@@ -44,11 +49,21 @@ class KategoriIuranService {
     required String id,
     required Map<String, dynamic> kategoriBaru,
   }) async {
+    final docRef = _db.collection(_collection).doc(id);
+    final oldDoc = await docRef.get();
+    final oldData = oldDoc.data() ?? {};
+
+    final String namaKategori = kategoriBaru['nama'] ?? oldData['nama'] ?? 'Unknown';
+
     final Map<String, dynamic> data = {
       "updatedAt": FieldValue.serverTimestamp(),
       ...kategoriBaru,
     };
-
+  
     await _db.collection(_collection).doc(id).update(data);
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Mengubah Kategori Iuran dengan : $namaKategori diperbaruik',
+      aktor: 'System',
+    );
   }
 }

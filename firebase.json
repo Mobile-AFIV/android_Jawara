@@ -1,1 +1,40 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"khip01-jawara-app","appId":"1:677414590656:android:f6c30559a13f63600bf525","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"khip01-jawara-app","configurations":{"android":"1:677414590656:android:f6c30559a13f63600bf525","ios":"1:677414590656:ios:4ab53b96ad73b4f30bf525","web":"1:677414590656:web:96cacff3beece26b0bf525"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "khip01-jawara-app",
+          "appId": "1:677414590656:android:f6c30559a13f63600bf525",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "khip01-jawara-app",
+          "configurations": {
+            "android": "1:677414590656:android:f6c30559a13f63600bf525",
+            "ios": "1:677414590656:ios:4ab53b96ad73b4f30bf525",
+            "web": "1:677414590656:web:96cacff3beece26b0bf525"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ],
+      "source": "functions"
+    }
+  ]
+}

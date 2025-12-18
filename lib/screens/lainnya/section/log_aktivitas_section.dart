@@ -15,165 +15,132 @@ class LogAktivitasSection extends StatefulWidget {
 class _LogAktivitasSectionState extends State<LogAktivitasSection> {
   final TextEditingController deskripsiLog = TextEditingController();
   final TextEditingController aktorLog = TextEditingController();
+  // Filter controllers
+  final TextEditingController _filterDeskripsiController = TextEditingController();
+  DateTime? _startDate;
+  DateTime? _endDate;
 
-  // ===============================
-  // SHOW EDIT DIALOG
-  // ===============================
-  Future<void> _showEditLog(LogAktivitas log) async {
-    // set initial values (in case controller changed earlier)
-    deskripsiLog.text = log.deskripsi;
-    aktorLog.text = log.aktor;
+  List<LogAktivitas> _logs = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _limit = 5; // jumlah log per "halaman"
+  LogAktivitas? _lastLog; // untuk tracking data terakhir
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Edit Log Aktivitas"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: deskripsiLog,
-              decoration: const InputDecoration(
-                labelText: "Deskripsi Log",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: aktorLog,
-              decoration: const InputDecoration(
-                labelText: "Aktor Log",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Batal"),
-          ),
-          TextButton(
-            onPressed: () async {
-              Map<String, dynamic> data = {};
-
-              if (deskripsiLog.text.trim() != log.deskripsi) {
-                data['deskripsi'] = deskripsiLog.text.trim();
-              }
-
-              if (aktorLog.text.trim() != log.aktor) {
-                data['aktor'] = aktorLog.text.trim();
-              }
-
-              if (data.isEmpty) {
-                // nothing changed -> just close
-                Navigator.pop(context);
-                return;
-              }
-
-              try {
-                await LogAktivitasService.instance.updateLogAktivitas(
-                  id: log.id,
-                  logBaru: data,
-                );
-                Navigator.pop(context);
-                setState(() {});
-                // optional: show confirmation
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Log berhasil diperbarui')),
-                );
-              } catch (e) {
-                // handle error: show message but keep dialog open so user can retry/cancel
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Gagal update: $e')),
-                );
-              }
-            },
-            child: const Text("Simpan"),
-          ),
-        ],
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _fetchLogs();
   }
 
-  // ===============================
-  // SHOW TAMBAH LOG
-  // ===============================
-  Future<void> _showTambahLog() async {
-    deskripsiLog.clear();
-    aktorLog.clear();
+  Future<void> _fetchLogs() async {
+    if (_isLoading || !_hasMore) return;
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Tambah Log Aktivitas"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: deskripsiLog,
-              decoration: const InputDecoration(
-                labelText: "Deskripsi",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: aktorLog,
-              decoration: const InputDecoration(
-                labelText: "Nama Aktor",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
-          ),
-          TextButton(
-            onPressed: () async {
-              final deskripsi = deskripsiLog.text.trim();
-              final aktor = aktorLog.text.trim();
+    setState(() {
+      _isLoading = true;
+    });
 
-              if (deskripsi.isEmpty || aktor.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Harap isi semua field')),
-                );
-                return;
-              }
+    try {
+      final newLogs = await LogAktivitasService.instance.getLogAktivitasLimit(
+        startAfter: _lastLog,
+        limit: _limit,
+      );
 
-              try {
-                await LogAktivitasService.instance.createLogAktivitas(
-                  deskripsi: deskripsi,
-                  aktor: aktor,
-                );
-                Navigator.pop(context);
-                setState(() {});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Log berhasil ditambahkan')),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Gagal menambah log: $e')),
-                );
-              }
-            },
-            child: const Text("Tambah"),
-          ),
-        ],
-      ),
-    );
+      if (newLogs.length < _limit) {
+        _hasMore = false;
+      }
+
+      if (newLogs.isNotEmpty) {
+        _lastLog = newLogs.last;
+        _logs.addAll(newLogs);
+      }
+
+      setState(() {});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal load log: $e')),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   void dispose() {
     deskripsiLog.dispose();
     aktorLog.dispose();
+    _filterDeskripsiController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDate({required bool isStart}) async {
+    final now = DateTime.now();
+    final initial = isStart ? (_startDate ?? now) : (_endDate ?? now);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = picked;
+        } else {
+          _endDate = picked;
+        }
+      });
+    }
+  }
+
+  Future<void> _applyFilter() async {
+    setState(() {
+      _isLoading = true;
+      _logs = [];
+      _hasMore = false; // when filtering we show exact results
+    });
+
+    try {
+      final all = await LogAktivitasService.instance.getAllLogAktivitas();
+
+      final descFilter = _filterDeskripsiController.text.trim().toLowerCase();
+
+      final filtered = all.where((l) {
+        final passDesc = descFilter.isEmpty
+            ? true
+            : l.deskripsi.toLowerCase().contains(descFilter);
+
+        final passStart = _startDate == null ? true : !l.waktu.isBefore(_startDate!);
+        final passEnd = _endDate == null ? true : !l.waktu.isAfter(_endDate!.add(const Duration(hours: 23, minutes: 59, seconds: 59)));
+
+        return passDesc && passStart && passEnd;
+      }).toList();
+
+      setState(() {
+        _logs = filtered;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menerapkan filter: $e')),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _resetFilter() {
+    setState(() {
+      _filterDeskripsiController.clear();
+      _startDate = null;
+      _endDate = null;
+      _hasMore = true;
+      _logs = [];
+      _lastLog = null;
+    });
+    _fetchLogs();
   }
 
   String _formatWaktu(dynamic waktu) {
@@ -184,7 +151,6 @@ class _LogAktivitasSectionState extends State<LogAktivitasSection> {
         return "${d.day}/${d.month}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
       }
       if (waktu is Map && waktu['seconds'] != null) {
-        
         final seconds = waktu['seconds'] as int;
         final d = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
         return "${d.day}/${d.month}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
@@ -194,184 +160,229 @@ class _LogAktivitasSectionState extends State<LogAktivitasSection> {
         final d = (waktu as dynamic).toDate() as DateTime;
         return "${d.day}/${d.month}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}";
       }
-      
       return waktu.toString();
     } catch (_) {
       return waktu.toString();
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text("Log Aktivitas"),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16),
-      child: FutureBuilder<List<LogAktivitas>>(
-        future: LogAktivitasService.instance.getAllLogAktivitas(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Tidak ada log aktivitas."));
-          }
-
-          final logs = snapshot.data!;
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80),
-            itemCount: logs.length,
-            itemBuilder: (context, i) {
-              final log = logs[i];
-              final waktuText = _formatWaktu(log.waktu);
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.orange.withOpacity(0.15),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Theme(
-                  data: Theme.of(context)
-                      .copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    childrenPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.history, color: Colors.orange),
-                    ),
-
-                    // ---------- TITLE ----------
-                    title: Text(
-                      log.deskripsi,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-
-                    subtitle: Text(
-                      "Aktor: ${log.aktor}",
-                      style:
-                          TextStyle(color: Colors.grey.shade700, fontSize: 13),
-                    ),
-
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          waktuText,
-                          style: const TextStyle(
-                              fontSize: 11, color: Colors.grey),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Log Aktivitas")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Filter UI
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          readOnly: true,
+                          onTap: () => _pickDate(isStart: true),
+                          decoration: InputDecoration(
+                            labelText: 'Tanggal Mulai',
+                            hintText: _startDate == null ? 'Pilih tanggal' : '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}',
+                            suffixIcon: const Icon(Icons.calendar_today),
+                          ),
                         ),
-                        const Icon(Icons.keyboard_arrow_down),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          readOnly: true,
+                          onTap: () => _pickDate(isStart: false),
+                          decoration: InputDecoration(
+                            labelText: 'Tanggal Selesai',
+                            hintText: _endDate == null ? 'Pilih tanggal' : '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}',
+                            suffixIcon: const Icon(Icons.calendar_today),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _filterDeskripsiController,
+                    decoration: const InputDecoration(
+                      labelText: 'Deskripsi',
+                      hintText: 'Masukkan kata kunci deskripsi',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: _resetFilter,
+                          child: const Text('Reset'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 2,
+                        child: CustomButton(
+                          onPressed: _applyFilter,
+                          child: const Text('Terapkan'),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _logs.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: _logs.length + 1, // +1 untuk tombol Load More
+                      itemBuilder: (context, i) {
+                  if (i == _logs.length) {
+                    // tombol Load More
+                    if (!_hasMore) return const SizedBox();
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Center(
+                        child: _isLoading
+                            ? const CircularProgressIndicator()
+                            : ElevatedButton(
+                                onPressed: _fetchLogs,
+                                child: const Text("Muat Lebih Banyak"),
+                              ),
+                      ),
+                    );
+                  }
+
+                  final log = _logs[i];
+                  final waktuText = _formatWaktu(log.waktu);
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withOpacity(0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
                       ],
                     ),
-
-                    // ---------- DROPDOWN CONTENT ----------
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        childrenPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.history, color: Colors.orange),
+                        ),
+                        title: Text(
+                          log.deskripsi,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "Aktor: ${log.aktor}",
+                          style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              waktuText,
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            ),
+                            const Icon(Icons.keyboard_arrow_down),
+                          ],
+                        ),
                         children: [
-                          Text("Deskripsi: ${log.deskripsi}"),
-                          const SizedBox(height: 6),
-                          Text("Aktor: ${log.aktor}"),
-                          const SizedBox(height: 6),
-                          Text("Waktu: $waktuText"),
-
-                          const SizedBox(height: 12),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(width: 8),
-                              TextButton.icon(
-                                onPressed: () => _showEditLog(log),
-                                icon: const Icon(Icons.edit, size: 18),
-                                label: const Text("Edit"),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.description, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text("Deskripsi: ${log.deskripsi}")),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  final konfirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: const Text("Konfirmasi"),
-                                      content: const Text(
-                                          "Hapus log aktivitas ini?"),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: const Text("Batal")),
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: const Text("Hapus")),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (konfirm == true) {
-                                    await LogAktivitasService.instance
-                                        .deleteLogAktivitas(log.id);
-                                    setState(() {});
-                                  }
-                                },
-                                icon: const Icon(Icons.delete,
-                                    size: 18, color: Colors.red),
-                                label: const Text("Hapus",
-                                    style: TextStyle(color: Colors.red)),
+                              const SizedBox(height: 6),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.person, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text("Aktor: ${log.aktor}")),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.access_time, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text("Waktu: $waktuText")),
+                                ],
                               ),
                             ],
                           ),
                         ],
-                      )
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
-    ),
+          ],),
+      ),
+    );
+  }
+}
 
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: _showTambahLog,
-      icon: const Icon(Icons.add, color: Colors.white),
-      label: const Text(
-        "Tambah Log",
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      backgroundColor: AppStyles.primaryColor,
-    ),
-  );
-}
-}
+
+    // floatingActionButton: FloatingActionButton.extended(
+    //   onPressed: _showTambahLog,
+    //   icon: const Icon(Icons.add, color: Colors.white),
+    //   label: const Text(
+    //     "Tambah Log",
+    //     style: TextStyle(
+    //       color: Colors.white,
+    //       fontWeight: FontWeight.w600,
+    //     ),
+    //   ),
+    //   backgroundColor: AppStyles.primaryColor,
+    // ),

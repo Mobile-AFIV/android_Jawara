@@ -50,4 +50,26 @@ class LogAktivitasService {
   Future<void> deleteLogAktivitas(String id) async {
     await _db.collection(_collection).doc(id).delete();
   }
+
+  Future<List<LogAktivitas>> getLogAktivitasLimit({
+    LogAktivitas? startAfter,
+    required int limit,
+  }) async {
+    Query query = _db
+        .collection(_collection)
+        .orderBy('waktu', descending: true)
+        .limit(limit);
+
+    if (startAfter != null) {
+      final docSnapshot =
+          await _db.collection(_collection).doc(startAfter.id).get();
+      query = query.startAfterDocument(docSnapshot);
+    }
+
+    final querySnapshot = await query.get();
+
+    return querySnapshot.docs
+        .map((doc) => LogAktivitas.fromFirestore(doc))
+        .toList();
+  }
 }
