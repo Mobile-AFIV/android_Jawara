@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_profile.dart';
+import 'log_aktivitas_service.dart';
 
 class UserProfileService {
   // Singleton
@@ -40,6 +41,11 @@ class UserProfileService {
       "statusKepemilikanRumah": statusKepemilikanRumah,
       "rumah": rumahRef, // DocumentReference
     };
+
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Menambahkan pengguna: $namaLengkap',
+      aktor: 'System',
+    );
 
     await _db.collection("user_profile").doc(uid).set(data);
   }

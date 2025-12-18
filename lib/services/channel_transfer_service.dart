@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../models/channel_transfer.dart';
+import 'log_aktivitas_service.dart';
 
 class ChannelTransferService {
   // Singleton
@@ -26,6 +28,10 @@ class ChannelTransferService {
       "updatedAt": FieldValue.serverTimestamp(),
     };
     await docRef.set(data);
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Menambahkan Channel baru : $pemilik',
+      aktor: 'System',
+    );
     return docRef.id;
   }
 
@@ -46,15 +52,38 @@ class ChannelTransferService {
     required String id,
     required Map<String, dynamic> channelBaru,
   }) async {
-    final Map<String, dynamic> data = {
+    final docRef = _db.collection(_collection).doc(id);
+
+    final oldDoc = await docRef.get();
+    final oldData = oldDoc.data() ?? {};
+
+    final String namaChannel = channelBaru['nama'] ?? oldData['nama'] ?? 'Unknown';
+    final String pemilikChannel = channelBaru['pemilik'] ?? oldData['pemilik'] ?? 'Unknown';
+
+    final data = {
       "updatedAt": FieldValue.serverTimestamp(),
       ...channelBaru,
     };
 
-    await _db.collection(_collection).doc(id).update(data);
+    await docRef.update(data);
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Mengubah data channel: $namaChannel ($pemilikChannel) diperbarui',
+      aktor: 'System',
+    );
   }
 
   Future<void> deleteChannelTransfer(String id) async {
-    await _db.collection(_collection).doc(id).delete();
+    final docRef = _db.collection(_collection).doc(id);
+
+    final doc = await docRef.get();
+    final data = doc.data() ?? {};
+    final String namaChannel = data['nama'] ?? 'Unknown';
+    final String pemilikChannel = data['pemilik'] ?? 'Unknown';
+
+    await docRef.delete();
+    await LogAktivitasService.instance.createLogAktivitas(
+        deskripsi: 'Menghapus data channel: $namaChannel' '($pemilikChannel)',
+        aktor: 'System',
+      ); 
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pengeluaran.dart';
+import 'log_aktivitas_service.dart';
 
 class PengeluaranService {
   // Singleton
@@ -31,6 +32,10 @@ class PengeluaranService {
       "updatedAt": FieldValue.serverTimestamp(),
     };
     await docRef.set(data);
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Menambahkan Pengeluaran baru: $nama',
+      aktor: 'System',
+    );
     return docRef.id;
   }
 
@@ -116,6 +121,13 @@ class PengeluaranService {
       ...data,
     };
 
+    final docRef = await _db.collection(_collection).doc(id).get();
+    final oldData = docRef.data() ?? {};
+    final String namaPengeluaran = data['nama'] ?? oldData['nama'] ?? 'Unknown';
+    await LogAktivitasService.instance.createLogAktivitas(
+      deskripsi: 'Memperbarui Pengeluaran: $namaPengeluaran',
+      aktor: 'System',
+    );
     await _db.collection(_collection).doc(id).update(updateData);
   }
 
