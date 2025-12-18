@@ -181,11 +181,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            "Hello, ${AuthService.instance.currentUser!.displayName}!",
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                          Container(
+                            constraints: const BoxConstraints(
+                              maxWidth: 120,
+                            ),
+                            child: Text(
+                              overflow: TextOverflow.ellipsis,
+                              "Hello, ${AuthService.instance.currentUser!.displayName}!",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Text(
