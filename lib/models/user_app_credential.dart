@@ -1,20 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserCredential {
+class UserAppCredential {
   final String uid;
   final String email;
   final String role; // 'administrator' atau 'warga'
 
-  UserCredential({
+  UserAppCredential({
     required this.uid,
     required this.email,
     required this.role,
   });
 
   // From Firestore
-  factory UserCredential.fromFirestore(DocumentSnapshot doc) {
+  factory UserAppCredential.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    return UserCredential(
+    return UserAppCredential(
       uid: data['uid'] ?? '',
       email: data['email'] ?? '',
       role: data['role'] ?? 'warga',
@@ -31,12 +31,12 @@ class UserCredential {
   }
 
   // Copy with
-  UserCredential copyWith({
+  UserAppCredential copyWith({
     String? uid,
     String? email,
     String? role,
   }) {
-    return UserCredential(
+    return UserAppCredential(
       uid: uid ?? this.uid,
       email: email ?? this.email,
       role: role ?? this.role,

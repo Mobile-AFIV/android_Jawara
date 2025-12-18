@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:jawara_pintar/models/user_credential.dart';
+import 'package:jawara_pintar/models/user_app_credential.dart';
 
 class UserCredentialService {
   // Singleton
@@ -15,7 +15,7 @@ class UserCredentialService {
     required String email,
     required String role, // 'administrator' atau 'warga'
   }) async {
-    final credential = UserCredential(
+    final credential = UserAppCredential(
       uid: uid,
       email: email,
       role: role,
@@ -28,7 +28,7 @@ class UserCredentialService {
   }
 
   // Get user credential by UID
-  Future<UserCredential?> getUserCredentialByUid(String uid) async {
+  Future<UserAppCredential?> getUserCredentialByUid(String uid) async {
     final querySnapshot = await _firestore
         .collection(_collection)
         .where('uid', isEqualTo: uid)
@@ -39,11 +39,11 @@ class UserCredentialService {
       return null;
     }
 
-    return UserCredential.fromFirestore(querySnapshot.docs.first);
+    return UserAppCredential.fromFirestore(querySnapshot.docs.first);
   }
 
   // Get user credential by Email
-  Future<UserCredential?> getUserCredentialByEmail(String email) async {
+  Future<UserAppCredential?> getUserCredentialByEmail(String email) async {
     final querySnapshot = await _firestore
         .collection(_collection)
         .where('email', isEqualTo: email)
@@ -54,27 +54,27 @@ class UserCredentialService {
       return null;
     }
 
-    return UserCredential.fromFirestore(querySnapshot.docs.first);
+    return UserAppCredential.fromFirestore(querySnapshot.docs.first);
   }
 
   // Get all user credentials
-  Future<List<UserCredential>> getAllUserCredentials() async {
+  Future<List<UserAppCredential>> getAllUserCredentials() async {
     final querySnapshot = await _firestore.collection(_collection).get();
 
     return querySnapshot.docs
-        .map((doc) => UserCredential.fromFirestore(doc))
+        .map((doc) => UserAppCredential.fromFirestore(doc))
         .toList();
   }
 
   // Get user credentials by role
-  Future<List<UserCredential>> getUserCredentialsByRole(String role) async {
+  Future<List<UserAppCredential>> getUserCredentialsByRole(String role) async {
     final querySnapshot = await _firestore
         .collection(_collection)
         .where('role', isEqualTo: role)
         .get();
 
     return querySnapshot.docs
-        .map((doc) => UserCredential.fromFirestore(doc))
+        .map((doc) => UserAppCredential.fromFirestore(doc))
         .toList();
   }
 
@@ -120,7 +120,7 @@ class UserCredentialService {
   }
 
   // Stream user credential
-  Stream<UserCredential?> streamUserCredential(String uid) {
+  Stream<UserAppCredential?> streamUserCredential(String uid) {
     return _firestore
         .collection(_collection)
         .where('uid', isEqualTo: uid)
@@ -130,7 +130,7 @@ class UserCredentialService {
       if (snapshot.docs.isEmpty) {
         return null;
       }
-      return UserCredential.fromFirestore(snapshot.docs.first);
+      return UserAppCredential.fromFirestore(snapshot.docs.first);
     });
   }
 }
